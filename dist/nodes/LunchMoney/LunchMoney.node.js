@@ -85,6 +85,10 @@ class LunchMoney {
                         qs.start_date = this.getNodeParameter('start_date', i);
                         qs.end_date = this.getNodeParameter('end_date', i);
                         const additionalFields = this.getNodeParameter('additionalFields', i);
+                        for (const k of Object.keys(additionalFields)) {
+                            if (additionalFields[k] === '')
+                                delete additionalFields[k];
+                        }
                         Object.assign(qs, additionalFields);
                         responseData = await GenericFunctions_1.lunchMoneyApiRequest.call(this, 'GET', `/summary`, {}, qs);
                     }
@@ -94,6 +98,10 @@ class LunchMoney {
                         const body = {};
                         body.name = this.getNodeParameter('name', i);
                         const additionalFields = this.getNodeParameter('additionalFields', i);
+                        for (const k of Object.keys(additionalFields)) {
+                            if (additionalFields[k] === '')
+                                delete additionalFields[k];
+                        }
                         Object.assign(body, additionalFields);
                         responseData = await GenericFunctions_1.lunchMoneyApiRequest.call(this, 'POST', `/categories`, body);
                     }
@@ -108,6 +116,10 @@ class LunchMoney {
                     if (operation === 'getAll') {
                         const qs = {};
                         const additionalFields = this.getNodeParameter('additionalFields', i);
+                        for (const k of Object.keys(additionalFields)) {
+                            if (additionalFields[k] === '')
+                                delete additionalFields[k];
+                        }
                         Object.assign(qs, additionalFields);
                         responseData = await GenericFunctions_1.lunchMoneyApiRequest.call(this, 'GET', `/categories`, {}, qs);
                         responseData = responseData.categories || responseData;
@@ -116,6 +128,10 @@ class LunchMoney {
                         const id = this.getNodeParameter('categoryId', i);
                         const body = {};
                         const additionalFields = this.getNodeParameter('additionalFields', i);
+                        for (const k of Object.keys(additionalFields)) {
+                            if (additionalFields[k] === '')
+                                delete additionalFields[k];
+                        }
                         Object.assign(body, additionalFields);
                         responseData = await GenericFunctions_1.lunchMoneyApiRequest.call(this, 'PUT', `/categories/${id}`, body);
                     }
@@ -130,6 +146,10 @@ class LunchMoney {
                         if (additionalFields.tag_ids) {
                             additionalFields.tag_ids = additionalFields.tag_ids.split(',').map(s => parseInt(s.trim(), 10)).filter(n => !isNaN(n));
                         }
+                        for (const k of Object.keys(additionalFields)) {
+                            if (additionalFields[k] === '')
+                                delete additionalFields[k];
+                        }
                         Object.assign(body, additionalFields);
                         responseData = await GenericFunctions_1.lunchMoneyApiRequest.call(this, 'POST', `/transactions`, { transactions: [body] });
                     }
@@ -142,6 +162,10 @@ class LunchMoney {
                         const additionalFields = this.getNodeParameter('additionalFields', i);
                         if (additionalFields.tag_ids) {
                             additionalFields.tag_ids = additionalFields.tag_ids.split(',').map(s => parseInt(s.trim(), 10)).filter(n => !isNaN(n));
+                        }
+                        for (const k of Object.keys(additionalFields)) {
+                            if (additionalFields[k] === '')
+                                delete additionalFields[k];
                         }
                         Object.assign(body, additionalFields);
                         responseData = await GenericFunctions_1.lunchMoneyApiRequest.call(this, 'POST', `/transactions/group`, body);
@@ -175,6 +199,10 @@ class LunchMoney {
                     if (operation === 'getAll') {
                         const qs = {};
                         const additionalFields = this.getNodeParameter('additionalFields', i);
+                        for (const k of Object.keys(additionalFields)) {
+                            if (additionalFields[k] === '')
+                                delete additionalFields[k];
+                        }
                         Object.assign(qs, additionalFields);
                         responseData = await GenericFunctions_1.lunchMoneyApiRequest.call(this, 'GET', `/transactions`, {}, qs);
                         responseData = responseData.transactions || responseData;
@@ -210,6 +238,10 @@ class LunchMoney {
                             mutationQs.update_balance = additionalFields.update_balance;
                             delete additionalFields.update_balance;
                         }
+                        for (const k of Object.keys(additionalFields)) {
+                            if (additionalFields[k] === '')
+                                delete additionalFields[k];
+                        }
                         Object.assign(body, additionalFields);
                         responseData = await GenericFunctions_1.lunchMoneyApiRequest.call(this, 'PUT', `/transactions/${id}`, body, mutationQs);
                     }
@@ -219,6 +251,10 @@ class LunchMoney {
                         body.uploadTransactionId = this.getNodeParameter('uploadTransactionId', i);
                         body.fileUrl = this.getNodeParameter('fileUrl', i);
                         const additionalFields = this.getNodeParameter('additionalFields', i);
+                        for (const k of Object.keys(additionalFields)) {
+                            if (additionalFields[k] === '')
+                                delete additionalFields[k];
+                        }
                         Object.assign(body, additionalFields);
                         responseData = await GenericFunctions_1.lunchMoneyApiRequest.call(this, 'POST', `/transactions/${txId}/attachments`, body);
                     }
@@ -228,6 +264,10 @@ class LunchMoney {
                         const body = {};
                         body.name = this.getNodeParameter('name', i);
                         const additionalFields = this.getNodeParameter('additionalFields', i);
+                        for (const k of Object.keys(additionalFields)) {
+                            if (additionalFields[k] === '')
+                                delete additionalFields[k];
+                        }
                         Object.assign(body, additionalFields);
                         responseData = await GenericFunctions_1.lunchMoneyApiRequest.call(this, 'POST', `/tags`, body);
                     }
@@ -247,6 +287,10 @@ class LunchMoney {
                         const id = this.getNodeParameter('tagId', i);
                         const body = {};
                         const additionalFields = this.getNodeParameter('additionalFields', i);
+                        for (const k of Object.keys(additionalFields)) {
+                            if (additionalFields[k] === '')
+                                delete additionalFields[k];
+                        }
                         Object.assign(body, additionalFields);
                         responseData = await GenericFunctions_1.lunchMoneyApiRequest.call(this, 'PUT', `/tags/${id}`, body);
                     }
@@ -259,6 +303,10 @@ class LunchMoney {
                     if (operation === 'getAll') {
                         const qs = {};
                         const additionalFields = this.getNodeParameter('additionalFields', i);
+                        for (const k of Object.keys(additionalFields)) {
+                            if (additionalFields[k] === '')
+                                delete additionalFields[k];
+                        }
                         Object.assign(qs, additionalFields);
                         responseData = await GenericFunctions_1.lunchMoneyApiRequest.call(this, 'GET', `/recurring_items`, {}, qs);
                         responseData = responseData.recurring_items || responseData;
@@ -280,6 +328,10 @@ class LunchMoney {
                         body.category_id = this.getNodeParameter('category_id', i);
                         body.amount = this.getNodeParameter('amount', i);
                         const additionalFields = this.getNodeParameter('additionalFields', i);
+                        for (const k of Object.keys(additionalFields)) {
+                            if (additionalFields[k] === '')
+                                delete additionalFields[k];
+                        }
                         Object.assign(body, additionalFields);
                         responseData = await GenericFunctions_1.lunchMoneyApiRequest.call(this, 'PUT', `/budgets`, body);
                     }
@@ -291,6 +343,10 @@ class LunchMoney {
                         body.type = this.getNodeParameter('type', i);
                         body.balance = this.getNodeParameter('balance', i);
                         const additionalFields = this.getNodeParameter('additionalFields', i);
+                        for (const k of Object.keys(additionalFields)) {
+                            if (additionalFields[k] === '')
+                                delete additionalFields[k];
+                        }
                         Object.assign(body, additionalFields);
                         responseData = await GenericFunctions_1.lunchMoneyApiRequest.call(this, 'POST', `/manual_accounts`, body);
                     }
@@ -310,6 +366,10 @@ class LunchMoney {
                         const id = this.getNodeParameter('accountId', i);
                         const body = {};
                         const additionalFields = this.getNodeParameter('additionalFields', i);
+                        for (const k of Object.keys(additionalFields)) {
+                            if (additionalFields[k] === '')
+                                delete additionalFields[k];
+                        }
                         Object.assign(body, additionalFields);
                         responseData = await GenericFunctions_1.lunchMoneyApiRequest.call(this, 'PUT', `/manual_accounts/${id}`, body);
                     }
@@ -335,6 +395,10 @@ class LunchMoney {
                         body.currency = this.getNodeParameter('currency', i);
                         body.balance = this.getNodeParameter('balance', i);
                         const additionalFields = this.getNodeParameter('additionalFields', i);
+                        for (const k of Object.keys(additionalFields)) {
+                            if (additionalFields[k] === '')
+                                delete additionalFields[k];
+                        }
                         Object.assign(body, additionalFields);
                         responseData = await GenericFunctions_1.lunchMoneyApiRequest.call(this, 'POST', `/crypto/manual`, body);
                     }
@@ -374,6 +438,10 @@ class LunchMoney {
                         const id = this.getNodeParameter('cryptoId', i);
                         const body = {};
                         const additionalFields = this.getNodeParameter('additionalFields', i);
+                        for (const k of Object.keys(additionalFields)) {
+                            if (additionalFields[k] === '')
+                                delete additionalFields[k];
+                        }
                         Object.assign(body, additionalFields);
                         responseData = await GenericFunctions_1.lunchMoneyApiRequest.call(this, 'PUT', `/crypto/manual/${id}`, body);
                     }
@@ -402,6 +470,10 @@ class LunchMoney {
                     if (operation === 'getAll') {
                         const qs = {};
                         const additionalFields = this.getNodeParameter('additionalFields', i);
+                        for (const k of Object.keys(additionalFields)) {
+                            if (additionalFields[k] === '')
+                                delete additionalFields[k];
+                        }
                         Object.assign(qs, additionalFields);
                         responseData = await GenericFunctions_1.lunchMoneyApiRequest.call(this, 'GET', `/balance_history`, {}, qs);
                     }
@@ -412,6 +484,10 @@ class LunchMoney {
                         qs.account_type = this.getNodeParameter('account_type', i);
                         qs.account_id = this.getNodeParameter('account_id', i);
                         const additionalFields = this.getNodeParameter('additionalFields', i);
+                        for (const k of Object.keys(additionalFields)) {
+                            if (additionalFields[k] === '')
+                                delete additionalFields[k];
+                        }
                         Object.assign(qs, additionalFields);
                         responseData = await GenericFunctions_1.lunchMoneyApiRequest.call(this, 'GET', `/balance_history/${accountType}/${accountId}`, {}, qs);
                     }
@@ -439,6 +515,10 @@ class LunchMoney {
                         qs.cryptoSyncedAccountId = this.getNodeParameter('cryptoSyncedAccountId', i);
                         qs.cryptoSyncedSymbol = this.getNodeParameter('cryptoSyncedSymbol', i);
                         const additionalFields = this.getNodeParameter('additionalFields', i);
+                        for (const k of Object.keys(additionalFields)) {
+                            if (additionalFields[k] === '')
+                                delete additionalFields[k];
+                        }
                         Object.assign(qs, additionalFields);
                         responseData = await GenericFunctions_1.lunchMoneyApiRequest.call(this, 'GET', `/balance_history/crypto_synced/${csAccountId}/${csSymbol}`, {}, qs);
                     }

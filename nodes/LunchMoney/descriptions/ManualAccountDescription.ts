@@ -51,9 +51,9 @@ export const manualAccountFields: INodeProperties[] = [
 	{
 		"displayName": "Account ID",
 		"name": "accountId",
-		"type": "number",
+		"type": "string",
 		"required": true,
-		"default": 0,
+		"default": "",
 		"description": "The ID of the manual account",
 		"displayOptions": {
 			"show": {

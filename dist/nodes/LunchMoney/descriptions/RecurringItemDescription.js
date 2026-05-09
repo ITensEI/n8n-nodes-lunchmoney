@@ -33,9 +33,9 @@ exports.recurringItemFields = [
     {
         "displayName": "Recurring Item ID",
         "name": "recurringItemId",
-        "type": "number",
+        "type": "string",
         "required": true,
-        "default": 0,
+        "default": "",
         "description": "The ID of the recurring item",
         "displayOptions": {
             "show": {

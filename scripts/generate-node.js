@@ -157,9 +157,9 @@ const FIELDS = {
 				{ name: 'exclude_from_budget', displayName: 'Exclude From Budget', type: 'boolean', desc: 'If true, transactions in this category are excluded from the budget.' },
 				{ name: 'exclude_from_totals', displayName: 'Exclude From Totals', type: 'boolean', desc: 'If true, transactions in this category are excluded from totals.' },
 				{ name: 'is_group', displayName: 'Is Group', type: 'boolean', desc: 'If true, the category is created as a category group.' },
-				{ name: 'group_id', displayName: 'Group ID', type: 'number', desc: 'If set to the ID of an existing category group, this new category will be assigned to that group. Cannot be set if is_group is true.' },
+				{ name: 'group_id', displayName: 'Group ID', type: 'string', desc: 'If set to the ID of an existing category group, this new category will be assigned to that group. Cannot be set if is_group is true.' },
 				{ name: 'archived', displayName: 'Archived', type: 'boolean', desc: 'If true, the category is archived and not displayed in the Lunch Money app.' },
-				{ name: 'order', displayName: 'Order', type: 'number', desc: 'Index specifying the display position on the categories page.' },
+				{ name: 'order', displayName: 'Order', type: 'string', desc: 'Index specifying the display position on the categories page.' },
 				{ name: 'collapsed', displayName: 'Collapsed', type: 'boolean', desc: 'If true, the category group appears collapsed in the Lunch Money app. Only applicable to category groups.' },
 			],
 		},
@@ -170,10 +170,10 @@ const FIELDS = {
 				{ name: 'is_income', displayName: 'Is Income', type: 'boolean', desc: 'If set, indicates whether transactions in this category are treated as income.' },
 				{ name: 'exclude_from_budget', displayName: 'Exclude From Budget', type: 'boolean', desc: 'If set, indicates whether transactions are excluded from the budget.' },
 				{ name: 'exclude_from_totals', displayName: 'Exclude From Totals', type: 'boolean', desc: 'If set, indicates whether transactions are excluded from totals.' },
-				{ name: 'group_id', displayName: 'Group ID', type: 'number', desc: 'If set to an existing category group ID, assigns this category to that group.' },
+				{ name: 'group_id', displayName: 'Group ID', type: 'string', desc: 'If set to an existing category group ID, assigns this category to that group.' },
 				{ name: 'is_group', displayName: 'Is Group', type: 'boolean', desc: 'May not be changed from the current status of the category.' },
 				{ name: 'archived', displayName: 'Archived', type: 'boolean', desc: 'If set, indicates whether the category is archived.' },
-				{ name: 'order', displayName: 'Order', type: 'number', desc: 'Index specifying the display position on the categories page.' },
+				{ name: 'order', displayName: 'Order', type: 'string', desc: 'Index specifying the display position on the categories page.' },
 				{ name: 'collapsed', displayName: 'Collapsed', type: 'boolean', desc: 'If true, the category group appears collapsed. Only applicable to category groups.' },
 			],
 		},
@@ -186,11 +186,11 @@ const FIELDS = {
 				{ name: 'end_date', displayName: 'End Date', type: 'string', desc: 'End of the time period to fetch transactions for (YYYY-MM-DD). Required if start_date is set.', placeholder: '2024-12-31' },
 				{ name: 'created_since', displayName: 'Created Since', type: 'string', desc: 'Filter to transactions created after this timestamp. Accepts YYYY-MM-DD or ISO 8601 datetime.', placeholder: '2024-01-01' },
 				{ name: 'updated_since', displayName: 'Updated Since', type: 'string', desc: 'Filter to transactions updated after this timestamp. Accepts YYYY-MM-DD or ISO 8601 datetime.', placeholder: '2024-01-01' },
-				{ name: 'category_id', displayName: 'Category ID', type: 'number', desc: 'Filter to transactions associated with the specified category ID. Also matches category groups. Set to 0 to filter for uncategorized.' },
-				{ name: 'tag_id', displayName: 'Tag ID', type: 'number', desc: 'Filter to transactions that have a tag with the specified Tag ID.' },
-				{ name: 'recurring_id', displayName: 'Recurring ID', type: 'number', desc: 'Filter to transactions associated with the specified Recurring Item ID.' },
-				{ name: 'plaid_account_id', displayName: 'Plaid Account ID', type: 'number', desc: 'Filter to transactions associated with the specified Plaid account ID. Set to 0 to omit Plaid transactions.' },
-				{ name: 'manual_account_id', displayName: 'Manual Account ID', type: 'number', desc: 'Filter to transactions associated with the specified manual account ID. Set to 0 to omit manual account transactions.' },
+				{ name: 'category_id', displayName: 'Category ID', type: 'string', desc: 'Filter to transactions associated with the specified category ID. Also matches category groups. Set to 0 to filter for uncategorized.' },
+				{ name: 'tag_id', displayName: 'Tag ID', type: 'string', desc: 'Filter to transactions that have a tag with the specified Tag ID.' },
+				{ name: 'recurring_id', displayName: 'Recurring ID', type: 'string', desc: 'Filter to transactions associated with the specified Recurring Item ID.' },
+				{ name: 'plaid_account_id', displayName: 'Plaid Account ID', type: 'string', desc: 'Filter to transactions associated with the specified Plaid account ID. Set to 0 to omit Plaid transactions.' },
+				{ name: 'manual_account_id', displayName: 'Manual Account ID', type: 'string', desc: 'Filter to transactions associated with the specified manual account ID. Set to 0 to omit manual account transactions.' },
 				{ name: 'status', displayName: 'Status', type: 'options', desc: 'Filter to transactions with the specified status.', options: ['reviewed', 'unreviewed', 'delete_pending'] },
 				{ name: 'is_group_parent', displayName: 'Is Group Parent', type: 'boolean', desc: 'If true, return only transaction groups (parent transactions).' },
 				{ name: 'is_pending', displayName: 'Is Pending', type: 'boolean', desc: 'If true, return only pending transactions. If false, return only non-pending transactions.' },
@@ -200,8 +200,8 @@ const FIELDS = {
 				{ name: 'include_group_children', displayName: 'Include Group Children', type: 'boolean', desc: 'By default, individual transactions that joined a transaction group are not included. Set to true to include them.' },
 				{ name: 'include_children', displayName: 'Include Children', type: 'boolean', desc: 'If true, include the children property containing split or grouped child transactions.' },
 				{ name: 'include_files', displayName: 'Include Files', type: 'boolean', desc: 'If true, include the files property containing a list of attached files for each transaction.' },
-				{ name: 'limit', displayName: 'Limit', type: 'number', desc: 'Maximum number of transactions to return.' },
-				{ name: 'offset', displayName: 'Offset', type: 'number', desc: 'Number of records to skip for pagination.' },
+				{ name: 'limit', displayName: 'Limit', type: 'string', desc: 'Maximum number of transactions to return.' },
+				{ name: 'offset', displayName: 'Offset', type: 'string', desc: 'Number of records to skip for pagination.' },
 			],
 		},
 		create: {
@@ -212,13 +212,13 @@ const FIELDS = {
 			],
 			optional: [
 				{ name: 'currency', displayName: 'Currency', type: 'string', desc: 'Three-letter lowercase ISO 4217 currency code (e.g. "usd"). Defaults to the account primary currency.', placeholder: 'usd' },
-				{ name: 'category_id', displayName: 'Category ID', type: 'number', desc: 'Unique identifier of the category to assign.' },
+				{ name: 'category_id', displayName: 'Category ID', type: 'string', desc: 'Unique identifier of the category to assign.' },
 				{ name: 'notes', displayName: 'Notes', type: 'string', desc: 'Notes for the transaction.' },
 				{ name: 'status', displayName: 'Status', type: 'options', desc: 'Transaction status.', options: ['reviewed', 'unreviewed'] },
 				{ name: 'external_id', displayName: 'External ID', type: 'string', desc: 'User-defined external ID for deduplication (requires manual_account_id).' },
-				{ name: 'manual_account_id', displayName: 'Manual Account ID', type: 'number', desc: 'ID of the manual account to associate with this transaction.' },
+				{ name: 'manual_account_id', displayName: 'Manual Account ID', type: 'string', desc: 'ID of the manual account to associate with this transaction.' },
 				{ name: 'tag_ids', displayName: 'Tag IDs', type: 'string', desc: 'Comma-separated list of tag IDs to assign to the transaction.' },
-				{ name: 'recurring_id', displayName: 'Recurring Item ID', type: 'number', desc: 'ID of the recurring item to link to this transaction.' },
+				{ name: 'recurring_id', displayName: 'Recurring Item ID', type: 'string', desc: 'ID of the recurring item to link to this transaction.' },
 				{ name: 'apply_rules', displayName: 'Apply Rules', type: 'boolean', desc: 'If true, any rules associated with the manual_account_id will be applied to the transaction.' },
 				{ name: 'skip_duplicates', displayName: 'Skip Duplicates', type: 'boolean', desc: 'If true, flag transactions as duplicates if they share the same date, payee, amount, and account.' },
 				{ name: 'skip_balance_update', displayName: 'Skip Balance Update', type: 'boolean', desc: 'If true, the balance of the associated manual account will not be updated.' },
@@ -230,14 +230,14 @@ const FIELDS = {
 				{ name: 'amount', displayName: 'Amount', type: 'string', desc: 'Numeric amount without currency symbol.' },
 				{ name: 'payee', displayName: 'Payee', type: 'string', desc: 'New payee for the transaction.' },
 				{ name: 'currency', displayName: 'Currency', type: 'string', desc: 'Three-letter lowercase ISO 4217 currency code.' },
-				{ name: 'category_id', displayName: 'Category ID', type: 'number', desc: 'Category to assign. Set to null to clear.' },
+				{ name: 'category_id', displayName: 'Category ID', type: 'string', desc: 'Category to assign. Set to null to clear.' },
 				{ name: 'notes', displayName: 'Notes', type: 'string', desc: 'New notes. Set to empty string to clear.' },
 				{ name: 'status', displayName: 'Status', type: 'options', desc: 'Transaction status.', options: ['reviewed', 'unreviewed'] },
-				{ name: 'recurring_id', displayName: 'Recurring Item ID', type: 'number', desc: 'ID of a recurring item to associate. Set to null to clear.' },
+				{ name: 'recurring_id', displayName: 'Recurring Item ID', type: 'string', desc: 'ID of a recurring item to associate. Set to null to clear.' },
 				{ name: 'tag_ids', displayName: 'Tag IDs (replace)', type: 'string', desc: 'Comma-separated tag IDs. Overwrites any existing tags on the transaction.' },
 				{ name: 'additional_tag_ids', displayName: 'Tag IDs (add)', type: 'string', desc: 'Comma-separated tag IDs to add without replacing existing tags.' },
 				{ name: 'external_id', displayName: 'External ID', type: 'string', desc: 'User-defined external ID (requires manual_account_id).' },
-				{ name: 'manual_account_id', displayName: 'Manual Account ID', type: 'number', desc: 'ID of the manual account. Set to null to disassociate.' },
+				{ name: 'manual_account_id', displayName: 'Manual Account ID', type: 'string', desc: 'ID of the manual account. Set to null to disassociate.' },
 				{ name: 'update_balance', displayName: 'Update Balance', type: 'boolean', desc: "Set to false to skip updating the account's balance when changing the transaction." },
 			],
 		},
@@ -248,7 +248,7 @@ const FIELDS = {
 				{ name: 'ids', displayName: 'Transaction IDs', type: 'string', desc: 'Comma-separated list of existing transaction IDs to group. Split and recurring transactions may not be grouped.' },
 			],
 			optional: [
-				{ name: 'category_id', displayName: 'Category ID', type: 'number', desc: 'ID of an existing category to assign to the grouped transaction.' },
+				{ name: 'category_id', displayName: 'Category ID', type: 'string', desc: 'ID of an existing category to assign to the grouped transaction.' },
 				{ name: 'notes', displayName: 'Notes', type: 'string', desc: 'Notes for the grouped transaction.' },
 				{ name: 'status', displayName: 'Status', type: 'options', desc: 'Status of the grouped transaction.', options: ['reviewed', 'unreviewed'] },
 				{ name: 'tag_ids', displayName: 'Tag IDs', type: 'string', desc: 'Comma-separated list of tag IDs to assign to the grouped transaction.' },
@@ -256,7 +256,7 @@ const FIELDS = {
 		},
 		deleteGroup: {
 			required: [
-				{ name: 'groupId', displayName: 'Group ID', type: 'number', desc: 'Transaction ID of the group parent to delete.' },
+				{ name: 'groupId', displayName: 'Group ID', type: 'string', desc: 'Transaction ID of the group parent to delete.' },
 			],
 		},
 		split: {
@@ -266,7 +266,7 @@ const FIELDS = {
 		},
 		uploadAttachment: {
 			required: [
-				{ name: 'uploadTransactionId', displayName: 'Transaction ID', type: 'number', desc: 'ID of the transaction to attach the file to.' },
+				{ name: 'uploadTransactionId', displayName: 'Transaction ID', type: 'string', desc: 'ID of the transaction to attach the file to.' },
 				{ name: 'fileUrl', displayName: 'File URL', type: 'string', desc: 'URL of the file to attach.' },
 			],
 			optional: [
@@ -275,12 +275,12 @@ const FIELDS = {
 		},
 		getAttachment: {
 			required: [
-				{ name: 'fileId', displayName: 'File ID', type: 'number', desc: 'ID of the attachment file.' },
+				{ name: 'fileId', displayName: 'File ID', type: 'string', desc: 'ID of the attachment file.' },
 			],
 		},
 		deleteAttachment: {
 			required: [
-				{ name: 'fileId', displayName: 'File ID', type: 'number', desc: 'ID of the attachment file to delete.' },
+				{ name: 'fileId', displayName: 'File ID', type: 'string', desc: 'ID of the attachment file to delete.' },
 			],
 		},
 	},
@@ -322,7 +322,7 @@ const FIELDS = {
 		upsert: {
 			required: [
 				{ name: 'start_date', displayName: 'Start Date', type: 'string', desc: 'Start date of the budget period (YYYY-MM-DD). Must be a valid budget period start for the account.', placeholder: '2024-01-01' },
-				{ name: 'category_id', displayName: 'Category ID', type: 'number', desc: 'Category ID for the budget.' },
+				{ name: 'category_id', displayName: 'Category ID', type: 'string', desc: 'Category ID for the budget.' },
 				{ name: 'amount', displayName: 'Amount', type: 'string', desc: 'Budget amount as a number or decimal string.', placeholder: '500.00' },
 			],
 			optional: [
@@ -335,7 +335,7 @@ const FIELDS = {
 			_useQs: true,
 			required: [
 				{ name: 'start_date', displayName: 'Start Date', type: 'string', desc: 'Start date of the budget period to remove (YYYY-MM-DD).', placeholder: '2024-01-01' },
-				{ name: 'category_id', displayName: 'Category ID', type: 'number', desc: 'Category ID of the budget to remove.' },
+				{ name: 'category_id', displayName: 'Category ID', type: 'string', desc: 'Category ID of the budget to remove.' },
 			],
 		},
 	},
@@ -418,7 +418,7 @@ const FIELDS = {
 		getForAccount: {
 			required: [
 				{ name: 'account_type', displayName: 'Account Type', type: 'options', desc: 'Type of account', options: ['manual', 'plaid', 'crypto_manual', 'deleted'] },
-				{ name: 'account_id', displayName: 'Account ID', type: 'number', desc: 'ID of the account' },
+				{ name: 'account_id', displayName: 'Account ID', type: 'string', desc: 'ID of the account' },
 			],
 			optional: [
 				{ name: 'start_date', displayName: 'Start Date', type: 'string', desc: 'Start date (YYYY-MM-DD)', placeholder: '2024-01-01' },
@@ -428,14 +428,14 @@ const FIELDS = {
 		updateForAccount: {
 			required: [
 				{ name: 'account_type', displayName: 'Account Type', type: 'options', desc: 'Type of account', options: ['manual', 'plaid', 'crypto_manual', 'deleted'] },
-				{ name: 'account_id', displayName: 'Account ID', type: 'number', desc: 'ID of the account' },
+				{ name: 'account_id', displayName: 'Account ID', type: 'string', desc: 'ID of the account' },
 				{ name: 'balanceEntries', displayName: 'Balance Entries (JSON)', type: 'json', desc: 'JSON array of balance entries with date and balance fields' },
 			],
 		},
 		deleteForAccount: {
 			required: [
 				{ name: 'account_type', displayName: 'Account Type', type: 'options', desc: 'Type of account', options: ['manual', 'plaid', 'crypto_manual', 'deleted'] },
-				{ name: 'account_id', displayName: 'Account ID', type: 'number', desc: 'ID of the account' },
+				{ name: 'account_id', displayName: 'Account ID', type: 'string', desc: 'ID of the account' },
 			],
 			optional: [
 				{ name: 'start_date', displayName: 'Start Date', type: 'string', desc: 'Start date of range to delete (YYYY-MM-DD)' },
@@ -444,12 +444,12 @@ const FIELDS = {
 		},
 		deleteEntry: {
 			required: [
-				{ name: 'entryId', displayName: 'Entry ID', type: 'number', desc: 'ID of the balance history entry to delete' },
+				{ name: 'entryId', displayName: 'Entry ID', type: 'string', desc: 'ID of the balance history entry to delete' },
 			],
 		},
 		getCryptoSynced: {
 			required: [
-				{ name: 'cryptoSyncedAccountId', displayName: 'Account ID', type: 'number', desc: 'ID of the synced crypto account' },
+				{ name: 'cryptoSyncedAccountId', displayName: 'Account ID', type: 'string', desc: 'ID of the synced crypto account' },
 				{ name: 'cryptoSyncedSymbol', displayName: 'Symbol', type: 'string', desc: 'Cryptocurrency symbol (e.g. "btc")', placeholder: 'btc' },
 			],
 			optional: [
@@ -459,14 +459,14 @@ const FIELDS = {
 		},
 		updateCryptoSynced: {
 			required: [
-				{ name: 'cryptoSyncedAccountId', displayName: 'Account ID', type: 'number', desc: 'ID of the synced crypto account' },
+				{ name: 'cryptoSyncedAccountId', displayName: 'Account ID', type: 'string', desc: 'ID of the synced crypto account' },
 				{ name: 'cryptoSyncedSymbol', displayName: 'Symbol', type: 'string', desc: 'Cryptocurrency symbol (e.g. "btc")', placeholder: 'btc' },
 				{ name: 'balanceEntries', displayName: 'Balance Entries (JSON)', type: 'json', desc: 'JSON array of balance entries with date and balance fields' },
 			],
 		},
 		deleteCryptoSynced: {
 			required: [
-				{ name: 'cryptoSyncedAccountId', displayName: 'Account ID', type: 'number', desc: 'ID of the synced crypto account' },
+				{ name: 'cryptoSyncedAccountId', displayName: 'Account ID', type: 'string', desc: 'ID of the synced crypto account' },
 				{ name: 'cryptoSyncedSymbol', displayName: 'Symbol', type: 'string', desc: 'Cryptocurrency symbol (e.g. "btc")', placeholder: 'btc' },
 			],
 			optional: [
@@ -476,7 +476,7 @@ const FIELDS = {
 		},
 		updateDeletedDetails: {
 			required: [
-				{ name: 'deletedAccountId', displayName: 'Deleted Account ID', type: 'number', desc: 'ID of the deleted account source' },
+				{ name: 'deletedAccountId', displayName: 'Deleted Account ID', type: 'string', desc: 'ID of the deleted account source' },
 				{ name: 'detailsData', displayName: 'Details (JSON)', type: 'json', desc: 'JSON object with display_name and/or other metadata fields' },
 			],
 		},
@@ -489,8 +489,9 @@ function toFieldProp(field, resource, operations) {
 	const prop = {
 		displayName: field.displayName,
 		name: field.name,
-		type: field.type === 'options' ? 'options' : field.type === 'json' ? 'json' : field.type,
-		default: field.type === 'boolean' ? false : field.type === 'number' ? 0 : field.type === 'json' ? '[]' : '',
+		// number → string: n8n always renders number fields as 0; use string for truly empty inputs
+		type: field.type === 'options' ? 'options' : field.type === 'json' ? 'json' : field.type === 'number' ? 'string' : field.type,
+		default: field.type === 'boolean' ? false : field.type === 'json' ? '[]' : '',
 		description: field.desc,
 		displayOptions: {
 			show: {
@@ -549,9 +550,9 @@ function generateDescriptionFile(resourceKey) {
 		const prop = {
 			displayName: idF.displayName,
 			name: idF.name,
-			type: 'number',
+			type: 'string',
 			required: true,
-			default: 0,
+			default: '',
 			description: `The ID of the ${resource.displayName.toLowerCase()}`,
 			displayOptions: {
 				show: {
@@ -595,8 +596,8 @@ function generateDescriptionFile(resourceKey) {
 					const o = {
 						displayName: f.displayName,
 						name: f.name,
-						type: f.type === 'options' ? 'options' : f.type,
-						default: f.type === 'boolean' ? false : f.type === 'number' ? 0 : '',
+						type: f.type === 'options' ? 'options' : f.type === 'number' ? 'string' : f.type,
+						default: f.type === 'boolean' ? false : '',
 						description: f.desc,
 					};
 					if (f.placeholder) o.placeholder = f.placeholder;
@@ -847,6 +848,8 @@ function generateOperationHandler(resourceKey, op) {
 					code += `\t\t\t\t\t\tif (additionalFields.${f.name} !== undefined) { mutationQs.${f.name} = additionalFields.${f.name}; delete additionalFields.${f.name}; }\n`;
 				}
 			}
+			// Strip empty-string values so unset optional fields are not sent
+			code += `\t\t\t\t\t\tfor (const k of Object.keys(additionalFields)) { if (additionalFields[k] === '') delete additionalFields[k]; }\n`;
 			code += `\t\t\t\t\t\tObject.assign(body, additionalFields);\n`;
 		}
 
@@ -871,6 +874,7 @@ function generateOperationHandler(resourceKey, op) {
 			}
 			if (hasOptional) {
 				code += `\t\t\t\t\t\tconst additionalFields = this.getNodeParameter('additionalFields', i) as IDataObject;\n`;
+				code += `\t\t\t\t\t\tfor (const k of Object.keys(additionalFields)) { if (additionalFields[k] === '') delete additionalFields[k]; }\n`;
 				code += `\t\t\t\t\t\tObject.assign(qs, additionalFields);\n`;
 			}
 			code += `\t\t\t\t\t\tresponseData = await lunchMoneyApiRequest.call(this, '${op.method}', \`${apiPath}\`, {}, qs);\n`;

@@ -51,9 +51,9 @@ exports.tagFields = [
     {
         "displayName": "Tag ID",
         "name": "tagId",
-        "type": "number",
+        "type": "string",
         "required": true,
-        "default": 0,
+        "default": "",
         "description": "The ID of the tag",
         "displayOptions": {
             "show": {

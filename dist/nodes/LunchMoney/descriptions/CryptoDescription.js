@@ -81,9 +81,9 @@ exports.cryptoFields = [
     {
         "displayName": "Crypto Account ID",
         "name": "cryptoId",
-        "type": "number",
+        "type": "string",
         "required": true,
-        "default": 0,
+        "default": "",
         "description": "The ID of the crypto",
         "displayOptions": {
             "show": {

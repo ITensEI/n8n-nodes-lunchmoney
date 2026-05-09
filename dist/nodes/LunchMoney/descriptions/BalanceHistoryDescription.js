@@ -75,8 +75,8 @@ exports.balanceHistoryFields = [
     {
         "displayName": "Entry ID",
         "name": "entryId",
-        "type": "number",
-        "default": 0,
+        "type": "string",
+        "default": "",
         "description": "ID of the balance history entry to delete",
         "displayOptions": {
             "show": {
@@ -129,8 +129,8 @@ exports.balanceHistoryFields = [
     {
         "displayName": "Account ID",
         "name": "account_id",
-        "type": "number",
-        "default": 0,
+        "type": "string",
+        "default": "",
         "description": "ID of the account",
         "displayOptions": {
             "show": {
@@ -251,8 +251,8 @@ exports.balanceHistoryFields = [
     {
         "displayName": "Account ID",
         "name": "account_id",
-        "type": "number",
-        "default": 0,
+        "type": "string",
+        "default": "",
         "description": "ID of the account",
         "displayOptions": {
             "show": {
@@ -340,8 +340,8 @@ exports.balanceHistoryFields = [
     {
         "displayName": "Account ID",
         "name": "account_id",
-        "type": "number",
-        "default": 0,
+        "type": "string",
+        "default": "",
         "description": "ID of the account",
         "displayOptions": {
             "show": {
@@ -376,8 +376,8 @@ exports.balanceHistoryFields = [
     {
         "displayName": "Account ID",
         "name": "cryptoSyncedAccountId",
-        "type": "number",
-        "default": 0,
+        "type": "string",
+        "default": "",
         "description": "ID of the synced crypto account",
         "displayOptions": {
             "show": {
@@ -448,8 +448,8 @@ exports.balanceHistoryFields = [
     {
         "displayName": "Account ID",
         "name": "cryptoSyncedAccountId",
-        "type": "number",
-        "default": 0,
+        "type": "string",
+        "default": "",
         "description": "ID of the synced crypto account",
         "displayOptions": {
             "show": {
@@ -503,8 +503,8 @@ exports.balanceHistoryFields = [
     {
         "displayName": "Account ID",
         "name": "cryptoSyncedAccountId",
-        "type": "number",
-        "default": 0,
+        "type": "string",
+        "default": "",
         "description": "ID of the synced crypto account",
         "displayOptions": {
             "show": {
@@ -573,8 +573,8 @@ exports.balanceHistoryFields = [
     {
         "displayName": "Deleted Account ID",
         "name": "deletedAccountId",
-        "type": "number",
-        "default": 0,
+        "type": "string",
+        "default": "",
         "description": "ID of the deleted account source",
         "displayOptions": {
             "show": {

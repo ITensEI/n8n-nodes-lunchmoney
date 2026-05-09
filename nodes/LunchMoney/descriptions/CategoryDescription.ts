@@ -51,9 +51,9 @@ export const categoryFields: INodeProperties[] = [
 	{
 		"displayName": "Category ID",
 		"name": "categoryId",
-		"type": "number",
+		"type": "string",
 		"required": true,
-		"default": 0,
+		"default": "",
 		"description": "The ID of the category",
 		"displayOptions": {
 			"show": {
@@ -141,8 +141,8 @@ export const categoryFields: INodeProperties[] = [
 			{
 				"displayName": "Group ID",
 				"name": "group_id",
-				"type": "number",
-				"default": 0,
+				"type": "string",
+				"default": "",
 				"description": "If set to the ID of an existing category group, this new category will be assigned to that group. Cannot be set if is_group is true."
 			},
 			{
@@ -155,8 +155,8 @@ export const categoryFields: INodeProperties[] = [
 			{
 				"displayName": "Order",
 				"name": "order",
-				"type": "number",
-				"default": 0,
+				"type": "string",
+				"default": "",
 				"description": "Index specifying the display position on the categories page."
 			},
 			{
@@ -266,8 +266,8 @@ export const categoryFields: INodeProperties[] = [
 			{
 				"displayName": "Group ID",
 				"name": "group_id",
-				"type": "number",
-				"default": 0,
+				"type": "string",
+				"default": "",
 				"description": "If set to an existing category group ID, assigns this category to that group."
 			},
 			{
@@ -287,8 +287,8 @@ export const categoryFields: INodeProperties[] = [
 			{
 				"displayName": "Order",
 				"name": "order",
-				"type": "number",
-				"default": 0,
+				"type": "string",
+				"default": "",
 				"description": "Index specifying the display position on the categories page."
 			},
 			{

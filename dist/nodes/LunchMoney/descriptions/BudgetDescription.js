@@ -58,8 +58,8 @@ exports.budgetFields = [
     {
         "displayName": "Category ID",
         "name": "category_id",
-        "type": "number",
-        "default": 0,
+        "type": "string",
+        "default": "",
         "description": "Category ID of the budget to remove.",
         "displayOptions": {
             "show": {
@@ -95,8 +95,8 @@ exports.budgetFields = [
     {
         "displayName": "Category ID",
         "name": "category_id",
-        "type": "number",
-        "default": 0,
+        "type": "string",
+        "default": "",
         "description": "Category ID for the budget.",
         "displayOptions": {
             "show": {

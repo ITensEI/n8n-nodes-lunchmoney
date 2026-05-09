@@ -39,9 +39,9 @@ export const plaidAccountFields: INodeProperties[] = [
 	{
 		"displayName": "Plaid Account ID",
 		"name": "plaidAccountId",
-		"type": "number",
+		"type": "string",
 		"required": true,
-		"default": 0,
+		"default": "",
 		"description": "The ID of the plaid account",
 		"displayOptions": {
 			"show": {

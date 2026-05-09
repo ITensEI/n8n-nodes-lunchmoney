@@ -93,9 +93,9 @@ export const transactionFields: INodeProperties[] = [
 	{
 		"displayName": "Transaction ID",
 		"name": "transactionId",
-		"type": "number",
+		"type": "string",
 		"required": true,
-		"default": 0,
+		"default": "",
 		"description": "The ID of the transaction",
 		"displayOptions": {
 			"show": {
@@ -196,8 +196,8 @@ export const transactionFields: INodeProperties[] = [
 			{
 				"displayName": "Category ID",
 				"name": "category_id",
-				"type": "number",
-				"default": 0,
+				"type": "string",
+				"default": "",
 				"description": "Unique identifier of the category to assign."
 			},
 			{
@@ -234,8 +234,8 @@ export const transactionFields: INodeProperties[] = [
 			{
 				"displayName": "Manual Account ID",
 				"name": "manual_account_id",
-				"type": "number",
-				"default": 0,
+				"type": "string",
+				"default": "",
 				"description": "ID of the manual account to associate with this transaction."
 			},
 			{
@@ -248,8 +248,8 @@ export const transactionFields: INodeProperties[] = [
 			{
 				"displayName": "Recurring Item ID",
 				"name": "recurring_id",
-				"type": "number",
-				"default": 0,
+				"type": "string",
+				"default": "",
 				"description": "ID of the recurring item to link to this transaction."
 			},
 			{
@@ -350,8 +350,8 @@ export const transactionFields: INodeProperties[] = [
 			{
 				"displayName": "Category ID",
 				"name": "category_id",
-				"type": "number",
-				"default": 0,
+				"type": "string",
+				"default": "",
 				"description": "ID of an existing category to assign to the grouped transaction."
 			},
 			{
@@ -390,8 +390,8 @@ export const transactionFields: INodeProperties[] = [
 	{
 		"displayName": "File ID",
 		"name": "fileId",
-		"type": "number",
-		"default": 0,
+		"type": "string",
+		"default": "",
 		"description": "ID of the attachment file to delete.",
 		"displayOptions": {
 			"show": {
@@ -408,8 +408,8 @@ export const transactionFields: INodeProperties[] = [
 	{
 		"displayName": "Group ID",
 		"name": "groupId",
-		"type": "number",
-		"default": 0,
+		"type": "string",
+		"default": "",
 		"description": "Transaction ID of the group parent to delete.",
 		"displayOptions": {
 			"show": {
@@ -426,8 +426,8 @@ export const transactionFields: INodeProperties[] = [
 	{
 		"displayName": "File ID",
 		"name": "fileId",
-		"type": "number",
-		"default": 0,
+		"type": "string",
+		"default": "",
 		"description": "ID of the attachment file.",
 		"displayOptions": {
 			"show": {
@@ -493,36 +493,36 @@ export const transactionFields: INodeProperties[] = [
 			{
 				"displayName": "Category ID",
 				"name": "category_id",
-				"type": "number",
-				"default": 0,
+				"type": "string",
+				"default": "",
 				"description": "Filter to transactions associated with the specified category ID. Also matches category groups. Set to 0 to filter for uncategorized."
 			},
 			{
 				"displayName": "Tag ID",
 				"name": "tag_id",
-				"type": "number",
-				"default": 0,
+				"type": "string",
+				"default": "",
 				"description": "Filter to transactions that have a tag with the specified Tag ID."
 			},
 			{
 				"displayName": "Recurring ID",
 				"name": "recurring_id",
-				"type": "number",
-				"default": 0,
+				"type": "string",
+				"default": "",
 				"description": "Filter to transactions associated with the specified Recurring Item ID."
 			},
 			{
 				"displayName": "Plaid Account ID",
 				"name": "plaid_account_id",
-				"type": "number",
-				"default": 0,
+				"type": "string",
+				"default": "",
 				"description": "Filter to transactions associated with the specified Plaid account ID. Set to 0 to omit Plaid transactions."
 			},
 			{
 				"displayName": "Manual Account ID",
 				"name": "manual_account_id",
-				"type": "number",
-				"default": 0,
+				"type": "string",
+				"default": "",
 				"description": "Filter to transactions associated with the specified manual account ID. Set to 0 to omit manual account transactions."
 			},
 			{
@@ -605,15 +605,15 @@ export const transactionFields: INodeProperties[] = [
 			{
 				"displayName": "Limit",
 				"name": "limit",
-				"type": "number",
-				"default": 0,
+				"type": "string",
+				"default": "",
 				"description": "Maximum number of transactions to return."
 			},
 			{
 				"displayName": "Offset",
 				"name": "offset",
-				"type": "number",
-				"default": 0,
+				"type": "string",
+				"default": "",
 				"description": "Number of records to skip for pagination."
 			}
 		]
@@ -684,8 +684,8 @@ export const transactionFields: INodeProperties[] = [
 			{
 				"displayName": "Category ID",
 				"name": "category_id",
-				"type": "number",
-				"default": 0,
+				"type": "string",
+				"default": "",
 				"description": "Category to assign. Set to null to clear."
 			},
 			{
@@ -715,8 +715,8 @@ export const transactionFields: INodeProperties[] = [
 			{
 				"displayName": "Recurring Item ID",
 				"name": "recurring_id",
-				"type": "number",
-				"default": 0,
+				"type": "string",
+				"default": "",
 				"description": "ID of a recurring item to associate. Set to null to clear."
 			},
 			{
@@ -743,8 +743,8 @@ export const transactionFields: INodeProperties[] = [
 			{
 				"displayName": "Manual Account ID",
 				"name": "manual_account_id",
-				"type": "number",
-				"default": 0,
+				"type": "string",
+				"default": "",
 				"description": "ID of the manual account. Set to null to disassociate."
 			},
 			{
@@ -759,8 +759,8 @@ export const transactionFields: INodeProperties[] = [
 	{
 		"displayName": "Transaction ID",
 		"name": "uploadTransactionId",
-		"type": "number",
-		"default": 0,
+		"type": "string",
+		"default": "",
 		"description": "ID of the transaction to attach the file to.",
 		"displayOptions": {
 			"show": {

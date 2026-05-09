@@ -1,0 +1,160 @@
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.budgetFields = exports.budgetOperations = void 0;
+exports.budgetOperations = [
+    {
+        displayName: 'Operation',
+        name: 'operation',
+        type: 'options',
+        noDataExpression: true,
+        displayOptions: {
+            show: {
+                resource: ['budget'],
+            },
+        },
+        options: [
+            {
+                name: 'Get Settings',
+                value: 'getSettings',
+                description: 'Get budget settings',
+                action: 'Get budget settings',
+            },
+            {
+                name: 'Remove',
+                value: 'remove',
+                description: 'Remove a budget entry',
+                action: 'Remove a budget entry',
+            },
+            {
+                name: 'Upsert',
+                value: 'upsert',
+                description: 'Create or update a budget entry',
+                action: 'Upsert a budget entry',
+            },
+        ],
+        default: 'getSettings',
+    },
+];
+exports.budgetFields = [
+    {
+        "displayName": "Start Date",
+        "name": "start_date",
+        "type": "string",
+        "default": "",
+        "description": "Start date of the budget period to remove (YYYY-MM-DD)",
+        "displayOptions": {
+            "show": {
+                "resource": [
+                    "budget"
+                ],
+                "operation": [
+                    "remove"
+                ]
+            }
+        },
+        "required": true,
+        "placeholder": "2024-01-01"
+    },
+    {
+        "displayName": "Category ID",
+        "name": "category_id",
+        "type": "number",
+        "default": 0,
+        "description": "Category ID of the budget to remove",
+        "displayOptions": {
+            "show": {
+                "resource": [
+                    "budget"
+                ],
+                "operation": [
+                    "remove"
+                ]
+            }
+        },
+        "required": true
+    },
+    {
+        "displayName": "Start Date",
+        "name": "start_date",
+        "type": "string",
+        "default": "",
+        "description": "Start date for the budget period (YYYY-MM-DD, first of month)",
+        "displayOptions": {
+            "show": {
+                "resource": [
+                    "budget"
+                ],
+                "operation": [
+                    "upsert"
+                ]
+            }
+        },
+        "required": true,
+        "placeholder": "2024-01-01"
+    },
+    {
+        "displayName": "Category ID",
+        "name": "category_id",
+        "type": "number",
+        "default": 0,
+        "description": "Category ID for the budget",
+        "displayOptions": {
+            "show": {
+                "resource": [
+                    "budget"
+                ],
+                "operation": [
+                    "upsert"
+                ]
+            }
+        },
+        "required": true
+    },
+    {
+        "displayName": "Amount",
+        "name": "amount",
+        "type": "string",
+        "default": "",
+        "description": "Budget amount as decimal string",
+        "displayOptions": {
+            "show": {
+                "resource": [
+                    "budget"
+                ],
+                "operation": [
+                    "upsert"
+                ]
+            }
+        },
+        "required": true,
+        "placeholder": "500.00"
+    },
+    {
+        "displayName": "Additional Fields",
+        "name": "additionalFields",
+        "type": "collection",
+        "placeholder": "Add Field",
+        "default": {},
+        "displayOptions": {
+            "show": {
+                "resource": [
+                    "budget"
+                ],
+                "operation": [
+                    "upsert"
+                ]
+            }
+        },
+        "options": [
+            {
+                "displayName": "Currency",
+                "name": "currency",
+                "type": "string",
+                "default": "",
+                "description": "ISO 4217 currency code",
+                "placeholder": "usd"
+            }
+        ]
+    },
+];
+//# sourceMappingURL=BudgetDescription.js.map

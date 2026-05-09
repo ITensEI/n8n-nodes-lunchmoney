@@ -1,0 +1,5098 @@
+{
+  "byTag": {
+    "me": [
+      {
+        "path": "/me",
+        "method": "GET",
+        "operationId": "getMe",
+        "tags": [
+          "me"
+        ],
+        "summary": "Get current user",
+        "params": [],
+        "bodyProps": []
+      }
+    ],
+    "summary": [
+      {
+        "path": "/summary",
+        "method": "GET",
+        "operationId": "getBudgetSummary",
+        "tags": [
+          "summary"
+        ],
+        "summary": "Get summary",
+        "params": [
+          {
+            "name": "start_date",
+            "in": "query",
+            "required": true,
+            "type": "string",
+            "description": "Start of date range in ISO 8601 date format (YYYY-MM-DD).",
+            "format": "date"
+          },
+          {
+            "name": "end_date",
+            "in": "query",
+            "required": true,
+            "type": "string",
+            "description": "End of date range in ISO 8601 date format (YYYY-MM-DD).",
+            "format": "date"
+          },
+          {
+            "name": "include_exclude_from_budgets",
+            "in": "query",
+            "required": false,
+            "type": "boolean",
+            "description": "Enable to include categories that have the 'Exclude from Budgets' flag set in the returned `categori",
+            "default": false
+          },
+          {
+            "name": "include_occurrences",
+            "in": "query",
+            "required": false,
+            "type": "boolean",
+            "description": "Enable to include an `occurrences` array for each category in an aligned response. Each array will i",
+            "default": false
+          },
+          {
+            "name": "include_past_budget_dates",
+            "in": "query",
+            "required": false,
+            "type": "boolean",
+            "description": "Enable to include the three budget occurrences prior to the start date in the `occurrences` array fo",
+            "default": false
+          },
+          {
+            "name": "include_totals",
+            "in": "query",
+            "required": false,
+            "type": "boolean",
+            "description": "Enable to include a top-level `totals` section that summarizes the inflow and outflow across all tra",
+            "default": false
+          },
+          {
+            "name": "include_rollover_pool",
+            "in": "query",
+            "required": false,
+            "type": "boolean",
+            "description": "Enable to include a `rollover_pool` section that summarizes the current rollover pool balance and al",
+            "default": false
+          }
+        ],
+        "bodyProps": []
+      }
+    ],
+    "categories": [
+      {
+        "path": "/categories",
+        "method": "GET",
+        "operationId": "getAllCategories",
+        "tags": [
+          "categories"
+        ],
+        "summary": "Get all categories",
+        "params": [
+          {
+            "name": "format",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "enum": [
+              "nested",
+              "flattened"
+            ],
+            "description": "If `nested`, returns top-level categories (either category groups or categories not part of a catego",
+            "default": "nested"
+          },
+          {
+            "name": "is_group",
+            "in": "query",
+            "required": false,
+            "type": "boolean",
+            "description": "If `false`, only categories not part of a category group are returned.<br> If `true`, only category "
+          }
+        ],
+        "bodyProps": []
+      },
+      {
+        "path": "/categories",
+        "method": "POST",
+        "operationId": "createCategory",
+        "tags": [
+          "categories"
+        ],
+        "summary": "Create a new category or category group",
+        "params": [],
+        "bodyProps": [
+          {
+            "name": "name",
+            "type": "string",
+            "required": true,
+            "description": "Name of the new category. Must be between 1 and 100 characters.\nThe name must not match the name of ",
+            "nullable": false
+          },
+          {
+            "name": "description",
+            "type": "string",
+            "required": false,
+            "description": "Description of the category. Maximum length is 200 characters.",
+            "nullable": true,
+            "default": null
+          },
+          {
+            "name": "is_income",
+            "type": "boolean",
+            "required": false,
+            "description": "If `true`, transactions in this category are treated as income. (See [Category Properties](https://s",
+            "nullable": false,
+            "default": false
+          },
+          {
+            "name": "exclude_from_budget",
+            "type": "boolean",
+            "required": false,
+            "description": "If `true`, transactions in this category are excluded from the budget. (See [Category Properties](ht",
+            "nullable": false,
+            "default": false
+          },
+          {
+            "name": "exclude_from_totals",
+            "type": "boolean",
+            "required": false,
+            "description": "If `true`, transactions in this category are excluded from totals. (See [Category Properties](https:",
+            "nullable": false,
+            "default": false
+          },
+          {
+            "name": "is_group",
+            "type": "boolean",
+            "required": false,
+            "description": "If `true`, this category will be created as a category group.",
+            "nullable": false,
+            "default": false
+          },
+          {
+            "name": "group_id",
+            "type": "integer",
+            "required": false,
+            "description": "If set to the ID of an existing category group, the new category will be added to that group. Cannot",
+            "nullable": true,
+            "format": "int64",
+            "default": null
+          },
+          {
+            "name": "archived",
+            "type": "boolean",
+            "required": false,
+            "description": "If `true`, the category is archived and in relevant areas of the Lunch Money app.",
+            "nullable": false,
+            "default": false
+          },
+          {
+            "name": "children",
+            "type": "array",
+            "required": false,
+            "description": "List of categories to include in the new category group. This field should only be set if `is_group`",
+            "nullable": false
+          },
+          {
+            "name": "order",
+            "type": "integer",
+            "required": false,
+            "description": "Position of the category on the categories page in the Lunch Money app. For grouped categories, the ",
+            "nullable": true
+          },
+          {
+            "name": "collapsed",
+            "type": "boolean",
+            "required": false,
+            "description": "If `true`, the category group appears collapsed in the Lunch Money app. Can only be set to `true` fo",
+            "nullable": true
+          }
+        ]
+      },
+      {
+        "path": "/categories/{id}",
+        "method": "GET",
+        "operationId": "getCategoryById",
+        "tags": [
+          "categories"
+        ],
+        "summary": "Get a single category",
+        "params": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "type": "integer",
+            "description": "ID of the category to retrieve",
+            "format": "int32"
+          }
+        ],
+        "bodyProps": []
+      },
+      {
+        "path": "/categories/{id}",
+        "method": "PUT",
+        "operationId": "updateCategory",
+        "tags": [
+          "categories"
+        ],
+        "summary": "Update an existing category or category group",
+        "params": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "type": "integer",
+            "description": "ID of the category to update",
+            "format": "int32"
+          }
+        ],
+        "bodyProps": [
+          {
+            "name": "name",
+            "type": "string",
+            "required": false,
+            "description": "If set, updates the category name. Must be between 1 and 100 characters.",
+            "nullable": false
+          },
+          {
+            "name": "description",
+            "type": "string",
+            "required": false,
+            "description": "If set, updates the category description. Must not exceed 200 characters.",
+            "nullable": true
+          },
+          {
+            "name": "is_income",
+            "type": "boolean",
+            "required": false,
+            "description": "If set, determines whether transactions in this category are treated as income. (See [Category Prope",
+            "nullable": false
+          },
+          {
+            "name": "exclude_from_budget",
+            "type": "boolean",
+            "required": false,
+            "description": "If set, determines whether transactions in this category are excluded from budgets. (See [Category P",
+            "nullable": false
+          },
+          {
+            "name": "exclude_from_totals",
+            "type": "boolean",
+            "required": false,
+            "description": "If set, determines whether transactions in this category are excluded from totals. (See [Category Pr",
+            "nullable": false
+          },
+          {
+            "name": "archived",
+            "type": "boolean",
+            "required": false,
+            "description": "If set, determines whether this category is archived.",
+            "nullable": false
+          },
+          {
+            "name": "group_id",
+            "type": "integer",
+            "required": false,
+            "description": "If set to the ID of an existing category group, and this category is not itself a category group, th",
+            "nullable": true,
+            "format": "int64"
+          },
+          {
+            "name": "is_group",
+            "type": "boolean",
+            "required": false,
+            "description": "This property is tolerated but cannot be changed. This API cannot be used to convert a category into",
+            "nullable": true,
+            "default": false
+          },
+          {
+            "name": "children",
+            "type": "array",
+            "required": false,
+            "description": "List of existing category objects, existing category IDs, or names of new categories to add to the c",
+            "nullable": false
+          },
+          {
+            "name": "order",
+            "type": "integer",
+            "required": false,
+            "description": "Position of the category on the categories page in the Lunch Money app. For categories within a cate",
+            "nullable": true
+          },
+          {
+            "name": "collapsed",
+            "type": "boolean",
+            "required": false,
+            "description": "If `true`, the category is collapsed in the Lunch Money app.<br>While this property can be set via t",
+            "nullable": true
+          },
+          {
+            "name": "id",
+            "type": "integer",
+            "required": false,
+            "description": "System defined unique identifier for the category. Ignored if set.",
+            "nullable": false,
+            "format": "int64"
+          },
+          {
+            "name": "archived_at",
+            "type": "string",
+            "required": false,
+            "description": "System set date and time of when the category was last archived (in the ISO 8601 extended format). P",
+            "nullable": true,
+            "format": "date-time"
+          },
+          {
+            "name": "updated_at",
+            "type": "string",
+            "required": false,
+            "description": "System set date and time of when the category was last updated (in the ISO 8601 extended format). Ig",
+            "nullable": false,
+            "format": "date-time"
+          },
+          {
+            "name": "created_at",
+            "type": "string",
+            "required": false,
+            "description": "System set date and time of when the category was created (in the ISO 8601 extended format). Ignored",
+            "nullable": false,
+            "format": "date-time"
+          }
+        ]
+      },
+      {
+        "path": "/categories/{id}",
+        "method": "DELETE",
+        "operationId": "deleteCategory",
+        "tags": [
+          "categories"
+        ],
+        "summary": "Delete a category or category group",
+        "params": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "type": "integer",
+            "description": "ID of the category to delete",
+            "format": "int32"
+          },
+          {
+            "name": "force",
+            "in": "query",
+            "required": false,
+            "type": "boolean",
+            "description": "Set to `true` to force deletion even if there are dependencies",
+            "default": false
+          }
+        ],
+        "bodyProps": []
+      }
+    ],
+    "crypto-manual": [
+      {
+        "path": "/cryptocurrencies",
+        "method": "GET",
+        "operationId": "getAllCryptocurrencies",
+        "tags": [
+          "crypto-manual"
+        ],
+        "summary": "Get all supported cryptocurrencies",
+        "params": [],
+        "bodyProps": []
+      },
+      {
+        "path": "/cryptocurrencies",
+        "method": "POST",
+        "operationId": "createCryptocurrency",
+        "tags": [
+          "crypto-manual"
+        ],
+        "summary": "Add a new supported cryptocurrency",
+        "params": [],
+        "bodyProps": [
+          {
+            "name": "coingecko_url",
+            "type": "string",
+            "required": true,
+            "description": "CoinGecko coin-page URL in the form `https://www.coingecko.com/{locale}/coins/{id}`",
+            "nullable": false
+          }
+        ]
+      },
+      {
+        "path": "/crypto/manual",
+        "method": "GET",
+        "operationId": "getAllCryptoManual",
+        "tags": [
+          "crypto-manual"
+        ],
+        "summary": "Get all manual crypto balances",
+        "params": [],
+        "bodyProps": []
+      },
+      {
+        "path": "/crypto/manual",
+        "method": "POST",
+        "operationId": "createCryptoManual",
+        "tags": [
+          "crypto-manual"
+        ],
+        "summary": "Create a manual crypto balance",
+        "params": [],
+        "bodyProps": [
+          {
+            "name": "name",
+            "type": "string",
+            "required": true,
+            "description": "User-defined name for the manual crypto asset",
+            "nullable": false
+          },
+          {
+            "name": "display_name",
+            "type": "string",
+            "required": false,
+            "description": "Optional display name for the manual crypto asset. If omitted, clients may derive one from `institut",
+            "nullable": false
+          },
+          {
+            "name": "institution_name",
+            "type": "string",
+            "required": false,
+            "description": "Optional institution or wallet provider display name",
+            "nullable": false
+          },
+          {
+            "name": "balance",
+            "type": "unknown",
+            "required": true,
+            "description": "Numeric value of the balance, up to 18 decimal places",
+            "nullable": false
+          },
+          {
+            "name": "symbol",
+            "type": "string",
+            "required": true,
+            "description": "Cryptocurrency symbol to track. Must match the `symbol` of one of the supported cryptocurrencies ret",
+            "nullable": false
+          }
+        ]
+      },
+      {
+        "path": "/crypto/manual/{id}",
+        "method": "GET",
+        "operationId": "getCryptoManualById",
+        "tags": [
+          "crypto-manual"
+        ],
+        "summary": "Get a single manual crypto balance",
+        "params": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "type": "integer",
+            "description": "ID of the manual crypto balance to retrieve",
+            "format": "int32"
+          }
+        ],
+        "bodyProps": []
+      },
+      {
+        "path": "/crypto/manual/{id}",
+        "method": "PUT",
+        "operationId": "updateCryptoManual",
+        "tags": [
+          "crypto-manual"
+        ],
+        "summary": "Update a manual crypto balance",
+        "params": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "type": "integer",
+            "description": "ID of the manual crypto balance to update",
+            "format": "int32"
+          }
+        ],
+        "bodyProps": [
+          {
+            "name": "id",
+            "type": "integer",
+            "required": false,
+            "description": "System defined unique ID for the manual crypto asset. Ignored if set",
+            "nullable": false,
+            "format": "int32"
+          },
+          {
+            "name": "name",
+            "type": "string",
+            "required": false,
+            "description": "If set, the new name of the manual crypto asset",
+            "nullable": true
+          },
+          {
+            "name": "display_name",
+            "type": "string",
+            "required": false,
+            "description": "If set, the new display name for the manual crypto asset",
+            "nullable": true
+          },
+          {
+            "name": "institution_name",
+            "type": "string",
+            "required": false,
+            "description": "If set, the new institution or wallet provider display name",
+            "nullable": true
+          },
+          {
+            "name": "balance",
+            "type": "unknown",
+            "required": false,
+            "description": "If set, the new balance value up to 18 decimal places",
+            "nullable": false
+          },
+          {
+            "name": "symbol",
+            "type": "string",
+            "required": false,
+            "description": "Existing cryptocurrency symbol. Ignored if set.",
+            "nullable": false
+          },
+          {
+            "name": "coingecko_id",
+            "type": "string",
+            "required": false,
+            "description": "System-defined CoinGecko identifier for this symbol. Ignored if set.",
+            "nullable": true
+          },
+          {
+            "name": "to_base",
+            "type": "number",
+            "required": false,
+            "description": "System defined balance converted to the user's primary currency. Ignored if set",
+            "nullable": false
+          },
+          {
+            "name": "balance_as_of",
+            "type": "string",
+            "required": false,
+            "description": "System defined date/time the balance was last updated in ISO 8601 extended format. Ignored if set",
+            "nullable": true,
+            "format": "date-time"
+          },
+          {
+            "name": "created_by_name",
+            "type": "string",
+            "required": false,
+            "description": "System defined name of the user who created the crypto asset. Ignored if set",
+            "nullable": true
+          },
+          {
+            "name": "created_at",
+            "type": "string",
+            "required": false,
+            "description": "System defined date/time the crypto asset was created in ISO 8601 extended format. Ignored if set",
+            "nullable": false,
+            "format": "date-time"
+          },
+          {
+            "name": "updated_at",
+            "type": "string",
+            "required": false,
+            "description": "System defined date/time the crypto asset was last updated in ISO 8601 extended format. Ignored if s",
+            "nullable": false,
+            "format": "date-time"
+          }
+        ]
+      },
+      {
+        "path": "/crypto/manual/{id}",
+        "method": "DELETE",
+        "operationId": "deleteCryptoManual",
+        "tags": [
+          "crypto-manual"
+        ],
+        "summary": "Delete a manual crypto balance",
+        "params": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "type": "integer",
+            "description": "ID of the manual crypto balance to delete",
+            "format": "int32"
+          },
+          {
+            "name": "keep_history",
+            "in": "query",
+            "required": false,
+            "type": "boolean",
+            "description": "Explicitly set to `true` to preserve balance history, or `false` to remove associated history during"
+          }
+        ],
+        "bodyProps": []
+      }
+    ],
+    "crypto-synced": [
+      {
+        "path": "/crypto/synced",
+        "method": "GET",
+        "operationId": "getAllCryptoSynced",
+        "tags": [
+          "crypto-synced"
+        ],
+        "summary": "Get all synced crypto accounts",
+        "params": [],
+        "bodyProps": []
+      },
+      {
+        "path": "/crypto/synced/{id}",
+        "method": "GET",
+        "operationId": "getCryptoSyncedById",
+        "tags": [
+          "crypto-synced"
+        ],
+        "summary": "Get a single synced crypto account",
+        "params": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "type": "integer",
+            "description": "Synced crypto account ID",
+            "format": "int32"
+          }
+        ],
+        "bodyProps": []
+      },
+      {
+        "path": "/crypto/synced/{id}/{symbol}",
+        "method": "GET",
+        "operationId": "getCryptoSyncedBalanceBySymbol",
+        "tags": [
+          "crypto-synced"
+        ],
+        "summary": "Get a synced crypto balance by symbol",
+        "params": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "type": "integer",
+            "description": "Synced crypto account ID",
+            "format": "int32"
+          },
+          {
+            "name": "symbol",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "description": "Crypto symbol within the synced account"
+          }
+        ],
+        "bodyProps": []
+      },
+      {
+        "path": "/crypto/synced/{id}/refresh",
+        "method": "POST",
+        "operationId": "refreshCryptoSynced",
+        "tags": [
+          "crypto-synced"
+        ],
+        "summary": "Refresh balances for a synced crypto account",
+        "params": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "type": "integer",
+            "description": "Synced crypto account ID",
+            "format": "int32"
+          }
+        ],
+        "bodyProps": []
+      }
+    ],
+    "balance_history": [
+      {
+        "path": "/balance_history",
+        "method": "GET",
+        "operationId": "getBalanceHistory",
+        "tags": [
+          "balance_history"
+        ],
+        "summary": "Get balance history",
+        "params": [
+          {
+            "name": "start_date",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "description": "Optional start date for the requested history range in YYYY-MM-DD format. If set, `end_date` is also",
+            "format": "date"
+          },
+          {
+            "name": "end_date",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "description": "Optional end date for the requested history range in YYYY-MM-DD format. If set, `start_date` is also",
+            "format": "date"
+          }
+        ],
+        "bodyProps": []
+      },
+      {
+        "path": "/balance_history/{account_type}/{account_id}",
+        "method": "GET",
+        "operationId": "getBalanceHistoryForAccount",
+        "tags": [
+          "balance_history"
+        ],
+        "summary": "Get balance history for an account",
+        "params": [
+          {
+            "name": "account_type",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "enum": [
+              "manual",
+              "plaid",
+              "crypto_manual",
+              "deleted"
+            ],
+            "description": "Source family to retrieve. Use `manual`, `plaid`, `crypto_manual`, or `deleted`."
+          },
+          {
+            "name": "account_id",
+            "in": "path",
+            "required": true,
+            "type": "integer",
+            "description": "Account or deleted-source identifier within the selected `account_type`.",
+            "format": "int32"
+          },
+          {
+            "name": "start_date",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "description": "Optional start date for the requested history range in YYYY-MM-DD format. If set, `end_date` is also",
+            "format": "date"
+          },
+          {
+            "name": "end_date",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "description": "Optional end date for the requested history range in YYYY-MM-DD format. If set, `start_date` is also",
+            "format": "date"
+          }
+        ],
+        "bodyProps": []
+      },
+      {
+        "path": "/balance_history/{account_type}/{account_id}",
+        "method": "PUT",
+        "operationId": "upsertBalanceHistoryForAccount",
+        "tags": [
+          "balance_history"
+        ],
+        "summary": "Upsert balance history for an account",
+        "params": [
+          {
+            "name": "account_type",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "enum": [
+              "manual",
+              "plaid",
+              "crypto_manual",
+              "deleted"
+            ],
+            "description": "Source family to update. Use `manual`, `plaid`, `crypto_manual`, or `deleted`."
+          },
+          {
+            "name": "account_id",
+            "in": "path",
+            "required": true,
+            "type": "integer",
+            "description": "Account or deleted-source identifier within the selected `account_type`.",
+            "format": "int32"
+          }
+        ],
+        "bodyProps": [
+          {
+            "name": "balances",
+            "type": "array",
+            "required": true,
+            "description": "One or more monthly balance history entries to upsert",
+            "nullable": false
+          }
+        ]
+      },
+      {
+        "path": "/balance_history/{account_type}/{account_id}",
+        "method": "DELETE",
+        "operationId": "deleteBalanceHistoryForAccount",
+        "tags": [
+          "balance_history"
+        ],
+        "summary": "Delete all balance history for an account",
+        "params": [
+          {
+            "name": "account_type",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "enum": [
+              "manual",
+              "plaid",
+              "crypto_manual",
+              "deleted"
+            ],
+            "description": "Source family to delete. Use `manual`, `plaid`, `crypto_manual`, or `deleted`."
+          },
+          {
+            "name": "account_id",
+            "in": "path",
+            "required": true,
+            "type": "integer",
+            "description": "Account or deleted-source identifier within the selected `account_type`.",
+            "format": "int32"
+          }
+        ],
+        "bodyProps": []
+      },
+      {
+        "path": "/balance_history/crypto_synced/{account_id}/{symbol}",
+        "method": "GET",
+        "operationId": "getBalanceHistoryForCryptoSynced",
+        "tags": [
+          "balance_history"
+        ],
+        "summary": "Get balance history for a synced crypto symbol",
+        "params": [
+          {
+            "name": "account_id",
+            "in": "path",
+            "required": true,
+            "type": "integer",
+            "description": "Synced crypto account identifier.",
+            "format": "int32"
+          },
+          {
+            "name": "symbol",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "description": "Crypto symbol identifying one balance stream within the synced crypto account."
+          },
+          {
+            "name": "start_date",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "description": "Optional start date for the requested history range in YYYY-MM-DD format. If set, `end_date` is also",
+            "format": "date"
+          },
+          {
+            "name": "end_date",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "description": "Optional end date for the requested history range in YYYY-MM-DD format. If set, `start_date` is also",
+            "format": "date"
+          }
+        ],
+        "bodyProps": []
+      },
+      {
+        "path": "/balance_history/crypto_synced/{account_id}/{symbol}",
+        "method": "PUT",
+        "operationId": "upsertBalanceHistoryForCryptoSynced",
+        "tags": [
+          "balance_history"
+        ],
+        "summary": "Upsert balance history for a synced crypto symbol",
+        "params": [
+          {
+            "name": "account_id",
+            "in": "path",
+            "required": true,
+            "type": "integer",
+            "description": "Synced crypto account identifier to update.",
+            "format": "int32"
+          },
+          {
+            "name": "symbol",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "description": "Crypto symbol identifying one balance stream within the synced crypto account."
+          }
+        ],
+        "bodyProps": [
+          {
+            "name": "balances",
+            "type": "array",
+            "required": true,
+            "description": "One or more monthly balance history entries to upsert",
+            "nullable": false
+          }
+        ]
+      },
+      {
+        "path": "/balance_history/crypto_synced/{account_id}/{symbol}",
+        "method": "DELETE",
+        "operationId": "deleteBalanceHistoryForCryptoSynced",
+        "tags": [
+          "balance_history"
+        ],
+        "summary": "Delete all balance history for a synced crypto symbol",
+        "params": [
+          {
+            "name": "account_id",
+            "in": "path",
+            "required": true,
+            "type": "integer",
+            "description": "Synced crypto account identifier.",
+            "format": "int32"
+          },
+          {
+            "name": "symbol",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "description": "Crypto symbol identifying one balance stream within the synced crypto account."
+          }
+        ],
+        "bodyProps": []
+      },
+      {
+        "path": "/balance_history/entries/{id}",
+        "method": "DELETE",
+        "operationId": "deleteBalanceHistoryEntry",
+        "tags": [
+          "balance_history"
+        ],
+        "summary": "Delete a balance history entry",
+        "params": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "type": "integer",
+            "description": "Balance history row identifier to delete.",
+            "format": "int32"
+          }
+        ],
+        "bodyProps": []
+      },
+      {
+        "path": "/balance_history/deleted/{account_id}/details",
+        "method": "PUT",
+        "operationId": "updateBalanceHistoryDetails",
+        "tags": [
+          "balance_history"
+        ],
+        "summary": "Update details for a deleted account",
+        "params": [
+          {
+            "name": "account_id",
+            "in": "path",
+            "required": true,
+            "type": "integer",
+            "description": "Deleted account history source identifier to update.",
+            "format": "int32"
+          }
+        ],
+        "bodyProps": [
+          {
+            "name": "name",
+            "type": "string",
+            "required": false,
+            "description": "New archived account name for the deleted account source.",
+            "nullable": true
+          },
+          {
+            "name": "institution_name",
+            "type": "string",
+            "required": false,
+            "description": "New archived institution name for the deleted account source.",
+            "nullable": true
+          },
+          {
+            "name": "display_name",
+            "type": "string",
+            "required": false,
+            "description": "New display name for the deleted account source.",
+            "nullable": true
+          },
+          {
+            "name": "account_type",
+            "type": "string",
+            "required": false,
+            "description": "New archived account type for the deleted account source.",
+            "nullable": true
+          },
+          {
+            "name": "subtype",
+            "type": "string",
+            "required": false,
+            "description": "New archived subtype for the deleted account source.",
+            "nullable": true
+          },
+          {
+            "name": "mask",
+            "type": "string",
+            "required": false,
+            "description": "New archived account mask for the deleted account source.",
+            "nullable": true
+          }
+        ]
+      }
+    ],
+    "manual_accounts": [
+      {
+        "path": "/manual_accounts",
+        "method": "GET",
+        "operationId": "getAllManualAccounts",
+        "tags": [
+          "manual_accounts"
+        ],
+        "summary": "Get all manual accounts",
+        "params": [],
+        "bodyProps": []
+      },
+      {
+        "path": "/manual_accounts",
+        "method": "POST",
+        "operationId": "createManualAccount",
+        "tags": [
+          "manual_accounts"
+        ],
+        "summary": "Create a manual account",
+        "params": [],
+        "bodyProps": [
+          {
+            "name": "name",
+            "type": "string",
+            "required": true,
+            "description": "Name of the manual account",
+            "nullable": false
+          },
+          {
+            "name": "institution_name",
+            "type": "string",
+            "required": false,
+            "description": "Name of institution holding the manual account",
+            "nullable": false
+          },
+          {
+            "name": "display_name",
+            "type": "string",
+            "required": false,
+            "description": "Display name of the manual account as set by user or derived from the `institution_name` and `name` ",
+            "nullable": false
+          },
+          {
+            "name": "type",
+            "type": "unknown",
+            "required": true,
+            "description": "The type of manual account",
+            "nullable": false
+          },
+          {
+            "name": "subtype",
+            "type": "string",
+            "required": false,
+            "description": "An optional manual account subtype. Examples include<br> - retirement - checking - savings - prepaid",
+            "nullable": false
+          },
+          {
+            "name": "balance",
+            "type": "unknown",
+            "required": true,
+            "description": "Numeric value of the current balance, up to four decimal places, of the account as a number or strin",
+            "nullable": false
+          },
+          {
+            "name": "balance_as_of",
+            "type": "string",
+            "required": false,
+            "description": "Date/time the balance of the manual account was last updated in ISO 8601 extended format",
+            "nullable": false
+          },
+          {
+            "name": "currency",
+            "type": "unknown",
+            "required": false,
+            "description": "Three-letter lowercase currency code of the transaction in ISO 4217 format",
+            "nullable": false
+          },
+          {
+            "name": "status",
+            "type": "string",
+            "required": false,
+            "description": "The status of the account",
+            "enum": [
+              "active",
+              "closed"
+            ],
+            "nullable": false,
+            "default": "active"
+          },
+          {
+            "name": "closed_on",
+            "type": "unknown",
+            "required": false,
+            "description": "The date this manual account was closed in YYYY-MM-DD format. If set, `status` must also be set to `",
+            "nullable": true
+          },
+          {
+            "name": "external_id",
+            "type": "string",
+            "required": false,
+            "description": "An optional user-defined ID for the manual account",
+            "nullable": true
+          },
+          {
+            "name": "custom_metadata",
+            "type": "object",
+            "required": false,
+            "description": "An optional JSON object that includes additional data related to this account. This must be a valid ",
+            "nullable": true
+          },
+          {
+            "name": "exclude_from_transactions",
+            "type": "boolean",
+            "required": false,
+            "description": "If `true`, transactions may not be assigned to this manual account",
+            "nullable": false,
+            "default": false
+          }
+        ]
+      },
+      {
+        "path": "/manual_accounts/{id}",
+        "method": "GET",
+        "operationId": "getManualAccountById",
+        "tags": [
+          "manual_accounts"
+        ],
+        "summary": "Get a single manual account",
+        "params": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "type": "integer",
+            "description": "ID of the manual account to retrieve",
+            "format": "int32"
+          }
+        ],
+        "bodyProps": []
+      },
+      {
+        "path": "/manual_accounts/{id}",
+        "method": "PUT",
+        "operationId": "updateManualAccount",
+        "tags": [
+          "manual_accounts"
+        ],
+        "summary": "Update an existing manual account",
+        "params": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "type": "integer",
+            "description": "ID of the manual account to update",
+            "format": "int32"
+          }
+        ],
+        "bodyProps": [
+          {
+            "name": "id",
+            "type": "integer",
+            "required": false,
+            "description": "System defined unique identifier of this account. Ignored if set",
+            "nullable": false,
+            "format": "int32"
+          },
+          {
+            "name": "name",
+            "type": "string",
+            "required": false,
+            "description": "If set, the new name of the manual account",
+            "nullable": false
+          },
+          {
+            "name": "institution_name",
+            "type": "string",
+            "required": false,
+            "description": "If set, the name of the institution holding the account",
+            "nullable": true
+          },
+          {
+            "name": "display_name",
+            "type": "string",
+            "required": false,
+            "description": "If set, the new display name for the manual account.<br> This must be unique for the user.",
+            "nullable": true
+          },
+          {
+            "name": "type",
+            "type": "unknown",
+            "required": false,
+            "description": "If set, the new type of the manual account",
+            "nullable": false
+          },
+          {
+            "name": "subtype",
+            "type": "string",
+            "required": false,
+            "description": "If set, an optional account subtype. Examples include<br> - retirement - checking - savings - prepai",
+            "nullable": false
+          },
+          {
+            "name": "balance",
+            "type": "unknown",
+            "required": false,
+            "description": "Numeric value of the current balance, up to four decimal places, of the manual account as a number o",
+            "nullable": false
+          },
+          {
+            "name": "currency",
+            "type": "unknown",
+            "required": false,
+            "description": "If set, the new three-letter lowercase currency code of the manual account balance.",
+            "nullable": false
+          },
+          {
+            "name": "balance_as_of",
+            "type": "string",
+            "required": false,
+            "description": "If set, updates the `balance_as_of` value. May be provided as a date in YYYY-MM-DD format or as a da",
+            "nullable": false
+          },
+          {
+            "name": "status",
+            "type": "string",
+            "required": false,
+            "description": "If set, updates the status of the manual account. If set to `closed`, `closed_on` will be set to the",
+            "enum": [
+              "active",
+              "closed"
+            ],
+            "nullable": false
+          },
+          {
+            "name": "closed_on",
+            "type": "unknown",
+            "required": false,
+            "description": "If set, the date this manual account was closed in YYYY-MM-DD format. If updating an account that is",
+            "nullable": true
+          },
+          {
+            "name": "external_id",
+            "type": "string",
+            "required": false,
+            "description": "An optional user-defined ID for the manual account",
+            "nullable": true
+          },
+          {
+            "name": "custom_metadata",
+            "type": "object",
+            "required": false,
+            "description": "An optional JSON object that includes additional data related to this account. This must be a valid ",
+            "nullable": true
+          },
+          {
+            "name": "exclude_from_transactions",
+            "type": "boolean",
+            "required": false,
+            "description": "If set, transactions may not be assigned to this manual account",
+            "nullable": false
+          },
+          {
+            "name": "to_base",
+            "type": "number",
+            "required": false,
+            "description": "System defined balance converted to the user's primary currency. Ignored if set. Use `balance` to up",
+            "nullable": false
+          },
+          {
+            "name": "created_at",
+            "type": "string",
+            "required": false,
+            "description": "System defined date/time the account was created in ISO 8601 extended format. Ignored if set.",
+            "nullable": false,
+            "format": "date-time"
+          },
+          {
+            "name": "updated_at",
+            "type": "string",
+            "required": false,
+            "description": "System defined date/time the account was last updated in ISO 8601 extended format. Ignored if set.",
+            "nullable": false,
+            "format": "date-time"
+          },
+          {
+            "name": "created_by_name",
+            "type": "string",
+            "required": false,
+            "description": "System defined name of the user who created the account. Ignored if set",
+            "nullable": false
+          }
+        ]
+      },
+      {
+        "path": "/manual_accounts/{id}",
+        "method": "DELETE",
+        "operationId": "deleteManualAccount",
+        "tags": [
+          "manual_accounts"
+        ],
+        "summary": "Delete a manual account",
+        "params": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "type": "integer",
+            "description": "ID of the manual account to delete",
+            "format": "int32"
+          },
+          {
+            "name": "delete_items",
+            "in": "query",
+            "required": false,
+            "type": "boolean",
+            "description": "When set to true will also delete any transactions, rules, and recurring items associated with this ",
+            "default": false
+          },
+          {
+            "name": "delete_balance_history",
+            "in": "query",
+            "required": false,
+            "type": "boolean",
+            "description": "When set to true will delete any balance history associated with this account.",
+            "default": false
+          }
+        ],
+        "bodyProps": []
+      }
+    ],
+    "plaid_accounts": [
+      {
+        "path": "/plaid_accounts",
+        "method": "GET",
+        "operationId": "getAllPlaidAccounts",
+        "tags": [
+          "plaid_accounts"
+        ],
+        "summary": "Get all accounts synced via Plaid",
+        "params": [],
+        "bodyProps": []
+      },
+      {
+        "path": "/plaid_accounts/{id}",
+        "method": "GET",
+        "operationId": "getPlaidAccountById",
+        "tags": [
+          "plaid_accounts"
+        ],
+        "summary": "Get a single account that is synced via Plaid",
+        "params": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "type": "integer",
+            "description": "ID of the plaid account to retrieve",
+            "format": "int32"
+          }
+        ],
+        "bodyProps": []
+      },
+      {
+        "path": "/plaid_accounts/fetch",
+        "method": "POST",
+        "operationId": "triggerPlaidAccountFetch",
+        "tags": [
+          "plaid_accounts"
+        ],
+        "summary": "Trigger Fetch from Plaid",
+        "params": [
+          {
+            "name": "start_date",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "description": "Indicates the beginning of the time period to fetch transactions for. If omitted, the most recent tr",
+            "format": "date"
+          },
+          {
+            "name": "end_date",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "description": "Indicates the end of the time period to fetch transactions for. Required if start_date exists. ",
+            "format": "date"
+          },
+          {
+            "name": "id",
+            "in": "query",
+            "required": false,
+            "type": "integer",
+            "description": "Specific ID of a plaid account to fetch. If not set the endpoint will trigger a fetch for all eligib",
+            "format": "int32"
+          }
+        ],
+        "bodyProps": []
+      }
+    ],
+    "transactions (bulk)": [
+      {
+        "path": "/transactions",
+        "method": "GET",
+        "operationId": "getAllTransactions",
+        "tags": [
+          "transactions (bulk)"
+        ],
+        "summary": "Get all transactions",
+        "params": [
+          {
+            "name": "start_date",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "description": "Indicates the beginning of the time period to fetch transactions for. If omitted, the most recent tr",
+            "format": "date"
+          },
+          {
+            "name": "end_date",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "description": "Indicates the end of the time period to fetch transactions for. Required if start_date exists. ",
+            "format": "date"
+          },
+          {
+            "name": "created_since",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "description": "Filter transactions to those created after the specified timestamp. Accepts either a date (YYYY-MM-D"
+          },
+          {
+            "name": "updated_since",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "description": "Filter transactions to those updated after the specified timestamp. Accepts either a date (YYYY-MM-D"
+          },
+          {
+            "name": "manual_account_id",
+            "in": "query",
+            "required": false,
+            "type": "integer",
+            "description": "Filter transactions to those associated with specified manual account ID or set this to 0 to omit an",
+            "format": "int32"
+          },
+          {
+            "name": "plaid_account_id",
+            "in": "query",
+            "required": false,
+            "type": "integer",
+            "description": "Filter transactions to those associated with specified plaid account ID or set this to 0 to omit any",
+            "format": "int32"
+          },
+          {
+            "name": "recurring_id",
+            "in": "query",
+            "required": false,
+            "type": "integer",
+            "description": "Filter transactions to those associated with the specified recurring item ID.\n",
+            "format": "int32"
+          },
+          {
+            "name": "category_id",
+            "in": "query",
+            "required": false,
+            "type": "integer",
+            "description": "Filter transactions to those associated with the specified category ID. Will also match category gro",
+            "format": "int32"
+          },
+          {
+            "name": "tag_id",
+            "in": "query",
+            "required": false,
+            "type": "integer",
+            "description": "Filter transactions to those that have the specified tag ID",
+            "format": "int32"
+          },
+          {
+            "name": "is_group_parent",
+            "in": "query",
+            "required": false,
+            "type": "boolean",
+            "description": "Filter by group (returns only transaction groups if `true`)"
+          },
+          {
+            "name": "status",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "enum": [
+              "reviewed",
+              "unreviewed",
+              "delete_pending"
+            ],
+            "description": "Filter transactions to those with the specified status:<br> - `reviewed`: Only user reviewed transac"
+          },
+          {
+            "name": "is_pending",
+            "in": "query",
+            "required": false,
+            "type": "boolean",
+            "description": "Filter transactions by pending status. Set to `true` to return only pending transactions, or `false`"
+          },
+          {
+            "name": "include_pending",
+            "in": "query",
+            "required": false,
+            "type": "boolean",
+            "description": "By default, pending transactions are excluded from results. Set to `true` to include imported transa",
+            "default": false
+          },
+          {
+            "name": "include_metadata",
+            "in": "query",
+            "required": false,
+            "type": "boolean",
+            "description": "By default, custom and plaid metadata are not included in the response. Set to true if you'd like th",
+            "default": false
+          },
+          {
+            "name": "include_split_parents",
+            "in": "query",
+            "required": false,
+            "type": "boolean",
+            "description": "By default, transactions that were split into multiple transactions are not included in the response",
+            "default": false
+          },
+          {
+            "name": "include_group_children",
+            "in": "query",
+            "required": false,
+            "type": "boolean",
+            "description": "By default, individual transactions that joined into a transaction group are not included in the res",
+            "default": false
+          },
+          {
+            "name": "include_children",
+            "in": "query",
+            "required": false,
+            "type": "boolean",
+            "description": "By default, the `children` property is not included in the response. Set to true if you'd like the c",
+            "default": false
+          },
+          {
+            "name": "include_files",
+            "in": "query",
+            "required": false,
+            "type": "boolean",
+            "description": "By default, the `files` property is not included in the response. Set to true if you'd like the resp",
+            "default": false
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "type": "integer",
+            "description": "Sets the maximum number of transactions to return. If more match the filter criteria, the response w",
+            "default": 1000
+          },
+          {
+            "name": "offset",
+            "in": "query",
+            "required": false,
+            "type": "integer",
+            "description": "Sets the offset for the records returned. This is typically set automatically in the header. See [Pa"
+          }
+        ],
+        "bodyProps": []
+      },
+      {
+        "path": "/transactions",
+        "method": "POST",
+        "operationId": "createNewTransactions",
+        "tags": [
+          "transactions (bulk)"
+        ],
+        "summary": "Insert one or more transactions.",
+        "params": [],
+        "bodyProps": [
+          {
+            "name": "transactions",
+            "type": "array",
+            "required": true,
+            "description": "List of transactions to insert.",
+            "nullable": false
+          },
+          {
+            "name": "apply_rules",
+            "type": "boolean",
+            "required": false,
+            "description": "If explicitly set to `true`, any rules associated with the account specified by the `manual_account_",
+            "nullable": false,
+            "default": false
+          },
+          {
+            "name": "skip_duplicates",
+            "type": "boolean",
+            "required": false,
+            "description": "If `true`, the system will flag new transactions that have the same `date`, `payee`, `amount`, and a",
+            "nullable": false,
+            "default": false
+          },
+          {
+            "name": "skip_balance_update",
+            "type": "boolean",
+            "required": false,
+            "description": "If `true`, and new transactions include a `manual_account_id`, the balances of these accounts will n",
+            "nullable": false,
+            "default": false
+          }
+        ]
+      },
+      {
+        "path": "/transactions",
+        "method": "PUT",
+        "operationId": "updateTransactions",
+        "tags": [
+          "transactions (bulk)"
+        ],
+        "summary": "Update multiple transactions",
+        "params": [],
+        "bodyProps": [
+          {
+            "name": "transactions",
+            "type": "array",
+            "required": true,
+            "description": "List of transactions to update. Each transaction must have an `id` property and at least one other p",
+            "nullable": false
+          }
+        ]
+      },
+      {
+        "path": "/transactions",
+        "method": "DELETE",
+        "operationId": "deleteTransactions",
+        "tags": [
+          "transactions (bulk)"
+        ],
+        "summary": "Bulk delete existing transactions",
+        "params": [],
+        "bodyProps": [
+          {
+            "name": "ids",
+            "type": "array",
+            "required": true,
+            "description": "Array of existing Transaction IDs to delete",
+            "nullable": false
+          }
+        ]
+      }
+    ],
+    "transactions": [
+      {
+        "path": "/transactions/{id}",
+        "method": "GET",
+        "operationId": "getTransactionById",
+        "tags": [
+          "transactions"
+        ],
+        "summary": "Get a single transaction",
+        "params": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "type": "integer",
+            "description": "ID of the transaction to retrieve",
+            "format": "int64"
+          }
+        ],
+        "bodyProps": []
+      },
+      {
+        "path": "/transactions/{id}",
+        "method": "PUT",
+        "operationId": "updateTransaction",
+        "tags": [
+          "transactions"
+        ],
+        "summary": "Update an existing transaction",
+        "params": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "type": "integer",
+            "description": "ID of the transaction to update",
+            "format": "int64"
+          },
+          {
+            "name": "update_balance",
+            "in": "query",
+            "required": false,
+            "type": "boolean",
+            "description": "Set this to `false` to skip updating the transaction's associated account balance. Default behavior "
+          }
+        ],
+        "bodyProps": [
+          {
+            "name": "id",
+            "type": "integer",
+            "required": false,
+            "description": "System defined unique identifier of this transaction. Ignored if set.",
+            "nullable": false,
+            "format": "int64"
+          },
+          {
+            "name": "date",
+            "type": "string",
+            "required": false,
+            "description": "Transaction date in ISO 8601 format",
+            "nullable": false,
+            "format": "date"
+          },
+          {
+            "name": "amount",
+            "type": "unknown",
+            "required": false,
+            "description": "Numeric value of the amount without a currency symbol. For example, $4.25 should be provided as 4.25",
+            "nullable": false
+          },
+          {
+            "name": "currency",
+            "type": "unknown",
+            "required": false,
+            "description": "Three-letter lowercase currency code of the transaction in ISO 4217 format.<br> May not be updated o",
+            "nullable": false
+          },
+          {
+            "name": "recurring_id",
+            "type": "integer",
+            "required": false,
+            "description": "The unique identifier of the associated recurring item that this transaction matches.",
+            "nullable": true,
+            "format": "int32"
+          },
+          {
+            "name": "payee",
+            "type": "string",
+            "required": false,
+            "description": "The new payee for the transaction.\n",
+            "nullable": false
+          },
+          {
+            "name": "original_name",
+            "type": "string",
+            "required": false,
+            "description": "Original payee name. Cannot be changed. Ignored if set.",
+            "nullable": true
+          },
+          {
+            "name": "category_id",
+            "type": "integer",
+            "required": false,
+            "description": "Unique identifier of the category for this transaction. Set this to null to clear the transaction's ",
+            "nullable": true,
+            "format": "int32"
+          },
+          {
+            "name": "notes",
+            "type": "string",
+            "required": false,
+            "description": "New notes for the transaction. Set this to an empty string to clear the existing notes.\n",
+            "nullable": true
+          },
+          {
+            "name": "manual_account_id",
+            "type": "integer",
+            "required": false,
+            "description": "The unique identifier of the manual account associated with this transaction. Set this to null to di",
+            "nullable": true,
+            "format": "int32"
+          },
+          {
+            "name": "plaid_account_id",
+            "type": "integer",
+            "required": false,
+            "description": "The unique identifier of the Plaid account associated with this transaction. If set, `manual_account",
+            "nullable": true,
+            "format": "int32"
+          },
+          {
+            "name": "tag_ids",
+            "type": "array",
+            "required": false,
+            "description": "A list of tag_ids for the tags associated with this transaction. If set, this property will overwrit",
+            "nullable": false
+          },
+          {
+            "name": "additional_tag_ids",
+            "type": "array",
+            "required": false,
+            "description": "A list of tag_ids for the tags associated with this transaction. If set, the tags listed in this pro",
+            "nullable": false
+          },
+          {
+            "name": "external_id",
+            "type": "string",
+            "required": false,
+            "description": "A user-defined external ID for the transaction. The update will fail if the transaction does not als",
+            "nullable": true
+          },
+          {
+            "name": "custom_metadata",
+            "type": "object",
+            "required": false,
+            "description": "User defined JSON data that can be set or cleared via the API.",
+            "nullable": true
+          },
+          {
+            "name": "status",
+            "type": "string",
+            "required": false,
+            "description": "Status of the transaction, may be one of:\n- `reviewed`: User has reviewed the transaction, or it was",
+            "enum": [
+              "reviewed",
+              "unreviewed"
+            ],
+            "nullable": false
+          },
+          {
+            "name": "to_base",
+            "type": "number",
+            "required": false,
+            "description": "System defined amount of this transaction in the user's primary currency. Ignored if set. Use `amoun",
+            "nullable": false,
+            "format": "double"
+          },
+          {
+            "name": "is_pending",
+            "type": "boolean",
+            "required": false,
+            "description": "System defined flag set for pending transactions. Ignored if set.",
+            "nullable": false
+          },
+          {
+            "name": "plaid_metadata",
+            "type": "object",
+            "required": false,
+            "description": "System set metadata from a Plaid account sync. Ignored if set.",
+            "nullable": true
+          },
+          {
+            "name": "created_at",
+            "type": "string",
+            "required": false,
+            "description": "System defined date and time of when the transaction was created. Ignored if set.",
+            "nullable": false,
+            "format": "date-time"
+          },
+          {
+            "name": "updated_at",
+            "type": "string",
+            "required": false,
+            "description": "System defined date and time of when the transaction was last updated. Ignored if set.",
+            "nullable": false,
+            "format": "date-time"
+          },
+          {
+            "name": "is_split_parent",
+            "type": "boolean",
+            "required": false,
+            "description": "System defined boolean indicating if this transaction was split. To split or unsplit a transaction u",
+            "nullable": false
+          },
+          {
+            "name": "children",
+            "type": "array",
+            "required": false,
+            "description": "An array of child transactions present when a transaction has been split or when the transaction is ",
+            "nullable": false
+          },
+          {
+            "name": "split_parent_id",
+            "type": "integer",
+            "required": false,
+            "description": "A transaction ID if this is a split transaction. Split transactions may not be modified this API. Us",
+            "nullable": true,
+            "format": "int64"
+          },
+          {
+            "name": "is_group_parent",
+            "type": "boolean",
+            "required": false,
+            "description": "System defined boolean indicating if this transaction represents a group of transactions. Grouped tr",
+            "nullable": false
+          },
+          {
+            "name": "group_parent_id",
+            "type": "integer",
+            "required": false,
+            "description": "A transaction group ID if this transaction is part of a group. Grouped transactions may not be modif",
+            "nullable": true,
+            "format": "int64"
+          },
+          {
+            "name": "source",
+            "type": "string",
+            "required": false,
+            "description": "System defined original source of the transaction. Ignored if set.\n",
+            "enum": [
+              "api",
+              "csv",
+              "manual",
+              "merge",
+              "plaid",
+              "recurring",
+              "rule",
+              "split",
+              "user"
+            ],
+            "nullable": true
+          }
+        ]
+      },
+      {
+        "path": "/transactions/{id}",
+        "method": "DELETE",
+        "operationId": "deleteTransactionById",
+        "tags": [
+          "transactions"
+        ],
+        "summary": "Delete a transaction",
+        "params": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "type": "integer",
+            "description": "ID of the transaction to delete",
+            "format": "int64"
+          }
+        ],
+        "bodyProps": []
+      }
+    ],
+    "transactions (group)": [
+      {
+        "path": "/transactions/group",
+        "method": "POST",
+        "operationId": "groupTransactions",
+        "tags": [
+          "transactions (group)"
+        ],
+        "summary": "Create a transaction group",
+        "params": [],
+        "bodyProps": [
+          {
+            "name": "ids",
+            "type": "array",
+            "required": true,
+            "description": "List of existing transaction IDs to group. Split and recurring transactions may not be grouped. Tran",
+            "nullable": false
+          },
+          {
+            "name": "date",
+            "type": "string",
+            "required": true,
+            "description": "Date for the new grouped transaction in ISO 8601 format.",
+            "nullable": false,
+            "format": "date"
+          },
+          {
+            "name": "payee",
+            "type": "string",
+            "required": true,
+            "description": "The payee for the new grouped transaction.\n",
+            "nullable": false
+          },
+          {
+            "name": "category_id",
+            "type": "integer",
+            "required": false,
+            "description": "The ID of an existing category to assign to the grouped transaction. If not set and all the grouped ",
+            "nullable": true,
+            "format": "int64"
+          },
+          {
+            "name": "notes",
+            "type": "string",
+            "required": false,
+            "description": "Notes for the grouped transaction.\n",
+            "nullable": true
+          },
+          {
+            "name": "status",
+            "type": "string",
+            "required": false,
+            "description": "If set, must be either `reviewed` or `unreviewed`. If not set, defaults to `reviewed`.",
+            "enum": [
+              "reviewed",
+              "unreviewed"
+            ],
+            "nullable": false
+          },
+          {
+            "name": "tag_ids",
+            "type": "array",
+            "required": false,
+            "description": "A list of IDs for the tags associated with the grouped transaction. Each ID must match an existing t",
+            "nullable": false
+          }
+        ]
+      },
+      {
+        "path": "/transactions/group/{id}",
+        "method": "DELETE",
+        "operationId": "ungroupTransactions",
+        "tags": [
+          "transactions (group)"
+        ],
+        "summary": "Delete a transaction group",
+        "params": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "type": "integer",
+            "description": "ID of the transaction group to delete",
+            "format": "int64"
+          }
+        ],
+        "bodyProps": []
+      }
+    ],
+    "transactions (split)": [
+      {
+        "path": "/transactions/split/{id}",
+        "method": "POST",
+        "operationId": "splitTransaction",
+        "tags": [
+          "transactions (split)"
+        ],
+        "summary": "Split a transaction",
+        "params": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "type": "integer",
+            "description": "ID of the transaction to spit",
+            "format": "int64"
+          }
+        ],
+        "bodyProps": [
+          {
+            "name": "child_transactions",
+            "type": "array",
+            "required": true,
+            "description": "List of child transactions to create. The sum of the `amounts` must match the split transaction amou",
+            "nullable": false
+          }
+        ]
+      },
+      {
+        "path": "/transactions/split/{id}",
+        "method": "DELETE",
+        "operationId": "unsplitTransaction",
+        "tags": [
+          "transactions (split)"
+        ],
+        "summary": "Unsplit a previously split transactions",
+        "params": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "type": "integer",
+            "description": "ID of the previously split transaction to delete.",
+            "format": "int64"
+          }
+        ],
+        "bodyProps": []
+      }
+    ],
+    "transactions (files)": [
+      {
+        "path": "/transactions/{transaction_id}/attachments",
+        "method": "POST",
+        "operationId": "attachFileToTransaction",
+        "tags": [
+          "transactions (files)"
+        ],
+        "summary": "Attach a file to a transaction",
+        "params": [
+          {
+            "name": "transaction_id",
+            "in": "path",
+            "required": true,
+            "type": "integer",
+            "description": "",
+            "format": "int64"
+          }
+        ],
+        "bodyProps": []
+      },
+      {
+        "path": "/transactions/attachments/{file_id}",
+        "method": "GET",
+        "operationId": "getTransactionAttachmentUrl",
+        "tags": [
+          "transactions (files)"
+        ],
+        "summary": "Get a url to download a file attachment",
+        "params": [
+          {
+            "name": "file_id",
+            "in": "path",
+            "required": true,
+            "type": "integer",
+            "description": "",
+            "format": "int32"
+          }
+        ],
+        "bodyProps": []
+      },
+      {
+        "path": "/transactions/attachments/{file_id}",
+        "method": "DELETE",
+        "operationId": "deleteTransactionAttachment",
+        "tags": [
+          "transactions (files)"
+        ],
+        "summary": "Delete a file attachment",
+        "params": [
+          {
+            "name": "file_id",
+            "in": "path",
+            "required": true,
+            "type": "integer",
+            "description": "",
+            "format": "int32"
+          }
+        ],
+        "bodyProps": []
+      }
+    ],
+    "tags": [
+      {
+        "path": "/tags",
+        "method": "GET",
+        "operationId": "getAllTags",
+        "tags": [
+          "tags"
+        ],
+        "summary": "Get All Tags",
+        "params": [],
+        "bodyProps": []
+      },
+      {
+        "path": "/tags",
+        "method": "POST",
+        "operationId": "createTag",
+        "tags": [
+          "tags"
+        ],
+        "summary": "Create a new tag",
+        "params": [],
+        "bodyProps": [
+          {
+            "name": "name",
+            "type": "string",
+            "required": true,
+            "description": "The name of the new tag. Must be between 1 and 100 characters.\nMust not match the name of any existi",
+            "nullable": false
+          },
+          {
+            "name": "description",
+            "type": "string",
+            "required": false,
+            "description": "The description of the tag. Must not exceed 200 characters.",
+            "nullable": true,
+            "default": null
+          },
+          {
+            "name": "text_color",
+            "type": "string",
+            "required": false,
+            "description": "The text color of the tag.",
+            "nullable": true
+          },
+          {
+            "name": "background_color",
+            "type": "string",
+            "required": false,
+            "description": "The background color of the tag.",
+            "nullable": true
+          },
+          {
+            "name": "archived",
+            "type": "boolean",
+            "required": false,
+            "description": "If `true`, the tag is archived and not displayed in relevant areas of the Lunch Money app.",
+            "nullable": false,
+            "default": false
+          }
+        ]
+      },
+      {
+        "path": "/tags/{id}",
+        "method": "GET",
+        "operationId": "getTagById",
+        "tags": [
+          "tags"
+        ],
+        "summary": "Get a single tag",
+        "params": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "type": "integer",
+            "description": "ID of the tag to retrieve",
+            "format": "int32"
+          }
+        ],
+        "bodyProps": []
+      },
+      {
+        "path": "/tags/{id}",
+        "method": "PUT",
+        "operationId": "updateTag",
+        "tags": [
+          "tags"
+        ],
+        "summary": "Update an existing tag",
+        "params": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "type": "integer",
+            "description": "ID of the tag to update",
+            "format": "int32"
+          }
+        ],
+        "bodyProps": [
+          {
+            "name": "name",
+            "type": "string",
+            "required": false,
+            "description": "If set, the new name of the tag. Must be between 1 and 100. characters.",
+            "nullable": false
+          },
+          {
+            "name": "description",
+            "type": "string",
+            "required": false,
+            "description": "If set, the new description of the tag. Must not exceed 200. characters.",
+            "nullable": true
+          },
+          {
+            "name": "text_color",
+            "type": "string",
+            "required": false,
+            "description": "The text color of the tag.",
+            "nullable": true
+          },
+          {
+            "name": "background_color",
+            "type": "string",
+            "required": false,
+            "description": "The background color of the tag.",
+            "nullable": true
+          },
+          {
+            "name": "archived",
+            "type": "boolean",
+            "required": false,
+            "description": "If set, determines whether this tag is archived.",
+            "nullable": false
+          },
+          {
+            "name": "id",
+            "type": "integer",
+            "required": false,
+            "description": "System-defined unique identifier for the tag. Ignored if set.",
+            "nullable": false,
+            "format": "int32"
+          },
+          {
+            "name": "updated_at",
+            "type": "string",
+            "required": false,
+            "description": "System-set time the tag was last updated. Ignored if set",
+            "nullable": false,
+            "format": "date-time"
+          },
+          {
+            "name": "created_at",
+            "type": "string",
+            "required": false,
+            "description": "System-set time the tag was created. Ignored if set.",
+            "nullable": false,
+            "format": "date-time"
+          },
+          {
+            "name": "archived_at",
+            "type": "string",
+            "required": false,
+            "description": "If set, updates the archived timestamp for the tag. Provide an ISO 8601 extended datetime or `null` ",
+            "nullable": true,
+            "format": "date-time"
+          }
+        ]
+      },
+      {
+        "path": "/tags/{id}",
+        "method": "DELETE",
+        "operationId": "deleteTag",
+        "tags": [
+          "tags"
+        ],
+        "summary": "Delete a tag",
+        "params": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "type": "integer",
+            "description": "ID of the tag to delete",
+            "format": "int32"
+          },
+          {
+            "name": "force",
+            "in": "query",
+            "required": false,
+            "type": "boolean",
+            "description": "Set to true to force deletion even if there are dependencies",
+            "default": false
+          }
+        ],
+        "bodyProps": []
+      }
+    ],
+    "recurring_items": [
+      {
+        "path": "/recurring_items",
+        "method": "GET",
+        "operationId": "getAllRecurring",
+        "tags": [
+          "recurring_items"
+        ],
+        "summary": "Get all recurring items",
+        "params": [
+          {
+            "name": "start_date",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "description": "Indicates the beginning of the range used to populate the `matching` object in the recurring items. ",
+            "format": "date"
+          },
+          {
+            "name": "end_date",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "description": "Indicates the end of the range used to populate the `matching` object in the recurring items. Requir",
+            "format": "date"
+          },
+          {
+            "name": "include_suggested",
+            "in": "query",
+            "required": false,
+            "type": "boolean",
+            "description": ""
+          }
+        ],
+        "bodyProps": []
+      },
+      {
+        "path": "/recurring_items/{id}",
+        "method": "GET",
+        "operationId": "getRecurringById",
+        "tags": [
+          "recurring_items"
+        ],
+        "summary": "Get a single recurring item",
+        "params": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "type": "integer",
+            "description": "ID of the recurring item to retrieve",
+            "format": "int32"
+          },
+          {
+            "name": "start_date",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "description": "Indicates the beginning of the range used to populate the `matching` object in the recurring items. ",
+            "format": "date"
+          },
+          {
+            "name": "end_date",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "description": "Indicates the end of the range used to populate the `matching` object in the recurring items. Requir",
+            "format": "date"
+          }
+        ],
+        "bodyProps": []
+      }
+    ],
+    "budgets": [
+      {
+        "path": "/budgets/settings",
+        "method": "GET",
+        "operationId": "getBudgetSettings",
+        "tags": [
+          "budgets"
+        ],
+        "summary": "Get budget settings",
+        "params": [],
+        "bodyProps": []
+      },
+      {
+        "path": "/budgets",
+        "method": "PUT",
+        "operationId": "upsertBudget",
+        "tags": [
+          "budgets"
+        ],
+        "summary": "Upsert budget",
+        "params": [],
+        "bodyProps": [
+          {
+            "name": "start_date",
+            "type": "string",
+            "required": true,
+            "description": "Start date of the budget period in ISO 8601 date format (YYYY-MM-DD). Must be a valid budget period ",
+            "nullable": false,
+            "format": "date"
+          },
+          {
+            "name": "category_id",
+            "type": "integer",
+            "required": true,
+            "description": "Category ID for the budget",
+            "nullable": false,
+            "format": "int32"
+          },
+          {
+            "name": "amount",
+            "type": "unknown",
+            "required": true,
+            "description": "Budget amount. May be a string or a number in double format.",
+            "nullable": false
+          },
+          {
+            "name": "currency",
+            "type": "unknown",
+            "required": false,
+            "description": "Three-letter currency code. If omitted, the primary currency for the user's account is used.",
+            "nullable": false
+          },
+          {
+            "name": "notes",
+            "type": "string",
+            "required": false,
+            "description": "Optional notes for the budget period",
+            "nullable": true
+          }
+        ]
+      },
+      {
+        "path": "/budgets",
+        "method": "DELETE",
+        "operationId": "deleteBudget",
+        "tags": [
+          "budgets"
+        ],
+        "summary": "Delete budget",
+        "params": [
+          {
+            "name": "category_id",
+            "in": "query",
+            "required": true,
+            "type": "integer",
+            "description": "Category ID of the budget to delete",
+            "format": "int32"
+          },
+          {
+            "name": "start_date",
+            "in": "query",
+            "required": true,
+            "type": "string",
+            "description": "Start date of the budget period in ISO 8601 date format (YYYY-MM-DD)",
+            "format": "date"
+          }
+        ],
+        "bodyProps": []
+      }
+    ]
+  },
+  "endpoints": [
+    {
+      "path": "/me",
+      "method": "GET",
+      "operationId": "getMe",
+      "tags": [
+        "me"
+      ],
+      "summary": "Get current user",
+      "params": [],
+      "bodyProps": []
+    },
+    {
+      "path": "/summary",
+      "method": "GET",
+      "operationId": "getBudgetSummary",
+      "tags": [
+        "summary"
+      ],
+      "summary": "Get summary",
+      "params": [
+        {
+          "name": "start_date",
+          "in": "query",
+          "required": true,
+          "type": "string",
+          "description": "Start of date range in ISO 8601 date format (YYYY-MM-DD).",
+          "format": "date"
+        },
+        {
+          "name": "end_date",
+          "in": "query",
+          "required": true,
+          "type": "string",
+          "description": "End of date range in ISO 8601 date format (YYYY-MM-DD).",
+          "format": "date"
+        },
+        {
+          "name": "include_exclude_from_budgets",
+          "in": "query",
+          "required": false,
+          "type": "boolean",
+          "description": "Enable to include categories that have the 'Exclude from Budgets' flag set in the returned `categori",
+          "default": false
+        },
+        {
+          "name": "include_occurrences",
+          "in": "query",
+          "required": false,
+          "type": "boolean",
+          "description": "Enable to include an `occurrences` array for each category in an aligned response. Each array will i",
+          "default": false
+        },
+        {
+          "name": "include_past_budget_dates",
+          "in": "query",
+          "required": false,
+          "type": "boolean",
+          "description": "Enable to include the three budget occurrences prior to the start date in the `occurrences` array fo",
+          "default": false
+        },
+        {
+          "name": "include_totals",
+          "in": "query",
+          "required": false,
+          "type": "boolean",
+          "description": "Enable to include a top-level `totals` section that summarizes the inflow and outflow across all tra",
+          "default": false
+        },
+        {
+          "name": "include_rollover_pool",
+          "in": "query",
+          "required": false,
+          "type": "boolean",
+          "description": "Enable to include a `rollover_pool` section that summarizes the current rollover pool balance and al",
+          "default": false
+        }
+      ],
+      "bodyProps": []
+    },
+    {
+      "path": "/categories",
+      "method": "GET",
+      "operationId": "getAllCategories",
+      "tags": [
+        "categories"
+      ],
+      "summary": "Get all categories",
+      "params": [
+        {
+          "name": "format",
+          "in": "query",
+          "required": false,
+          "type": "string",
+          "enum": [
+            "nested",
+            "flattened"
+          ],
+          "description": "If `nested`, returns top-level categories (either category groups or categories not part of a catego",
+          "default": "nested"
+        },
+        {
+          "name": "is_group",
+          "in": "query",
+          "required": false,
+          "type": "boolean",
+          "description": "If `false`, only categories not part of a category group are returned.<br> If `true`, only category "
+        }
+      ],
+      "bodyProps": []
+    },
+    {
+      "path": "/categories",
+      "method": "POST",
+      "operationId": "createCategory",
+      "tags": [
+        "categories"
+      ],
+      "summary": "Create a new category or category group",
+      "params": [],
+      "bodyProps": [
+        {
+          "name": "name",
+          "type": "string",
+          "required": true,
+          "description": "Name of the new category. Must be between 1 and 100 characters.\nThe name must not match the name of ",
+          "nullable": false
+        },
+        {
+          "name": "description",
+          "type": "string",
+          "required": false,
+          "description": "Description of the category. Maximum length is 200 characters.",
+          "nullable": true,
+          "default": null
+        },
+        {
+          "name": "is_income",
+          "type": "boolean",
+          "required": false,
+          "description": "If `true`, transactions in this category are treated as income. (See [Category Properties](https://s",
+          "nullable": false,
+          "default": false
+        },
+        {
+          "name": "exclude_from_budget",
+          "type": "boolean",
+          "required": false,
+          "description": "If `true`, transactions in this category are excluded from the budget. (See [Category Properties](ht",
+          "nullable": false,
+          "default": false
+        },
+        {
+          "name": "exclude_from_totals",
+          "type": "boolean",
+          "required": false,
+          "description": "If `true`, transactions in this category are excluded from totals. (See [Category Properties](https:",
+          "nullable": false,
+          "default": false
+        },
+        {
+          "name": "is_group",
+          "type": "boolean",
+          "required": false,
+          "description": "If `true`, this category will be created as a category group.",
+          "nullable": false,
+          "default": false
+        },
+        {
+          "name": "group_id",
+          "type": "integer",
+          "required": false,
+          "description": "If set to the ID of an existing category group, the new category will be added to that group. Cannot",
+          "nullable": true,
+          "format": "int64",
+          "default": null
+        },
+        {
+          "name": "archived",
+          "type": "boolean",
+          "required": false,
+          "description": "If `true`, the category is archived and in relevant areas of the Lunch Money app.",
+          "nullable": false,
+          "default": false
+        },
+        {
+          "name": "children",
+          "type": "array",
+          "required": false,
+          "description": "List of categories to include in the new category group. This field should only be set if `is_group`",
+          "nullable": false
+        },
+        {
+          "name": "order",
+          "type": "integer",
+          "required": false,
+          "description": "Position of the category on the categories page in the Lunch Money app. For grouped categories, the ",
+          "nullable": true
+        },
+        {
+          "name": "collapsed",
+          "type": "boolean",
+          "required": false,
+          "description": "If `true`, the category group appears collapsed in the Lunch Money app. Can only be set to `true` fo",
+          "nullable": true
+        }
+      ]
+    },
+    {
+      "path": "/categories/{id}",
+      "method": "GET",
+      "operationId": "getCategoryById",
+      "tags": [
+        "categories"
+      ],
+      "summary": "Get a single category",
+      "params": [
+        {
+          "name": "id",
+          "in": "path",
+          "required": true,
+          "type": "integer",
+          "description": "ID of the category to retrieve",
+          "format": "int32"
+        }
+      ],
+      "bodyProps": []
+    },
+    {
+      "path": "/categories/{id}",
+      "method": "PUT",
+      "operationId": "updateCategory",
+      "tags": [
+        "categories"
+      ],
+      "summary": "Update an existing category or category group",
+      "params": [
+        {
+          "name": "id",
+          "in": "path",
+          "required": true,
+          "type": "integer",
+          "description": "ID of the category to update",
+          "format": "int32"
+        }
+      ],
+      "bodyProps": [
+        {
+          "name": "name",
+          "type": "string",
+          "required": false,
+          "description": "If set, updates the category name. Must be between 1 and 100 characters.",
+          "nullable": false
+        },
+        {
+          "name": "description",
+          "type": "string",
+          "required": false,
+          "description": "If set, updates the category description. Must not exceed 200 characters.",
+          "nullable": true
+        },
+        {
+          "name": "is_income",
+          "type": "boolean",
+          "required": false,
+          "description": "If set, determines whether transactions in this category are treated as income. (See [Category Prope",
+          "nullable": false
+        },
+        {
+          "name": "exclude_from_budget",
+          "type": "boolean",
+          "required": false,
+          "description": "If set, determines whether transactions in this category are excluded from budgets. (See [Category P",
+          "nullable": false
+        },
+        {
+          "name": "exclude_from_totals",
+          "type": "boolean",
+          "required": false,
+          "description": "If set, determines whether transactions in this category are excluded from totals. (See [Category Pr",
+          "nullable": false
+        },
+        {
+          "name": "archived",
+          "type": "boolean",
+          "required": false,
+          "description": "If set, determines whether this category is archived.",
+          "nullable": false
+        },
+        {
+          "name": "group_id",
+          "type": "integer",
+          "required": false,
+          "description": "If set to the ID of an existing category group, and this category is not itself a category group, th",
+          "nullable": true,
+          "format": "int64"
+        },
+        {
+          "name": "is_group",
+          "type": "boolean",
+          "required": false,
+          "description": "This property is tolerated but cannot be changed. This API cannot be used to convert a category into",
+          "nullable": true,
+          "default": false
+        },
+        {
+          "name": "children",
+          "type": "array",
+          "required": false,
+          "description": "List of existing category objects, existing category IDs, or names of new categories to add to the c",
+          "nullable": false
+        },
+        {
+          "name": "order",
+          "type": "integer",
+          "required": false,
+          "description": "Position of the category on the categories page in the Lunch Money app. For categories within a cate",
+          "nullable": true
+        },
+        {
+          "name": "collapsed",
+          "type": "boolean",
+          "required": false,
+          "description": "If `true`, the category is collapsed in the Lunch Money app.<br>While this property can be set via t",
+          "nullable": true
+        },
+        {
+          "name": "id",
+          "type": "integer",
+          "required": false,
+          "description": "System defined unique identifier for the category. Ignored if set.",
+          "nullable": false,
+          "format": "int64"
+        },
+        {
+          "name": "archived_at",
+          "type": "string",
+          "required": false,
+          "description": "System set date and time of when the category was last archived (in the ISO 8601 extended format). P",
+          "nullable": true,
+          "format": "date-time"
+        },
+        {
+          "name": "updated_at",
+          "type": "string",
+          "required": false,
+          "description": "System set date and time of when the category was last updated (in the ISO 8601 extended format). Ig",
+          "nullable": false,
+          "format": "date-time"
+        },
+        {
+          "name": "created_at",
+          "type": "string",
+          "required": false,
+          "description": "System set date and time of when the category was created (in the ISO 8601 extended format). Ignored",
+          "nullable": false,
+          "format": "date-time"
+        }
+      ]
+    },
+    {
+      "path": "/categories/{id}",
+      "method": "DELETE",
+      "operationId": "deleteCategory",
+      "tags": [
+        "categories"
+      ],
+      "summary": "Delete a category or category group",
+      "params": [
+        {
+          "name": "id",
+          "in": "path",
+          "required": true,
+          "type": "integer",
+          "description": "ID of the category to delete",
+          "format": "int32"
+        },
+        {
+          "name": "force",
+          "in": "query",
+          "required": false,
+          "type": "boolean",
+          "description": "Set to `true` to force deletion even if there are dependencies",
+          "default": false
+        }
+      ],
+      "bodyProps": []
+    },
+    {
+      "path": "/cryptocurrencies",
+      "method": "GET",
+      "operationId": "getAllCryptocurrencies",
+      "tags": [
+        "crypto-manual"
+      ],
+      "summary": "Get all supported cryptocurrencies",
+      "params": [],
+      "bodyProps": []
+    },
+    {
+      "path": "/cryptocurrencies",
+      "method": "POST",
+      "operationId": "createCryptocurrency",
+      "tags": [
+        "crypto-manual"
+      ],
+      "summary": "Add a new supported cryptocurrency",
+      "params": [],
+      "bodyProps": [
+        {
+          "name": "coingecko_url",
+          "type": "string",
+          "required": true,
+          "description": "CoinGecko coin-page URL in the form `https://www.coingecko.com/{locale}/coins/{id}`",
+          "nullable": false
+        }
+      ]
+    },
+    {
+      "path": "/crypto/manual",
+      "method": "GET",
+      "operationId": "getAllCryptoManual",
+      "tags": [
+        "crypto-manual"
+      ],
+      "summary": "Get all manual crypto balances",
+      "params": [],
+      "bodyProps": []
+    },
+    {
+      "path": "/crypto/manual",
+      "method": "POST",
+      "operationId": "createCryptoManual",
+      "tags": [
+        "crypto-manual"
+      ],
+      "summary": "Create a manual crypto balance",
+      "params": [],
+      "bodyProps": [
+        {
+          "name": "name",
+          "type": "string",
+          "required": true,
+          "description": "User-defined name for the manual crypto asset",
+          "nullable": false
+        },
+        {
+          "name": "display_name",
+          "type": "string",
+          "required": false,
+          "description": "Optional display name for the manual crypto asset. If omitted, clients may derive one from `institut",
+          "nullable": false
+        },
+        {
+          "name": "institution_name",
+          "type": "string",
+          "required": false,
+          "description": "Optional institution or wallet provider display name",
+          "nullable": false
+        },
+        {
+          "name": "balance",
+          "type": "unknown",
+          "required": true,
+          "description": "Numeric value of the balance, up to 18 decimal places",
+          "nullable": false
+        },
+        {
+          "name": "symbol",
+          "type": "string",
+          "required": true,
+          "description": "Cryptocurrency symbol to track. Must match the `symbol` of one of the supported cryptocurrencies ret",
+          "nullable": false
+        }
+      ]
+    },
+    {
+      "path": "/crypto/manual/{id}",
+      "method": "GET",
+      "operationId": "getCryptoManualById",
+      "tags": [
+        "crypto-manual"
+      ],
+      "summary": "Get a single manual crypto balance",
+      "params": [
+        {
+          "name": "id",
+          "in": "path",
+          "required": true,
+          "type": "integer",
+          "description": "ID of the manual crypto balance to retrieve",
+          "format": "int32"
+        }
+      ],
+      "bodyProps": []
+    },
+    {
+      "path": "/crypto/manual/{id}",
+      "method": "PUT",
+      "operationId": "updateCryptoManual",
+      "tags": [
+        "crypto-manual"
+      ],
+      "summary": "Update a manual crypto balance",
+      "params": [
+        {
+          "name": "id",
+          "in": "path",
+          "required": true,
+          "type": "integer",
+          "description": "ID of the manual crypto balance to update",
+          "format": "int32"
+        }
+      ],
+      "bodyProps": [
+        {
+          "name": "id",
+          "type": "integer",
+          "required": false,
+          "description": "System defined unique ID for the manual crypto asset. Ignored if set",
+          "nullable": false,
+          "format": "int32"
+        },
+        {
+          "name": "name",
+          "type": "string",
+          "required": false,
+          "description": "If set, the new name of the manual crypto asset",
+          "nullable": true
+        },
+        {
+          "name": "display_name",
+          "type": "string",
+          "required": false,
+          "description": "If set, the new display name for the manual crypto asset",
+          "nullable": true
+        },
+        {
+          "name": "institution_name",
+          "type": "string",
+          "required": false,
+          "description": "If set, the new institution or wallet provider display name",
+          "nullable": true
+        },
+        {
+          "name": "balance",
+          "type": "unknown",
+          "required": false,
+          "description": "If set, the new balance value up to 18 decimal places",
+          "nullable": false
+        },
+        {
+          "name": "symbol",
+          "type": "string",
+          "required": false,
+          "description": "Existing cryptocurrency symbol. Ignored if set.",
+          "nullable": false
+        },
+        {
+          "name": "coingecko_id",
+          "type": "string",
+          "required": false,
+          "description": "System-defined CoinGecko identifier for this symbol. Ignored if set.",
+          "nullable": true
+        },
+        {
+          "name": "to_base",
+          "type": "number",
+          "required": false,
+          "description": "System defined balance converted to the user's primary currency. Ignored if set",
+          "nullable": false
+        },
+        {
+          "name": "balance_as_of",
+          "type": "string",
+          "required": false,
+          "description": "System defined date/time the balance was last updated in ISO 8601 extended format. Ignored if set",
+          "nullable": true,
+          "format": "date-time"
+        },
+        {
+          "name": "created_by_name",
+          "type": "string",
+          "required": false,
+          "description": "System defined name of the user who created the crypto asset. Ignored if set",
+          "nullable": true
+        },
+        {
+          "name": "created_at",
+          "type": "string",
+          "required": false,
+          "description": "System defined date/time the crypto asset was created in ISO 8601 extended format. Ignored if set",
+          "nullable": false,
+          "format": "date-time"
+        },
+        {
+          "name": "updated_at",
+          "type": "string",
+          "required": false,
+          "description": "System defined date/time the crypto asset was last updated in ISO 8601 extended format. Ignored if s",
+          "nullable": false,
+          "format": "date-time"
+        }
+      ]
+    },
+    {
+      "path": "/crypto/manual/{id}",
+      "method": "DELETE",
+      "operationId": "deleteCryptoManual",
+      "tags": [
+        "crypto-manual"
+      ],
+      "summary": "Delete a manual crypto balance",
+      "params": [
+        {
+          "name": "id",
+          "in": "path",
+          "required": true,
+          "type": "integer",
+          "description": "ID of the manual crypto balance to delete",
+          "format": "int32"
+        },
+        {
+          "name": "keep_history",
+          "in": "query",
+          "required": false,
+          "type": "boolean",
+          "description": "Explicitly set to `true` to preserve balance history, or `false` to remove associated history during"
+        }
+      ],
+      "bodyProps": []
+    },
+    {
+      "path": "/crypto/synced",
+      "method": "GET",
+      "operationId": "getAllCryptoSynced",
+      "tags": [
+        "crypto-synced"
+      ],
+      "summary": "Get all synced crypto accounts",
+      "params": [],
+      "bodyProps": []
+    },
+    {
+      "path": "/crypto/synced/{id}",
+      "method": "GET",
+      "operationId": "getCryptoSyncedById",
+      "tags": [
+        "crypto-synced"
+      ],
+      "summary": "Get a single synced crypto account",
+      "params": [
+        {
+          "name": "id",
+          "in": "path",
+          "required": true,
+          "type": "integer",
+          "description": "Synced crypto account ID",
+          "format": "int32"
+        }
+      ],
+      "bodyProps": []
+    },
+    {
+      "path": "/crypto/synced/{id}/{symbol}",
+      "method": "GET",
+      "operationId": "getCryptoSyncedBalanceBySymbol",
+      "tags": [
+        "crypto-synced"
+      ],
+      "summary": "Get a synced crypto balance by symbol",
+      "params": [
+        {
+          "name": "id",
+          "in": "path",
+          "required": true,
+          "type": "integer",
+          "description": "Synced crypto account ID",
+          "format": "int32"
+        },
+        {
+          "name": "symbol",
+          "in": "path",
+          "required": true,
+          "type": "string",
+          "description": "Crypto symbol within the synced account"
+        }
+      ],
+      "bodyProps": []
+    },
+    {
+      "path": "/crypto/synced/{id}/refresh",
+      "method": "POST",
+      "operationId": "refreshCryptoSynced",
+      "tags": [
+        "crypto-synced"
+      ],
+      "summary": "Refresh balances for a synced crypto account",
+      "params": [
+        {
+          "name": "id",
+          "in": "path",
+          "required": true,
+          "type": "integer",
+          "description": "Synced crypto account ID",
+          "format": "int32"
+        }
+      ],
+      "bodyProps": []
+    },
+    {
+      "path": "/balance_history",
+      "method": "GET",
+      "operationId": "getBalanceHistory",
+      "tags": [
+        "balance_history"
+      ],
+      "summary": "Get balance history",
+      "params": [
+        {
+          "name": "start_date",
+          "in": "query",
+          "required": false,
+          "type": "string",
+          "description": "Optional start date for the requested history range in YYYY-MM-DD format. If set, `end_date` is also",
+          "format": "date"
+        },
+        {
+          "name": "end_date",
+          "in": "query",
+          "required": false,
+          "type": "string",
+          "description": "Optional end date for the requested history range in YYYY-MM-DD format. If set, `start_date` is also",
+          "format": "date"
+        }
+      ],
+      "bodyProps": []
+    },
+    {
+      "path": "/balance_history/{account_type}/{account_id}",
+      "method": "GET",
+      "operationId": "getBalanceHistoryForAccount",
+      "tags": [
+        "balance_history"
+      ],
+      "summary": "Get balance history for an account",
+      "params": [
+        {
+          "name": "account_type",
+          "in": "path",
+          "required": true,
+          "type": "string",
+          "enum": [
+            "manual",
+            "plaid",
+            "crypto_manual",
+            "deleted"
+          ],
+          "description": "Source family to retrieve. Use `manual`, `plaid`, `crypto_manual`, or `deleted`."
+        },
+        {
+          "name": "account_id",
+          "in": "path",
+          "required": true,
+          "type": "integer",
+          "description": "Account or deleted-source identifier within the selected `account_type`.",
+          "format": "int32"
+        },
+        {
+          "name": "start_date",
+          "in": "query",
+          "required": false,
+          "type": "string",
+          "description": "Optional start date for the requested history range in YYYY-MM-DD format. If set, `end_date` is also",
+          "format": "date"
+        },
+        {
+          "name": "end_date",
+          "in": "query",
+          "required": false,
+          "type": "string",
+          "description": "Optional end date for the requested history range in YYYY-MM-DD format. If set, `start_date` is also",
+          "format": "date"
+        }
+      ],
+      "bodyProps": []
+    },
+    {
+      "path": "/balance_history/{account_type}/{account_id}",
+      "method": "PUT",
+      "operationId": "upsertBalanceHistoryForAccount",
+      "tags": [
+        "balance_history"
+      ],
+      "summary": "Upsert balance history for an account",
+      "params": [
+        {
+          "name": "account_type",
+          "in": "path",
+          "required": true,
+          "type": "string",
+          "enum": [
+            "manual",
+            "plaid",
+            "crypto_manual",
+            "deleted"
+          ],
+          "description": "Source family to update. Use `manual`, `plaid`, `crypto_manual`, or `deleted`."
+        },
+        {
+          "name": "account_id",
+          "in": "path",
+          "required": true,
+          "type": "integer",
+          "description": "Account or deleted-source identifier within the selected `account_type`.",
+          "format": "int32"
+        }
+      ],
+      "bodyProps": [
+        {
+          "name": "balances",
+          "type": "array",
+          "required": true,
+          "description": "One or more monthly balance history entries to upsert",
+          "nullable": false
+        }
+      ]
+    },
+    {
+      "path": "/balance_history/{account_type}/{account_id}",
+      "method": "DELETE",
+      "operationId": "deleteBalanceHistoryForAccount",
+      "tags": [
+        "balance_history"
+      ],
+      "summary": "Delete all balance history for an account",
+      "params": [
+        {
+          "name": "account_type",
+          "in": "path",
+          "required": true,
+          "type": "string",
+          "enum": [
+            "manual",
+            "plaid",
+            "crypto_manual",
+            "deleted"
+          ],
+          "description": "Source family to delete. Use `manual`, `plaid`, `crypto_manual`, or `deleted`."
+        },
+        {
+          "name": "account_id",
+          "in": "path",
+          "required": true,
+          "type": "integer",
+          "description": "Account or deleted-source identifier within the selected `account_type`.",
+          "format": "int32"
+        }
+      ],
+      "bodyProps": []
+    },
+    {
+      "path": "/balance_history/crypto_synced/{account_id}/{symbol}",
+      "method": "GET",
+      "operationId": "getBalanceHistoryForCryptoSynced",
+      "tags": [
+        "balance_history"
+      ],
+      "summary": "Get balance history for a synced crypto symbol",
+      "params": [
+        {
+          "name": "account_id",
+          "in": "path",
+          "required": true,
+          "type": "integer",
+          "description": "Synced crypto account identifier.",
+          "format": "int32"
+        },
+        {
+          "name": "symbol",
+          "in": "path",
+          "required": true,
+          "type": "string",
+          "description": "Crypto symbol identifying one balance stream within the synced crypto account."
+        },
+        {
+          "name": "start_date",
+          "in": "query",
+          "required": false,
+          "type": "string",
+          "description": "Optional start date for the requested history range in YYYY-MM-DD format. If set, `end_date` is also",
+          "format": "date"
+        },
+        {
+          "name": "end_date",
+          "in": "query",
+          "required": false,
+          "type": "string",
+          "description": "Optional end date for the requested history range in YYYY-MM-DD format. If set, `start_date` is also",
+          "format": "date"
+        }
+      ],
+      "bodyProps": []
+    },
+    {
+      "path": "/balance_history/crypto_synced/{account_id}/{symbol}",
+      "method": "PUT",
+      "operationId": "upsertBalanceHistoryForCryptoSynced",
+      "tags": [
+        "balance_history"
+      ],
+      "summary": "Upsert balance history for a synced crypto symbol",
+      "params": [
+        {
+          "name": "account_id",
+          "in": "path",
+          "required": true,
+          "type": "integer",
+          "description": "Synced crypto account identifier to update.",
+          "format": "int32"
+        },
+        {
+          "name": "symbol",
+          "in": "path",
+          "required": true,
+          "type": "string",
+          "description": "Crypto symbol identifying one balance stream within the synced crypto account."
+        }
+      ],
+      "bodyProps": [
+        {
+          "name": "balances",
+          "type": "array",
+          "required": true,
+          "description": "One or more monthly balance history entries to upsert",
+          "nullable": false
+        }
+      ]
+    },
+    {
+      "path": "/balance_history/crypto_synced/{account_id}/{symbol}",
+      "method": "DELETE",
+      "operationId": "deleteBalanceHistoryForCryptoSynced",
+      "tags": [
+        "balance_history"
+      ],
+      "summary": "Delete all balance history for a synced crypto symbol",
+      "params": [
+        {
+          "name": "account_id",
+          "in": "path",
+          "required": true,
+          "type": "integer",
+          "description": "Synced crypto account identifier.",
+          "format": "int32"
+        },
+        {
+          "name": "symbol",
+          "in": "path",
+          "required": true,
+          "type": "string",
+          "description": "Crypto symbol identifying one balance stream within the synced crypto account."
+        }
+      ],
+      "bodyProps": []
+    },
+    {
+      "path": "/balance_history/entries/{id}",
+      "method": "DELETE",
+      "operationId": "deleteBalanceHistoryEntry",
+      "tags": [
+        "balance_history"
+      ],
+      "summary": "Delete a balance history entry",
+      "params": [
+        {
+          "name": "id",
+          "in": "path",
+          "required": true,
+          "type": "integer",
+          "description": "Balance history row identifier to delete.",
+          "format": "int32"
+        }
+      ],
+      "bodyProps": []
+    },
+    {
+      "path": "/balance_history/deleted/{account_id}/details",
+      "method": "PUT",
+      "operationId": "updateBalanceHistoryDetails",
+      "tags": [
+        "balance_history"
+      ],
+      "summary": "Update details for a deleted account",
+      "params": [
+        {
+          "name": "account_id",
+          "in": "path",
+          "required": true,
+          "type": "integer",
+          "description": "Deleted account history source identifier to update.",
+          "format": "int32"
+        }
+      ],
+      "bodyProps": [
+        {
+          "name": "name",
+          "type": "string",
+          "required": false,
+          "description": "New archived account name for the deleted account source.",
+          "nullable": true
+        },
+        {
+          "name": "institution_name",
+          "type": "string",
+          "required": false,
+          "description": "New archived institution name for the deleted account source.",
+          "nullable": true
+        },
+        {
+          "name": "display_name",
+          "type": "string",
+          "required": false,
+          "description": "New display name for the deleted account source.",
+          "nullable": true
+        },
+        {
+          "name": "account_type",
+          "type": "string",
+          "required": false,
+          "description": "New archived account type for the deleted account source.",
+          "nullable": true
+        },
+        {
+          "name": "subtype",
+          "type": "string",
+          "required": false,
+          "description": "New archived subtype for the deleted account source.",
+          "nullable": true
+        },
+        {
+          "name": "mask",
+          "type": "string",
+          "required": false,
+          "description": "New archived account mask for the deleted account source.",
+          "nullable": true
+        }
+      ]
+    },
+    {
+      "path": "/manual_accounts",
+      "method": "GET",
+      "operationId": "getAllManualAccounts",
+      "tags": [
+        "manual_accounts"
+      ],
+      "summary": "Get all manual accounts",
+      "params": [],
+      "bodyProps": []
+    },
+    {
+      "path": "/manual_accounts",
+      "method": "POST",
+      "operationId": "createManualAccount",
+      "tags": [
+        "manual_accounts"
+      ],
+      "summary": "Create a manual account",
+      "params": [],
+      "bodyProps": [
+        {
+          "name": "name",
+          "type": "string",
+          "required": true,
+          "description": "Name of the manual account",
+          "nullable": false
+        },
+        {
+          "name": "institution_name",
+          "type": "string",
+          "required": false,
+          "description": "Name of institution holding the manual account",
+          "nullable": false
+        },
+        {
+          "name": "display_name",
+          "type": "string",
+          "required": false,
+          "description": "Display name of the manual account as set by user or derived from the `institution_name` and `name` ",
+          "nullable": false
+        },
+        {
+          "name": "type",
+          "type": "unknown",
+          "required": true,
+          "description": "The type of manual account",
+          "nullable": false
+        },
+        {
+          "name": "subtype",
+          "type": "string",
+          "required": false,
+          "description": "An optional manual account subtype. Examples include<br> - retirement - checking - savings - prepaid",
+          "nullable": false
+        },
+        {
+          "name": "balance",
+          "type": "unknown",
+          "required": true,
+          "description": "Numeric value of the current balance, up to four decimal places, of the account as a number or strin",
+          "nullable": false
+        },
+        {
+          "name": "balance_as_of",
+          "type": "string",
+          "required": false,
+          "description": "Date/time the balance of the manual account was last updated in ISO 8601 extended format",
+          "nullable": false
+        },
+        {
+          "name": "currency",
+          "type": "unknown",
+          "required": false,
+          "description": "Three-letter lowercase currency code of the transaction in ISO 4217 format",
+          "nullable": false
+        },
+        {
+          "name": "status",
+          "type": "string",
+          "required": false,
+          "description": "The status of the account",
+          "enum": [
+            "active",
+            "closed"
+          ],
+          "nullable": false,
+          "default": "active"
+        },
+        {
+          "name": "closed_on",
+          "type": "unknown",
+          "required": false,
+          "description": "The date this manual account was closed in YYYY-MM-DD format. If set, `status` must also be set to `",
+          "nullable": true
+        },
+        {
+          "name": "external_id",
+          "type": "string",
+          "required": false,
+          "description": "An optional user-defined ID for the manual account",
+          "nullable": true
+        },
+        {
+          "name": "custom_metadata",
+          "type": "object",
+          "required": false,
+          "description": "An optional JSON object that includes additional data related to this account. This must be a valid ",
+          "nullable": true
+        },
+        {
+          "name": "exclude_from_transactions",
+          "type": "boolean",
+          "required": false,
+          "description": "If `true`, transactions may not be assigned to this manual account",
+          "nullable": false,
+          "default": false
+        }
+      ]
+    },
+    {
+      "path": "/manual_accounts/{id}",
+      "method": "GET",
+      "operationId": "getManualAccountById",
+      "tags": [
+        "manual_accounts"
+      ],
+      "summary": "Get a single manual account",
+      "params": [
+        {
+          "name": "id",
+          "in": "path",
+          "required": true,
+          "type": "integer",
+          "description": "ID of the manual account to retrieve",
+          "format": "int32"
+        }
+      ],
+      "bodyProps": []
+    },
+    {
+      "path": "/manual_accounts/{id}",
+      "method": "PUT",
+      "operationId": "updateManualAccount",
+      "tags": [
+        "manual_accounts"
+      ],
+      "summary": "Update an existing manual account",
+      "params": [
+        {
+          "name": "id",
+          "in": "path",
+          "required": true,
+          "type": "integer",
+          "description": "ID of the manual account to update",
+          "format": "int32"
+        }
+      ],
+      "bodyProps": [
+        {
+          "name": "id",
+          "type": "integer",
+          "required": false,
+          "description": "System defined unique identifier of this account. Ignored if set",
+          "nullable": false,
+          "format": "int32"
+        },
+        {
+          "name": "name",
+          "type": "string",
+          "required": false,
+          "description": "If set, the new name of the manual account",
+          "nullable": false
+        },
+        {
+          "name": "institution_name",
+          "type": "string",
+          "required": false,
+          "description": "If set, the name of the institution holding the account",
+          "nullable": true
+        },
+        {
+          "name": "display_name",
+          "type": "string",
+          "required": false,
+          "description": "If set, the new display name for the manual account.<br> This must be unique for the user.",
+          "nullable": true
+        },
+        {
+          "name": "type",
+          "type": "unknown",
+          "required": false,
+          "description": "If set, the new type of the manual account",
+          "nullable": false
+        },
+        {
+          "name": "subtype",
+          "type": "string",
+          "required": false,
+          "description": "If set, an optional account subtype. Examples include<br> - retirement - checking - savings - prepai",
+          "nullable": false
+        },
+        {
+          "name": "balance",
+          "type": "unknown",
+          "required": false,
+          "description": "Numeric value of the current balance, up to four decimal places, of the manual account as a number o",
+          "nullable": false
+        },
+        {
+          "name": "currency",
+          "type": "unknown",
+          "required": false,
+          "description": "If set, the new three-letter lowercase currency code of the manual account balance.",
+          "nullable": false
+        },
+        {
+          "name": "balance_as_of",
+          "type": "string",
+          "required": false,
+          "description": "If set, updates the `balance_as_of` value. May be provided as a date in YYYY-MM-DD format or as a da",
+          "nullable": false
+        },
+        {
+          "name": "status",
+          "type": "string",
+          "required": false,
+          "description": "If set, updates the status of the manual account. If set to `closed`, `closed_on` will be set to the",
+          "enum": [
+            "active",
+            "closed"
+          ],
+          "nullable": false
+        },
+        {
+          "name": "closed_on",
+          "type": "unknown",
+          "required": false,
+          "description": "If set, the date this manual account was closed in YYYY-MM-DD format. If updating an account that is",
+          "nullable": true
+        },
+        {
+          "name": "external_id",
+          "type": "string",
+          "required": false,
+          "description": "An optional user-defined ID for the manual account",
+          "nullable": true
+        },
+        {
+          "name": "custom_metadata",
+          "type": "object",
+          "required": false,
+          "description": "An optional JSON object that includes additional data related to this account. This must be a valid ",
+          "nullable": true
+        },
+        {
+          "name": "exclude_from_transactions",
+          "type": "boolean",
+          "required": false,
+          "description": "If set, transactions may not be assigned to this manual account",
+          "nullable": false
+        },
+        {
+          "name": "to_base",
+          "type": "number",
+          "required": false,
+          "description": "System defined balance converted to the user's primary currency. Ignored if set. Use `balance` to up",
+          "nullable": false
+        },
+        {
+          "name": "created_at",
+          "type": "string",
+          "required": false,
+          "description": "System defined date/time the account was created in ISO 8601 extended format. Ignored if set.",
+          "nullable": false,
+          "format": "date-time"
+        },
+        {
+          "name": "updated_at",
+          "type": "string",
+          "required": false,
+          "description": "System defined date/time the account was last updated in ISO 8601 extended format. Ignored if set.",
+          "nullable": false,
+          "format": "date-time"
+        },
+        {
+          "name": "created_by_name",
+          "type": "string",
+          "required": false,
+          "description": "System defined name of the user who created the account. Ignored if set",
+          "nullable": false
+        }
+      ]
+    },
+    {
+      "path": "/manual_accounts/{id}",
+      "method": "DELETE",
+      "operationId": "deleteManualAccount",
+      "tags": [
+        "manual_accounts"
+      ],
+      "summary": "Delete a manual account",
+      "params": [
+        {
+          "name": "id",
+          "in": "path",
+          "required": true,
+          "type": "integer",
+          "description": "ID of the manual account to delete",
+          "format": "int32"
+        },
+        {
+          "name": "delete_items",
+          "in": "query",
+          "required": false,
+          "type": "boolean",
+          "description": "When set to true will also delete any transactions, rules, and recurring items associated with this ",
+          "default": false
+        },
+        {
+          "name": "delete_balance_history",
+          "in": "query",
+          "required": false,
+          "type": "boolean",
+          "description": "When set to true will delete any balance history associated with this account.",
+          "default": false
+        }
+      ],
+      "bodyProps": []
+    },
+    {
+      "path": "/plaid_accounts",
+      "method": "GET",
+      "operationId": "getAllPlaidAccounts",
+      "tags": [
+        "plaid_accounts"
+      ],
+      "summary": "Get all accounts synced via Plaid",
+      "params": [],
+      "bodyProps": []
+    },
+    {
+      "path": "/plaid_accounts/{id}",
+      "method": "GET",
+      "operationId": "getPlaidAccountById",
+      "tags": [
+        "plaid_accounts"
+      ],
+      "summary": "Get a single account that is synced via Plaid",
+      "params": [
+        {
+          "name": "id",
+          "in": "path",
+          "required": true,
+          "type": "integer",
+          "description": "ID of the plaid account to retrieve",
+          "format": "int32"
+        }
+      ],
+      "bodyProps": []
+    },
+    {
+      "path": "/plaid_accounts/fetch",
+      "method": "POST",
+      "operationId": "triggerPlaidAccountFetch",
+      "tags": [
+        "plaid_accounts"
+      ],
+      "summary": "Trigger Fetch from Plaid",
+      "params": [
+        {
+          "name": "start_date",
+          "in": "query",
+          "required": false,
+          "type": "string",
+          "description": "Indicates the beginning of the time period to fetch transactions for. If omitted, the most recent tr",
+          "format": "date"
+        },
+        {
+          "name": "end_date",
+          "in": "query",
+          "required": false,
+          "type": "string",
+          "description": "Indicates the end of the time period to fetch transactions for. Required if start_date exists. ",
+          "format": "date"
+        },
+        {
+          "name": "id",
+          "in": "query",
+          "required": false,
+          "type": "integer",
+          "description": "Specific ID of a plaid account to fetch. If not set the endpoint will trigger a fetch for all eligib",
+          "format": "int32"
+        }
+      ],
+      "bodyProps": []
+    },
+    {
+      "path": "/transactions",
+      "method": "GET",
+      "operationId": "getAllTransactions",
+      "tags": [
+        "transactions (bulk)"
+      ],
+      "summary": "Get all transactions",
+      "params": [
+        {
+          "name": "start_date",
+          "in": "query",
+          "required": false,
+          "type": "string",
+          "description": "Indicates the beginning of the time period to fetch transactions for. If omitted, the most recent tr",
+          "format": "date"
+        },
+        {
+          "name": "end_date",
+          "in": "query",
+          "required": false,
+          "type": "string",
+          "description": "Indicates the end of the time period to fetch transactions for. Required if start_date exists. ",
+          "format": "date"
+        },
+        {
+          "name": "created_since",
+          "in": "query",
+          "required": false,
+          "type": "string",
+          "description": "Filter transactions to those created after the specified timestamp. Accepts either a date (YYYY-MM-D"
+        },
+        {
+          "name": "updated_since",
+          "in": "query",
+          "required": false,
+          "type": "string",
+          "description": "Filter transactions to those updated after the specified timestamp. Accepts either a date (YYYY-MM-D"
+        },
+        {
+          "name": "manual_account_id",
+          "in": "query",
+          "required": false,
+          "type": "integer",
+          "description": "Filter transactions to those associated with specified manual account ID or set this to 0 to omit an",
+          "format": "int32"
+        },
+        {
+          "name": "plaid_account_id",
+          "in": "query",
+          "required": false,
+          "type": "integer",
+          "description": "Filter transactions to those associated with specified plaid account ID or set this to 0 to omit any",
+          "format": "int32"
+        },
+        {
+          "name": "recurring_id",
+          "in": "query",
+          "required": false,
+          "type": "integer",
+          "description": "Filter transactions to those associated with the specified recurring item ID.\n",
+          "format": "int32"
+        },
+        {
+          "name": "category_id",
+          "in": "query",
+          "required": false,
+          "type": "integer",
+          "description": "Filter transactions to those associated with the specified category ID. Will also match category gro",
+          "format": "int32"
+        },
+        {
+          "name": "tag_id",
+          "in": "query",
+          "required": false,
+          "type": "integer",
+          "description": "Filter transactions to those that have the specified tag ID",
+          "format": "int32"
+        },
+        {
+          "name": "is_group_parent",
+          "in": "query",
+          "required": false,
+          "type": "boolean",
+          "description": "Filter by group (returns only transaction groups if `true`)"
+        },
+        {
+          "name": "status",
+          "in": "query",
+          "required": false,
+          "type": "string",
+          "enum": [
+            "reviewed",
+            "unreviewed",
+            "delete_pending"
+          ],
+          "description": "Filter transactions to those with the specified status:<br> - `reviewed`: Only user reviewed transac"
+        },
+        {
+          "name": "is_pending",
+          "in": "query",
+          "required": false,
+          "type": "boolean",
+          "description": "Filter transactions by pending status. Set to `true` to return only pending transactions, or `false`"
+        },
+        {
+          "name": "include_pending",
+          "in": "query",
+          "required": false,
+          "type": "boolean",
+          "description": "By default, pending transactions are excluded from results. Set to `true` to include imported transa",
+          "default": false
+        },
+        {
+          "name": "include_metadata",
+          "in": "query",
+          "required": false,
+          "type": "boolean",
+          "description": "By default, custom and plaid metadata are not included in the response. Set to true if you'd like th",
+          "default": false
+        },
+        {
+          "name": "include_split_parents",
+          "in": "query",
+          "required": false,
+          "type": "boolean",
+          "description": "By default, transactions that were split into multiple transactions are not included in the response",
+          "default": false
+        },
+        {
+          "name": "include_group_children",
+          "in": "query",
+          "required": false,
+          "type": "boolean",
+          "description": "By default, individual transactions that joined into a transaction group are not included in the res",
+          "default": false
+        },
+        {
+          "name": "include_children",
+          "in": "query",
+          "required": false,
+          "type": "boolean",
+          "description": "By default, the `children` property is not included in the response. Set to true if you'd like the c",
+          "default": false
+        },
+        {
+          "name": "include_files",
+          "in": "query",
+          "required": false,
+          "type": "boolean",
+          "description": "By default, the `files` property is not included in the response. Set to true if you'd like the resp",
+          "default": false
+        },
+        {
+          "name": "limit",
+          "in": "query",
+          "required": false,
+          "type": "integer",
+          "description": "Sets the maximum number of transactions to return. If more match the filter criteria, the response w",
+          "default": 1000
+        },
+        {
+          "name": "offset",
+          "in": "query",
+          "required": false,
+          "type": "integer",
+          "description": "Sets the offset for the records returned. This is typically set automatically in the header. See [Pa"
+        }
+      ],
+      "bodyProps": []
+    },
+    {
+      "path": "/transactions",
+      "method": "POST",
+      "operationId": "createNewTransactions",
+      "tags": [
+        "transactions (bulk)"
+      ],
+      "summary": "Insert one or more transactions.",
+      "params": [],
+      "bodyProps": [
+        {
+          "name": "transactions",
+          "type": "array",
+          "required": true,
+          "description": "List of transactions to insert.",
+          "nullable": false
+        },
+        {
+          "name": "apply_rules",
+          "type": "boolean",
+          "required": false,
+          "description": "If explicitly set to `true`, any rules associated with the account specified by the `manual_account_",
+          "nullable": false,
+          "default": false
+        },
+        {
+          "name": "skip_duplicates",
+          "type": "boolean",
+          "required": false,
+          "description": "If `true`, the system will flag new transactions that have the same `date`, `payee`, `amount`, and a",
+          "nullable": false,
+          "default": false
+        },
+        {
+          "name": "skip_balance_update",
+          "type": "boolean",
+          "required": false,
+          "description": "If `true`, and new transactions include a `manual_account_id`, the balances of these accounts will n",
+          "nullable": false,
+          "default": false
+        }
+      ]
+    },
+    {
+      "path": "/transactions",
+      "method": "PUT",
+      "operationId": "updateTransactions",
+      "tags": [
+        "transactions (bulk)"
+      ],
+      "summary": "Update multiple transactions",
+      "params": [],
+      "bodyProps": [
+        {
+          "name": "transactions",
+          "type": "array",
+          "required": true,
+          "description": "List of transactions to update. Each transaction must have an `id` property and at least one other p",
+          "nullable": false
+        }
+      ]
+    },
+    {
+      "path": "/transactions",
+      "method": "DELETE",
+      "operationId": "deleteTransactions",
+      "tags": [
+        "transactions (bulk)"
+      ],
+      "summary": "Bulk delete existing transactions",
+      "params": [],
+      "bodyProps": [
+        {
+          "name": "ids",
+          "type": "array",
+          "required": true,
+          "description": "Array of existing Transaction IDs to delete",
+          "nullable": false
+        }
+      ]
+    },
+    {
+      "path": "/transactions/{id}",
+      "method": "GET",
+      "operationId": "getTransactionById",
+      "tags": [
+        "transactions"
+      ],
+      "summary": "Get a single transaction",
+      "params": [
+        {
+          "name": "id",
+          "in": "path",
+          "required": true,
+          "type": "integer",
+          "description": "ID of the transaction to retrieve",
+          "format": "int64"
+        }
+      ],
+      "bodyProps": []
+    },
+    {
+      "path": "/transactions/{id}",
+      "method": "PUT",
+      "operationId": "updateTransaction",
+      "tags": [
+        "transactions"
+      ],
+      "summary": "Update an existing transaction",
+      "params": [
+        {
+          "name": "id",
+          "in": "path",
+          "required": true,
+          "type": "integer",
+          "description": "ID of the transaction to update",
+          "format": "int64"
+        },
+        {
+          "name": "update_balance",
+          "in": "query",
+          "required": false,
+          "type": "boolean",
+          "description": "Set this to `false` to skip updating the transaction's associated account balance. Default behavior "
+        }
+      ],
+      "bodyProps": [
+        {
+          "name": "id",
+          "type": "integer",
+          "required": false,
+          "description": "System defined unique identifier of this transaction. Ignored if set.",
+          "nullable": false,
+          "format": "int64"
+        },
+        {
+          "name": "date",
+          "type": "string",
+          "required": false,
+          "description": "Transaction date in ISO 8601 format",
+          "nullable": false,
+          "format": "date"
+        },
+        {
+          "name": "amount",
+          "type": "unknown",
+          "required": false,
+          "description": "Numeric value of the amount without a currency symbol. For example, $4.25 should be provided as 4.25",
+          "nullable": false
+        },
+        {
+          "name": "currency",
+          "type": "unknown",
+          "required": false,
+          "description": "Three-letter lowercase currency code of the transaction in ISO 4217 format.<br> May not be updated o",
+          "nullable": false
+        },
+        {
+          "name": "recurring_id",
+          "type": "integer",
+          "required": false,
+          "description": "The unique identifier of the associated recurring item that this transaction matches.",
+          "nullable": true,
+          "format": "int32"
+        },
+        {
+          "name": "payee",
+          "type": "string",
+          "required": false,
+          "description": "The new payee for the transaction.\n",
+          "nullable": false
+        },
+        {
+          "name": "original_name",
+          "type": "string",
+          "required": false,
+          "description": "Original payee name. Cannot be changed. Ignored if set.",
+          "nullable": true
+        },
+        {
+          "name": "category_id",
+          "type": "integer",
+          "required": false,
+          "description": "Unique identifier of the category for this transaction. Set this to null to clear the transaction's ",
+          "nullable": true,
+          "format": "int32"
+        },
+        {
+          "name": "notes",
+          "type": "string",
+          "required": false,
+          "description": "New notes for the transaction. Set this to an empty string to clear the existing notes.\n",
+          "nullable": true
+        },
+        {
+          "name": "manual_account_id",
+          "type": "integer",
+          "required": false,
+          "description": "The unique identifier of the manual account associated with this transaction. Set this to null to di",
+          "nullable": true,
+          "format": "int32"
+        },
+        {
+          "name": "plaid_account_id",
+          "type": "integer",
+          "required": false,
+          "description": "The unique identifier of the Plaid account associated with this transaction. If set, `manual_account",
+          "nullable": true,
+          "format": "int32"
+        },
+        {
+          "name": "tag_ids",
+          "type": "array",
+          "required": false,
+          "description": "A list of tag_ids for the tags associated with this transaction. If set, this property will overwrit",
+          "nullable": false
+        },
+        {
+          "name": "additional_tag_ids",
+          "type": "array",
+          "required": false,
+          "description": "A list of tag_ids for the tags associated with this transaction. If set, the tags listed in this pro",
+          "nullable": false
+        },
+        {
+          "name": "external_id",
+          "type": "string",
+          "required": false,
+          "description": "A user-defined external ID for the transaction. The update will fail if the transaction does not als",
+          "nullable": true
+        },
+        {
+          "name": "custom_metadata",
+          "type": "object",
+          "required": false,
+          "description": "User defined JSON data that can be set or cleared via the API.",
+          "nullable": true
+        },
+        {
+          "name": "status",
+          "type": "string",
+          "required": false,
+          "description": "Status of the transaction, may be one of:\n- `reviewed`: User has reviewed the transaction, or it was",
+          "enum": [
+            "reviewed",
+            "unreviewed"
+          ],
+          "nullable": false
+        },
+        {
+          "name": "to_base",
+          "type": "number",
+          "required": false,
+          "description": "System defined amount of this transaction in the user's primary currency. Ignored if set. Use `amoun",
+          "nullable": false,
+          "format": "double"
+        },
+        {
+          "name": "is_pending",
+          "type": "boolean",
+          "required": false,
+          "description": "System defined flag set for pending transactions. Ignored if set.",
+          "nullable": false
+        },
+        {
+          "name": "plaid_metadata",
+          "type": "object",
+          "required": false,
+          "description": "System set metadata from a Plaid account sync. Ignored if set.",
+          "nullable": true
+        },
+        {
+          "name": "created_at",
+          "type": "string",
+          "required": false,
+          "description": "System defined date and time of when the transaction was created. Ignored if set.",
+          "nullable": false,
+          "format": "date-time"
+        },
+        {
+          "name": "updated_at",
+          "type": "string",
+          "required": false,
+          "description": "System defined date and time of when the transaction was last updated. Ignored if set.",
+          "nullable": false,
+          "format": "date-time"
+        },
+        {
+          "name": "is_split_parent",
+          "type": "boolean",
+          "required": false,
+          "description": "System defined boolean indicating if this transaction was split. To split or unsplit a transaction u",
+          "nullable": false
+        },
+        {
+          "name": "children",
+          "type": "array",
+          "required": false,
+          "description": "An array of child transactions present when a transaction has been split or when the transaction is ",
+          "nullable": false
+        },
+        {
+          "name": "split_parent_id",
+          "type": "integer",
+          "required": false,
+          "description": "A transaction ID if this is a split transaction. Split transactions may not be modified this API. Us",
+          "nullable": true,
+          "format": "int64"
+        },
+        {
+          "name": "is_group_parent",
+          "type": "boolean",
+          "required": false,
+          "description": "System defined boolean indicating if this transaction represents a group of transactions. Grouped tr",
+          "nullable": false
+        },
+        {
+          "name": "group_parent_id",
+          "type": "integer",
+          "required": false,
+          "description": "A transaction group ID if this transaction is part of a group. Grouped transactions may not be modif",
+          "nullable": true,
+          "format": "int64"
+        },
+        {
+          "name": "source",
+          "type": "string",
+          "required": false,
+          "description": "System defined original source of the transaction. Ignored if set.\n",
+          "enum": [
+            "api",
+            "csv",
+            "manual",
+            "merge",
+            "plaid",
+            "recurring",
+            "rule",
+            "split",
+            "user"
+          ],
+          "nullable": true
+        }
+      ]
+    },
+    {
+      "path": "/transactions/{id}",
+      "method": "DELETE",
+      "operationId": "deleteTransactionById",
+      "tags": [
+        "transactions"
+      ],
+      "summary": "Delete a transaction",
+      "params": [
+        {
+          "name": "id",
+          "in": "path",
+          "required": true,
+          "type": "integer",
+          "description": "ID of the transaction to delete",
+          "format": "int64"
+        }
+      ],
+      "bodyProps": []
+    },
+    {
+      "path": "/transactions/group",
+      "method": "POST",
+      "operationId": "groupTransactions",
+      "tags": [
+        "transactions (group)"
+      ],
+      "summary": "Create a transaction group",
+      "params": [],
+      "bodyProps": [
+        {
+          "name": "ids",
+          "type": "array",
+          "required": true,
+          "description": "List of existing transaction IDs to group. Split and recurring transactions may not be grouped. Tran",
+          "nullable": false
+        },
+        {
+          "name": "date",
+          "type": "string",
+          "required": true,
+          "description": "Date for the new grouped transaction in ISO 8601 format.",
+          "nullable": false,
+          "format": "date"
+        },
+        {
+          "name": "payee",
+          "type": "string",
+          "required": true,
+          "description": "The payee for the new grouped transaction.\n",
+          "nullable": false
+        },
+        {
+          "name": "category_id",
+          "type": "integer",
+          "required": false,
+          "description": "The ID of an existing category to assign to the grouped transaction. If not set and all the grouped ",
+          "nullable": true,
+          "format": "int64"
+        },
+        {
+          "name": "notes",
+          "type": "string",
+          "required": false,
+          "description": "Notes for the grouped transaction.\n",
+          "nullable": true
+        },
+        {
+          "name": "status",
+          "type": "string",
+          "required": false,
+          "description": "If set, must be either `reviewed` or `unreviewed`. If not set, defaults to `reviewed`.",
+          "enum": [
+            "reviewed",
+            "unreviewed"
+          ],
+          "nullable": false
+        },
+        {
+          "name": "tag_ids",
+          "type": "array",
+          "required": false,
+          "description": "A list of IDs for the tags associated with the grouped transaction. Each ID must match an existing t",
+          "nullable": false
+        }
+      ]
+    },
+    {
+      "path": "/transactions/group/{id}",
+      "method": "DELETE",
+      "operationId": "ungroupTransactions",
+      "tags": [
+        "transactions (group)"
+      ],
+      "summary": "Delete a transaction group",
+      "params": [
+        {
+          "name": "id",
+          "in": "path",
+          "required": true,
+          "type": "integer",
+          "description": "ID of the transaction group to delete",
+          "format": "int64"
+        }
+      ],
+      "bodyProps": []
+    },
+    {
+      "path": "/transactions/split/{id}",
+      "method": "POST",
+      "operationId": "splitTransaction",
+      "tags": [
+        "transactions (split)"
+      ],
+      "summary": "Split a transaction",
+      "params": [
+        {
+          "name": "id",
+          "in": "path",
+          "required": true,
+          "type": "integer",
+          "description": "ID of the transaction to spit",
+          "format": "int64"
+        }
+      ],
+      "bodyProps": [
+        {
+          "name": "child_transactions",
+          "type": "array",
+          "required": true,
+          "description": "List of child transactions to create. The sum of the `amounts` must match the split transaction amou",
+          "nullable": false
+        }
+      ]
+    },
+    {
+      "path": "/transactions/split/{id}",
+      "method": "DELETE",
+      "operationId": "unsplitTransaction",
+      "tags": [
+        "transactions (split)"
+      ],
+      "summary": "Unsplit a previously split transactions",
+      "params": [
+        {
+          "name": "id",
+          "in": "path",
+          "required": true,
+          "type": "integer",
+          "description": "ID of the previously split transaction to delete.",
+          "format": "int64"
+        }
+      ],
+      "bodyProps": []
+    },
+    {
+      "path": "/transactions/{transaction_id}/attachments",
+      "method": "POST",
+      "operationId": "attachFileToTransaction",
+      "tags": [
+        "transactions (files)"
+      ],
+      "summary": "Attach a file to a transaction",
+      "params": [
+        {
+          "name": "transaction_id",
+          "in": "path",
+          "required": true,
+          "type": "integer",
+          "description": "",
+          "format": "int64"
+        }
+      ],
+      "bodyProps": []
+    },
+    {
+      "path": "/transactions/attachments/{file_id}",
+      "method": "GET",
+      "operationId": "getTransactionAttachmentUrl",
+      "tags": [
+        "transactions (files)"
+      ],
+      "summary": "Get a url to download a file attachment",
+      "params": [
+        {
+          "name": "file_id",
+          "in": "path",
+          "required": true,
+          "type": "integer",
+          "description": "",
+          "format": "int32"
+        }
+      ],
+      "bodyProps": []
+    },
+    {
+      "path": "/transactions/attachments/{file_id}",
+      "method": "DELETE",
+      "operationId": "deleteTransactionAttachment",
+      "tags": [
+        "transactions (files)"
+      ],
+      "summary": "Delete a file attachment",
+      "params": [
+        {
+          "name": "file_id",
+          "in": "path",
+          "required": true,
+          "type": "integer",
+          "description": "",
+          "format": "int32"
+        }
+      ],
+      "bodyProps": []
+    },
+    {
+      "path": "/tags",
+      "method": "GET",
+      "operationId": "getAllTags",
+      "tags": [
+        "tags"
+      ],
+      "summary": "Get All Tags",
+      "params": [],
+      "bodyProps": []
+    },
+    {
+      "path": "/tags",
+      "method": "POST",
+      "operationId": "createTag",
+      "tags": [
+        "tags"
+      ],
+      "summary": "Create a new tag",
+      "params": [],
+      "bodyProps": [
+        {
+          "name": "name",
+          "type": "string",
+          "required": true,
+          "description": "The name of the new tag. Must be between 1 and 100 characters.\nMust not match the name of any existi",
+          "nullable": false
+        },
+        {
+          "name": "description",
+          "type": "string",
+          "required": false,
+          "description": "The description of the tag. Must not exceed 200 characters.",
+          "nullable": true,
+          "default": null
+        },
+        {
+          "name": "text_color",
+          "type": "string",
+          "required": false,
+          "description": "The text color of the tag.",
+          "nullable": true
+        },
+        {
+          "name": "background_color",
+          "type": "string",
+          "required": false,
+          "description": "The background color of the tag.",
+          "nullable": true
+        },
+        {
+          "name": "archived",
+          "type": "boolean",
+          "required": false,
+          "description": "If `true`, the tag is archived and not displayed in relevant areas of the Lunch Money app.",
+          "nullable": false,
+          "default": false
+        }
+      ]
+    },
+    {
+      "path": "/tags/{id}",
+      "method": "GET",
+      "operationId": "getTagById",
+      "tags": [
+        "tags"
+      ],
+      "summary": "Get a single tag",
+      "params": [
+        {
+          "name": "id",
+          "in": "path",
+          "required": true,
+          "type": "integer",
+          "description": "ID of the tag to retrieve",
+          "format": "int32"
+        }
+      ],
+      "bodyProps": []
+    },
+    {
+      "path": "/tags/{id}",
+      "method": "PUT",
+      "operationId": "updateTag",
+      "tags": [
+        "tags"
+      ],
+      "summary": "Update an existing tag",
+      "params": [
+        {
+          "name": "id",
+          "in": "path",
+          "required": true,
+          "type": "integer",
+          "description": "ID of the tag to update",
+          "format": "int32"
+        }
+      ],
+      "bodyProps": [
+        {
+          "name": "name",
+          "type": "string",
+          "required": false,
+          "description": "If set, the new name of the tag. Must be between 1 and 100. characters.",
+          "nullable": false
+        },
+        {
+          "name": "description",
+          "type": "string",
+          "required": false,
+          "description": "If set, the new description of the tag. Must not exceed 200. characters.",
+          "nullable": true
+        },
+        {
+          "name": "text_color",
+          "type": "string",
+          "required": false,
+          "description": "The text color of the tag.",
+          "nullable": true
+        },
+        {
+          "name": "background_color",
+          "type": "string",
+          "required": false,
+          "description": "The background color of the tag.",
+          "nullable": true
+        },
+        {
+          "name": "archived",
+          "type": "boolean",
+          "required": false,
+          "description": "If set, determines whether this tag is archived.",
+          "nullable": false
+        },
+        {
+          "name": "id",
+          "type": "integer",
+          "required": false,
+          "description": "System-defined unique identifier for the tag. Ignored if set.",
+          "nullable": false,
+          "format": "int32"
+        },
+        {
+          "name": "updated_at",
+          "type": "string",
+          "required": false,
+          "description": "System-set time the tag was last updated. Ignored if set",
+          "nullable": false,
+          "format": "date-time"
+        },
+        {
+          "name": "created_at",
+          "type": "string",
+          "required": false,
+          "description": "System-set time the tag was created. Ignored if set.",
+          "nullable": false,
+          "format": "date-time"
+        },
+        {
+          "name": "archived_at",
+          "type": "string",
+          "required": false,
+          "description": "If set, updates the archived timestamp for the tag. Provide an ISO 8601 extended datetime or `null` ",
+          "nullable": true,
+          "format": "date-time"
+        }
+      ]
+    },
+    {
+      "path": "/tags/{id}",
+      "method": "DELETE",
+      "operationId": "deleteTag",
+      "tags": [
+        "tags"
+      ],
+      "summary": "Delete a tag",
+      "params": [
+        {
+          "name": "id",
+          "in": "path",
+          "required": true,
+          "type": "integer",
+          "description": "ID of the tag to delete",
+          "format": "int32"
+        },
+        {
+          "name": "force",
+          "in": "query",
+          "required": false,
+          "type": "boolean",
+          "description": "Set to true to force deletion even if there are dependencies",
+          "default": false
+        }
+      ],
+      "bodyProps": []
+    },
+    {
+      "path": "/recurring_items",
+      "method": "GET",
+      "operationId": "getAllRecurring",
+      "tags": [
+        "recurring_items"
+      ],
+      "summary": "Get all recurring items",
+      "params": [
+        {
+          "name": "start_date",
+          "in": "query",
+          "required": false,
+          "type": "string",
+          "description": "Indicates the beginning of the range used to populate the `matching` object in the recurring items. ",
+          "format": "date"
+        },
+        {
+          "name": "end_date",
+          "in": "query",
+          "required": false,
+          "type": "string",
+          "description": "Indicates the end of the range used to populate the `matching` object in the recurring items. Requir",
+          "format": "date"
+        },
+        {
+          "name": "include_suggested",
+          "in": "query",
+          "required": false,
+          "type": "boolean",
+          "description": ""
+        }
+      ],
+      "bodyProps": []
+    },
+    {
+      "path": "/recurring_items/{id}",
+      "method": "GET",
+      "operationId": "getRecurringById",
+      "tags": [
+        "recurring_items"
+      ],
+      "summary": "Get a single recurring item",
+      "params": [
+        {
+          "name": "id",
+          "in": "path",
+          "required": true,
+          "type": "integer",
+          "description": "ID of the recurring item to retrieve",
+          "format": "int32"
+        },
+        {
+          "name": "start_date",
+          "in": "query",
+          "required": false,
+          "type": "string",
+          "description": "Indicates the beginning of the range used to populate the `matching` object in the recurring items. ",
+          "format": "date"
+        },
+        {
+          "name": "end_date",
+          "in": "query",
+          "required": false,
+          "type": "string",
+          "description": "Indicates the end of the range used to populate the `matching` object in the recurring items. Requir",
+          "format": "date"
+        }
+      ],
+      "bodyProps": []
+    },
+    {
+      "path": "/budgets/settings",
+      "method": "GET",
+      "operationId": "getBudgetSettings",
+      "tags": [
+        "budgets"
+      ],
+      "summary": "Get budget settings",
+      "params": [],
+      "bodyProps": []
+    },
+    {
+      "path": "/budgets",
+      "method": "PUT",
+      "operationId": "upsertBudget",
+      "tags": [
+        "budgets"
+      ],
+      "summary": "Upsert budget",
+      "params": [],
+      "bodyProps": [
+        {
+          "name": "start_date",
+          "type": "string",
+          "required": true,
+          "description": "Start date of the budget period in ISO 8601 date format (YYYY-MM-DD). Must be a valid budget period ",
+          "nullable": false,
+          "format": "date"
+        },
+        {
+          "name": "category_id",
+          "type": "integer",
+          "required": true,
+          "description": "Category ID for the budget",
+          "nullable": false,
+          "format": "int32"
+        },
+        {
+          "name": "amount",
+          "type": "unknown",
+          "required": true,
+          "description": "Budget amount. May be a string or a number in double format.",
+          "nullable": false
+        },
+        {
+          "name": "currency",
+          "type": "unknown",
+          "required": false,
+          "description": "Three-letter currency code. If omitted, the primary currency for the user's account is used.",
+          "nullable": false
+        },
+        {
+          "name": "notes",
+          "type": "string",
+          "required": false,
+          "description": "Optional notes for the budget period",
+          "nullable": true
+        }
+      ]
+    },
+    {
+      "path": "/budgets",
+      "method": "DELETE",
+      "operationId": "deleteBudget",
+      "tags": [
+        "budgets"
+      ],
+      "summary": "Delete budget",
+      "params": [
+        {
+          "name": "category_id",
+          "in": "query",
+          "required": true,
+          "type": "integer",
+          "description": "Category ID of the budget to delete",
+          "format": "int32"
+        },
+        {
+          "name": "start_date",
+          "in": "query",
+          "required": true,
+          "type": "string",
+          "description": "Start date of the budget period in ISO 8601 date format (YYYY-MM-DD)",
+          "format": "date"
+        }
+      ],
+      "bodyProps": []
+    }
+  ]
+}

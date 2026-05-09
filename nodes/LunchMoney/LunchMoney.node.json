@@ -1,0 +1,22 @@
+{
+	"node": "n8n-nodes-base.lunchMoney",
+	"nodeVersion": "1.0",
+	"codexVersion": "1.0",
+	"categories": [
+		"Finance & Accounting"
+	],
+	"resources": {
+		"primaryDocumentation": [
+			{
+				"url": "https://alpha.lunchmoney.dev/v2/docs"
+			}
+		]
+	},
+	"alias": [
+		"lunch money",
+		"finance",
+		"budget",
+		"transactions",
+		"personal finance"
+	]
+}

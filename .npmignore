@@ -1,0 +1,11 @@
+nodes/
+credentials/
+*.ts
+!dist/**/*.js
+!dist/**/*.d.ts
+tsconfig.json
+gulpfile.js
+lm-endpoints.json
+package/
+*.tgz
+scripts/

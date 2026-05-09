@@ -98,6 +98,14 @@ class LunchMoney {
                         const body = {};
                         body.name = this.getNodeParameter('name', i);
                         const additionalFields = this.getNodeParameter('additionalFields', i);
+                        if (additionalFields.children && typeof additionalFields.children === 'string') {
+                            try {
+                                additionalFields.children = JSON.parse(additionalFields.children);
+                            }
+                            catch {
+                                throw new Error('Invalid JSON in "Children (JSON)"');
+                            }
+                        }
                         for (const k of Object.keys(additionalFields)) {
                             if (additionalFields[k] === '')
                                 delete additionalFields[k];
@@ -107,7 +115,14 @@ class LunchMoney {
                     }
                     if (operation === 'delete') {
                         const id = this.getNodeParameter('categoryId', i);
-                        responseData = await GenericFunctions_1.lunchMoneyApiRequest.call(this, 'DELETE', `/categories/${id}`);
+                        const qs = {};
+                        const additionalFields = this.getNodeParameter('additionalFields', i);
+                        for (const k of Object.keys(additionalFields)) {
+                            if (additionalFields[k] === '')
+                                delete additionalFields[k];
+                        }
+                        Object.assign(qs, additionalFields);
+                        responseData = await GenericFunctions_1.lunchMoneyApiRequest.call(this, 'DELETE', `/categories/${id}`, {}, qs);
                     }
                     if (operation === 'get') {
                         const id = this.getNodeParameter('categoryId', i);
@@ -128,6 +143,14 @@ class LunchMoney {
                         const id = this.getNodeParameter('categoryId', i);
                         const body = {};
                         const additionalFields = this.getNodeParameter('additionalFields', i);
+                        if (additionalFields.children && typeof additionalFields.children === 'string') {
+                            try {
+                                additionalFields.children = JSON.parse(additionalFields.children);
+                            }
+                            catch {
+                                throw new Error('Invalid JSON in "Children (JSON)"');
+                            }
+                        }
                         for (const k of Object.keys(additionalFields)) {
                             if (additionalFields[k] === '')
                                 delete additionalFields[k];
@@ -227,6 +250,14 @@ class LunchMoney {
                         const id = this.getNodeParameter('transactionId', i);
                         const body = {};
                         const additionalFields = this.getNodeParameter('additionalFields', i);
+                        if (additionalFields.custom_metadata && typeof additionalFields.custom_metadata === 'string') {
+                            try {
+                                additionalFields.custom_metadata = JSON.parse(additionalFields.custom_metadata);
+                            }
+                            catch {
+                                throw new Error('Invalid JSON in "Custom Metadata (JSON)"');
+                            }
+                        }
                         if (additionalFields.tag_ids) {
                             additionalFields.tag_ids = additionalFields.tag_ids.split(',').map(s => parseInt(s.trim(), 10)).filter(n => !isNaN(n));
                         }
@@ -273,7 +304,14 @@ class LunchMoney {
                     }
                     if (operation === 'delete') {
                         const id = this.getNodeParameter('tagId', i);
-                        responseData = await GenericFunctions_1.lunchMoneyApiRequest.call(this, 'DELETE', `/tags/${id}`);
+                        const qs = {};
+                        const additionalFields = this.getNodeParameter('additionalFields', i);
+                        for (const k of Object.keys(additionalFields)) {
+                            if (additionalFields[k] === '')
+                                delete additionalFields[k];
+                        }
+                        Object.assign(qs, additionalFields);
+                        responseData = await GenericFunctions_1.lunchMoneyApiRequest.call(this, 'DELETE', `/tags/${id}`, {}, qs);
                     }
                     if (operation === 'get') {
                         const id = this.getNodeParameter('tagId', i);
@@ -298,7 +336,14 @@ class LunchMoney {
                 if (resource === 'recurringItem') {
                     if (operation === 'get') {
                         const id = this.getNodeParameter('recurringItemId', i);
-                        responseData = await GenericFunctions_1.lunchMoneyApiRequest.call(this, 'GET', `/recurring_items/${id}`);
+                        const qs = {};
+                        const additionalFields = this.getNodeParameter('additionalFields', i);
+                        for (const k of Object.keys(additionalFields)) {
+                            if (additionalFields[k] === '')
+                                delete additionalFields[k];
+                        }
+                        Object.assign(qs, additionalFields);
+                        responseData = await GenericFunctions_1.lunchMoneyApiRequest.call(this, 'GET', `/recurring_items/${id}`, {}, qs);
                     }
                     if (operation === 'getAll') {
                         const qs = {};
@@ -343,6 +388,14 @@ class LunchMoney {
                         body.type = this.getNodeParameter('type', i);
                         body.balance = this.getNodeParameter('balance', i);
                         const additionalFields = this.getNodeParameter('additionalFields', i);
+                        if (additionalFields.custom_metadata && typeof additionalFields.custom_metadata === 'string') {
+                            try {
+                                additionalFields.custom_metadata = JSON.parse(additionalFields.custom_metadata);
+                            }
+                            catch {
+                                throw new Error('Invalid JSON in "Custom Metadata (JSON)"');
+                            }
+                        }
                         for (const k of Object.keys(additionalFields)) {
                             if (additionalFields[k] === '')
                                 delete additionalFields[k];
@@ -352,7 +405,14 @@ class LunchMoney {
                     }
                     if (operation === 'delete') {
                         const id = this.getNodeParameter('accountId', i);
-                        responseData = await GenericFunctions_1.lunchMoneyApiRequest.call(this, 'DELETE', `/manual_accounts/${id}`);
+                        const qs = {};
+                        const additionalFields = this.getNodeParameter('additionalFields', i);
+                        for (const k of Object.keys(additionalFields)) {
+                            if (additionalFields[k] === '')
+                                delete additionalFields[k];
+                        }
+                        Object.assign(qs, additionalFields);
+                        responseData = await GenericFunctions_1.lunchMoneyApiRequest.call(this, 'DELETE', `/manual_accounts/${id}`, {}, qs);
                     }
                     if (operation === 'get') {
                         const id = this.getNodeParameter('accountId', i);
@@ -366,6 +426,14 @@ class LunchMoney {
                         const id = this.getNodeParameter('accountId', i);
                         const body = {};
                         const additionalFields = this.getNodeParameter('additionalFields', i);
+                        if (additionalFields.custom_metadata && typeof additionalFields.custom_metadata === 'string') {
+                            try {
+                                additionalFields.custom_metadata = JSON.parse(additionalFields.custom_metadata);
+                            }
+                            catch {
+                                throw new Error('Invalid JSON in "Custom Metadata (JSON)"');
+                            }
+                        }
                         for (const k of Object.keys(additionalFields)) {
                             if (additionalFields[k] === '')
                                 delete additionalFields[k];
@@ -376,8 +444,14 @@ class LunchMoney {
                 }
                 if (resource === 'plaidAccount') {
                     if (operation === 'fetch') {
-                        const body = {};
-                        responseData = await GenericFunctions_1.lunchMoneyApiRequest.call(this, 'POST', `/plaid_accounts/fetch`, body);
+                        const qs = {};
+                        const additionalFields = this.getNodeParameter('additionalFields', i);
+                        for (const k of Object.keys(additionalFields)) {
+                            if (additionalFields[k] === '')
+                                delete additionalFields[k];
+                        }
+                        Object.assign(qs, additionalFields);
+                        responseData = await GenericFunctions_1.lunchMoneyApiRequest.call(this, 'POST', `/plaid_accounts/fetch`, {}, qs);
                     }
                     if (operation === 'get') {
                         const id = this.getNodeParameter('plaidAccountId', i);

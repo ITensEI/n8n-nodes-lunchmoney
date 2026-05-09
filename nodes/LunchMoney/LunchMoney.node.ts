@@ -133,6 +133,9 @@ export class LunchMoney implements INodeType {
 						const body: IDataObject = {};
 						body.name = this.getNodeParameter('name', i);
 						const additionalFields = this.getNodeParameter('additionalFields', i) as IDataObject;
+						if (additionalFields.children && typeof additionalFields.children === 'string') {
+							try { additionalFields.children = JSON.parse(additionalFields.children as string); } catch { throw new Error('Invalid JSON in "Children (JSON)"'); }
+						}
 						for (const k of Object.keys(additionalFields)) { if (additionalFields[k] === '') delete additionalFields[k]; }
 						Object.assign(body, additionalFields);
 						responseData = await lunchMoneyApiRequest.call(this, 'POST', `/categories`, body);
@@ -140,7 +143,11 @@ export class LunchMoney implements INodeType {
 
 					if (operation === 'delete') {
 						const id = this.getNodeParameter('categoryId', i) as number;
-						responseData = await lunchMoneyApiRequest.call(this, 'DELETE', `/categories/${id}`);
+						const qs: IDataObject = {};
+						const additionalFields = this.getNodeParameter('additionalFields', i) as IDataObject;
+						for (const k of Object.keys(additionalFields)) { if (additionalFields[k] === '') delete additionalFields[k]; }
+						Object.assign(qs, additionalFields);
+						responseData = await lunchMoneyApiRequest.call(this, 'DELETE', `/categories/${id}`, {}, qs);
 					}
 
 					if (operation === 'get') {
@@ -161,6 +168,9 @@ export class LunchMoney implements INodeType {
 						const id = this.getNodeParameter('categoryId', i) as number;
 						const body: IDataObject = {};
 						const additionalFields = this.getNodeParameter('additionalFields', i) as IDataObject;
+						if (additionalFields.children && typeof additionalFields.children === 'string') {
+							try { additionalFields.children = JSON.parse(additionalFields.children as string); } catch { throw new Error('Invalid JSON in "Children (JSON)"'); }
+						}
 						for (const k of Object.keys(additionalFields)) { if (additionalFields[k] === '') delete additionalFields[k]; }
 						Object.assign(body, additionalFields);
 						responseData = await lunchMoneyApiRequest.call(this, 'PUT', `/categories/${id}`, body);
@@ -255,6 +265,9 @@ export class LunchMoney implements INodeType {
 						const id = this.getNodeParameter('transactionId', i) as number;
 						const body: IDataObject = {};
 						const additionalFields = this.getNodeParameter('additionalFields', i) as IDataObject;
+						if (additionalFields.custom_metadata && typeof additionalFields.custom_metadata === 'string') {
+							try { additionalFields.custom_metadata = JSON.parse(additionalFields.custom_metadata as string); } catch { throw new Error('Invalid JSON in "Custom Metadata (JSON)"'); }
+						}
 						if (additionalFields.tag_ids) {
 							additionalFields.tag_ids = (additionalFields.tag_ids as string).split(',').map(s => parseInt(s.trim(), 10)).filter(n => !isNaN(n));
 						}
@@ -293,7 +306,11 @@ export class LunchMoney implements INodeType {
 
 					if (operation === 'delete') {
 						const id = this.getNodeParameter('tagId', i) as number;
-						responseData = await lunchMoneyApiRequest.call(this, 'DELETE', `/tags/${id}`);
+						const qs: IDataObject = {};
+						const additionalFields = this.getNodeParameter('additionalFields', i) as IDataObject;
+						for (const k of Object.keys(additionalFields)) { if (additionalFields[k] === '') delete additionalFields[k]; }
+						Object.assign(qs, additionalFields);
+						responseData = await lunchMoneyApiRequest.call(this, 'DELETE', `/tags/${id}`, {}, qs);
 					}
 
 					if (operation === 'get') {
@@ -320,7 +337,11 @@ export class LunchMoney implements INodeType {
 				if (resource === 'recurringItem') {
 					if (operation === 'get') {
 						const id = this.getNodeParameter('recurringItemId', i) as number;
-						responseData = await lunchMoneyApiRequest.call(this, 'GET', `/recurring_items/${id}`);
+						const qs: IDataObject = {};
+						const additionalFields = this.getNodeParameter('additionalFields', i) as IDataObject;
+						for (const k of Object.keys(additionalFields)) { if (additionalFields[k] === '') delete additionalFields[k]; }
+						Object.assign(qs, additionalFields);
+						responseData = await lunchMoneyApiRequest.call(this, 'GET', `/recurring_items/${id}`, {}, qs);
 					}
 
 					if (operation === 'getAll') {
@@ -366,6 +387,9 @@ export class LunchMoney implements INodeType {
 						body.type = this.getNodeParameter('type', i);
 						body.balance = this.getNodeParameter('balance', i);
 						const additionalFields = this.getNodeParameter('additionalFields', i) as IDataObject;
+						if (additionalFields.custom_metadata && typeof additionalFields.custom_metadata === 'string') {
+							try { additionalFields.custom_metadata = JSON.parse(additionalFields.custom_metadata as string); } catch { throw new Error('Invalid JSON in "Custom Metadata (JSON)"'); }
+						}
 						for (const k of Object.keys(additionalFields)) { if (additionalFields[k] === '') delete additionalFields[k]; }
 						Object.assign(body, additionalFields);
 						responseData = await lunchMoneyApiRequest.call(this, 'POST', `/manual_accounts`, body);
@@ -373,7 +397,11 @@ export class LunchMoney implements INodeType {
 
 					if (operation === 'delete') {
 						const id = this.getNodeParameter('accountId', i) as number;
-						responseData = await lunchMoneyApiRequest.call(this, 'DELETE', `/manual_accounts/${id}`);
+						const qs: IDataObject = {};
+						const additionalFields = this.getNodeParameter('additionalFields', i) as IDataObject;
+						for (const k of Object.keys(additionalFields)) { if (additionalFields[k] === '') delete additionalFields[k]; }
+						Object.assign(qs, additionalFields);
+						responseData = await lunchMoneyApiRequest.call(this, 'DELETE', `/manual_accounts/${id}`, {}, qs);
 					}
 
 					if (operation === 'get') {
@@ -390,6 +418,9 @@ export class LunchMoney implements INodeType {
 						const id = this.getNodeParameter('accountId', i) as number;
 						const body: IDataObject = {};
 						const additionalFields = this.getNodeParameter('additionalFields', i) as IDataObject;
+						if (additionalFields.custom_metadata && typeof additionalFields.custom_metadata === 'string') {
+							try { additionalFields.custom_metadata = JSON.parse(additionalFields.custom_metadata as string); } catch { throw new Error('Invalid JSON in "Custom Metadata (JSON)"'); }
+						}
 						for (const k of Object.keys(additionalFields)) { if (additionalFields[k] === '') delete additionalFields[k]; }
 						Object.assign(body, additionalFields);
 						responseData = await lunchMoneyApiRequest.call(this, 'PUT', `/manual_accounts/${id}`, body);
@@ -399,8 +430,11 @@ export class LunchMoney implements INodeType {
 
 				if (resource === 'plaidAccount') {
 					if (operation === 'fetch') {
-						const body: IDataObject = {};
-						responseData = await lunchMoneyApiRequest.call(this, 'POST', `/plaid_accounts/fetch`, body);
+						const qs: IDataObject = {};
+						const additionalFields = this.getNodeParameter('additionalFields', i) as IDataObject;
+						for (const k of Object.keys(additionalFields)) { if (additionalFields[k] === '') delete additionalFields[k]; }
+						Object.assign(qs, additionalFields);
+						responseData = await lunchMoneyApiRequest.call(this, 'POST', `/plaid_accounts/fetch`, {}, qs);
 					}
 
 					if (operation === 'get') {

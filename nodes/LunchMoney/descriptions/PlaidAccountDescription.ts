@@ -54,4 +54,46 @@ export const plaidAccountFields: INodeProperties[] = [
 			}
 		}
 	},
+	{
+		"displayName": "Additional Fields",
+		"name": "additionalFields",
+		"type": "collection",
+		"placeholder": "Add Field",
+		"default": {},
+		"displayOptions": {
+			"show": {
+				"resource": [
+					"plaidAccount"
+				],
+				"operation": [
+					"fetch"
+				]
+			}
+		},
+		"options": [
+			{
+				"displayName": "Start Date",
+				"name": "start_date",
+				"type": "string",
+				"default": "",
+				"description": "Beginning of the time period to fetch transactions for (YYYY-MM-DD). If omitted, the most recent transactions are returned.",
+				"placeholder": "2024-01-01"
+			},
+			{
+				"displayName": "End Date",
+				"name": "end_date",
+				"type": "string",
+				"default": "",
+				"description": "End of the time period to fetch transactions for (YYYY-MM-DD). Required if start_date is set.",
+				"placeholder": "2024-12-31"
+			},
+			{
+				"displayName": "Plaid Account ID",
+				"name": "id",
+				"type": "string",
+				"default": "",
+				"description": "Specific Plaid account ID to fetch. If not set, triggers a fetch for all eligible accounts."
+			}
+		]
+	},
 ];

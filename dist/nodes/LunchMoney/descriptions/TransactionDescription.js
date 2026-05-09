@@ -748,6 +748,20 @@ exports.transactionFields = [
                 "description": "ID of the manual account. Set to null to disassociate."
             },
             {
+                "displayName": "Plaid Account ID",
+                "name": "plaid_account_id",
+                "type": "string",
+                "default": "",
+                "description": "ID of the Plaid account to associate. If set, manual_account_id may not also be set."
+            },
+            {
+                "displayName": "Custom Metadata (JSON)",
+                "name": "custom_metadata",
+                "type": "json",
+                "default": "",
+                "description": "User-defined JSON data that can be set or cleared via the API."
+            },
+            {
                 "displayName": "Update Balance",
                 "name": "update_balance",
                 "type": "boolean",

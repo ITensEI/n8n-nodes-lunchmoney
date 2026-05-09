@@ -136,6 +136,7 @@ const FIELDS = {
 				{ name: 'include_occurrences', displayName: 'Include Occurrences', type: 'boolean', desc: 'Include an occurrences array for each category showing activity per budget period' },
 				{ name: 'include_past_budget_dates', displayName: 'Include Past Budget Dates', type: 'boolean', desc: 'Include three budget occurrences prior to the start date (requires Include Occurrences)' },
 				{ name: 'include_totals', displayName: 'Include Totals', type: 'boolean', desc: 'Include a top-level totals section summarising inflow and outflow' },
+				{ name: 'include_rollover_pool', displayName: 'Include Rollover Pool', type: 'boolean', desc: 'Include a rollover_pool section summarising the current rollover pool balance and previous adjustments' },
 			],
 		},
 	},
@@ -161,6 +162,7 @@ const FIELDS = {
 				{ name: 'archived', displayName: 'Archived', type: 'boolean', desc: 'If true, the category is archived and not displayed in the Lunch Money app.' },
 				{ name: 'order', displayName: 'Order', type: 'string', desc: 'Index specifying the display position on the categories page.' },
 				{ name: 'collapsed', displayName: 'Collapsed', type: 'boolean', desc: 'If true, the category group appears collapsed in the Lunch Money app. Only applicable to category groups.' },
+				{ name: 'children', displayName: 'Children (JSON)', type: 'json', desc: 'JSON array of existing category IDs or names of new categories to add to this category group. Only applicable when is_group is true.' },
 			],
 		},
 		update: {
@@ -175,6 +177,13 @@ const FIELDS = {
 				{ name: 'archived', displayName: 'Archived', type: 'boolean', desc: 'If set, indicates whether the category is archived.' },
 				{ name: 'order', displayName: 'Order', type: 'string', desc: 'Index specifying the display position on the categories page.' },
 				{ name: 'collapsed', displayName: 'Collapsed', type: 'boolean', desc: 'If true, the category group appears collapsed. Only applicable to category groups.' },
+				{ name: 'children', displayName: 'Children (JSON)', type: 'json', desc: 'JSON array of existing category IDs or names of new categories to assign to this category group.' },
+				{ name: 'archived_at', displayName: 'Archived At', type: 'string', desc: 'ISO 8601 datetime for when the category was archived. Set to null to clear it.' },
+			],
+		},
+		delete: {
+			optional: [
+				{ name: 'force', displayName: 'Force', type: 'boolean', desc: 'Set to true to force deletion even if there are dependencies.' },
 			],
 		},
 	},
@@ -238,6 +247,8 @@ const FIELDS = {
 				{ name: 'additional_tag_ids', displayName: 'Tag IDs (add)', type: 'string', desc: 'Comma-separated tag IDs to add without replacing existing tags.' },
 				{ name: 'external_id', displayName: 'External ID', type: 'string', desc: 'User-defined external ID (requires manual_account_id).' },
 				{ name: 'manual_account_id', displayName: 'Manual Account ID', type: 'string', desc: 'ID of the manual account. Set to null to disassociate.' },
+				{ name: 'plaid_account_id', displayName: 'Plaid Account ID', type: 'string', desc: 'ID of the Plaid account to associate. If set, manual_account_id may not also be set.' },
+				{ name: 'custom_metadata', displayName: 'Custom Metadata (JSON)', type: 'json', desc: 'User-defined JSON data that can be set or cleared via the API.' },
 				{ name: 'update_balance', displayName: 'Update Balance', type: 'boolean', desc: "Set to false to skip updating the account's balance when changing the transaction." },
 			],
 		},
@@ -304,11 +315,23 @@ const FIELDS = {
 				{ name: 'text_color', displayName: 'Text Color', type: 'string', desc: 'Text color for the tag (e.g. "#ffffff").' },
 				{ name: 'background_color', displayName: 'Background Color', type: 'string', desc: 'Background color for the tag (e.g. "#1a73e8").' },
 				{ name: 'archived', displayName: 'Archived', type: 'boolean', desc: 'If set, indicates whether the tag is archived.' },
+				{ name: 'archived_at', displayName: 'Archived At', type: 'string', desc: 'ISO 8601 datetime for when the tag was archived. Set to null to clear it.' },
+			],
+		},
+		delete: {
+			optional: [
+				{ name: 'force', displayName: 'Force', type: 'boolean', desc: 'Set to true to force deletion even if there are dependencies.' },
 			],
 		},
 	},
 	recurringItem: {
 		_idField: { name: 'recurringItemId', displayName: 'Recurring Item ID', ops: ['get'] },
+		get: {
+			optional: [
+				{ name: 'start_date', displayName: 'Start Date', type: 'string', desc: 'Beginning of the range to populate the matching object (YYYY-MM-DD). Defaults to current month start.', placeholder: '2024-01-01' },
+				{ name: 'end_date', displayName: 'End Date', type: 'string', desc: 'End of the range to populate the matching object (YYYY-MM-DD). Required if start_date is set.', placeholder: '2024-12-31' },
+			],
+		},
 		getAll: {
 			optional: [
 				{ name: 'start_date', displayName: 'Start Date', type: 'string', desc: 'Beginning of the range to populate the matching object (YYYY-MM-DD). Defaults to current month start if omitted.', placeholder: '2024-01-01' },
@@ -356,6 +379,7 @@ const FIELDS = {
 				{ name: 'status', displayName: 'Status', type: 'options', desc: 'Status of the account.', options: ['active', 'closed'] },
 				{ name: 'closed_on', displayName: 'Closed On', type: 'string', desc: 'Date this account was closed (YYYY-MM-DD). If set, status must also be set to "closed".' },
 				{ name: 'external_id', displayName: 'External ID', type: 'string', desc: 'Optional user-defined ID for the account.' },
+				{ name: 'custom_metadata', displayName: 'Custom Metadata (JSON)', type: 'json', desc: 'Optional JSON object with additional data related to this account.' },
 				{ name: 'exclude_from_transactions', displayName: 'Exclude From Transactions', type: 'boolean', desc: 'If true, transactions may not be created or imported for this account.' },
 			],
 		},
@@ -372,13 +396,27 @@ const FIELDS = {
 				{ name: 'status', displayName: 'Status', type: 'options', desc: 'New status. If set to "closed", closed_on will be set to today if not provided.', options: ['active', 'closed'] },
 				{ name: 'closed_on', displayName: 'Closed On', type: 'string', desc: 'Date this account was closed (YYYY-MM-DD). Account must currently be closed or being set to closed.' },
 				{ name: 'external_id', displayName: 'External ID', type: 'string', desc: 'User-defined external ID.' },
+				{ name: 'custom_metadata', displayName: 'Custom Metadata (JSON)', type: 'json', desc: 'Optional JSON object with additional data related to this account.' },
 				{ name: 'exclude_from_transactions', displayName: 'Exclude From Transactions', type: 'boolean', desc: 'If true, transactions may not be created or imported for this account.' },
+			],
+		},
+		delete: {
+			optional: [
+				{ name: 'delete_items', displayName: 'Delete Items', type: 'boolean', desc: 'If true, also delete any transactions, rules, and recurring items associated with this account.' },
+				{ name: 'delete_balance_history', displayName: 'Delete Balance History', type: 'boolean', desc: 'If true, delete any balance history associated with this account.' },
 			],
 		},
 	},
 	plaidAccount: {
 		_idField: { name: 'plaidAccountId', displayName: 'Plaid Account ID', ops: ['get'] },
-		fetch: {},
+		fetch: {
+			_useQs: true,
+			optional: [
+				{ name: 'start_date', displayName: 'Start Date', type: 'string', desc: 'Beginning of the time period to fetch transactions for (YYYY-MM-DD). If omitted, the most recent transactions are returned.', placeholder: '2024-01-01' },
+				{ name: 'end_date', displayName: 'End Date', type: 'string', desc: 'End of the time period to fetch transactions for (YYYY-MM-DD). Required if start_date is set.', placeholder: '2024-12-31' },
+				{ name: 'id', displayName: 'Plaid Account ID', type: 'string', desc: 'Specific Plaid account ID to fetch. If not set, triggers a fetch for all eligible accounts.' },
+			],
+		},
 	},
 	crypto: {
 		_idField: { name: 'cryptoId', displayName: 'Crypto Account ID', ops: ['getManual', 'updateManual', 'deleteManual', 'getSynced', 'getSyncedBySymbol', 'refreshSynced'] },
@@ -812,56 +850,82 @@ function generateOperationHandler(resourceKey, op) {
 
 	// Build body for POST/PUT
 	if (op.method === 'POST' || op.method === 'PUT') {
-		code += `\t\t\t\t\t\tconst body: IDataObject = {};\n`;
+		// Some POST/PUT operations use query string for all params (e.g. POST /plaid_accounts/fetch)
+		const allParamsAsQs = !!opFields._useQs;
 
-		if (hasRequired) {
-			for (const f of opFields.required) {
-				if (f.type === 'json') {
-					// JSON fields go directly into body under their API key
-					const apiKey = f.name === 'child_transactions' ? 'child_transactions' : f.name;
-					const varName = f.name.replace(/_([a-z])/g, (_, c) => c.toUpperCase());
-					code += `\t\t\t\t\t\tconst ${varName}Raw = this.getNodeParameter('${f.name}', i) as string;\n`;
-					code += `\t\t\t\t\t\ttry { body.${apiKey} = JSON.parse(${varName}Raw); } catch { throw new Error('Invalid JSON in "${f.displayName}"'); }\n`;
-				} else if (ARRAY_INT_FIELDS.has(f.name)) {
-					code += `\t\t\t\t\t\tconst ${f.name}Str = this.getNodeParameter('${f.name}', i) as string;\n`;
-					code += `\t\t\t\t\t\tbody.${f.name} = ${f.name}Str.split(',').map(s => parseInt(s.trim(), 10)).filter(n => !isNaN(n));\n`;
-				} else {
-					code += `\t\t\t\t\t\tbody.${f.name} = this.getNodeParameter('${f.name}', i);\n`;
+		if (allParamsAsQs) {
+			// All fields go to query string, no body
+			code += `\t\t\t\t\t\tconst qs: IDataObject = {};\n`;
+			if (hasRequired) {
+				for (const f of opFields.required) {
+					code += `\t\t\t\t\t\tqs.${f.name} = this.getNodeParameter('${f.name}', i);\n`;
 				}
 			}
-		}
-
-		if (hasOptional) {
-			code += `\t\t\t\t\t\tconst additionalFields = this.getNodeParameter('additionalFields', i) as IDataObject;\n`;
-			// Convert any comma-separated array fields in additionalFields
-			const arrayOptFields = opFields.optional.filter(f => ARRAY_INT_FIELDS.has(f.name));
-			for (const f of arrayOptFields) {
-				code += `\t\t\t\t\t\tif (additionalFields.${f.name}) {\n`;
-				code += `\t\t\t\t\t\t\tadditionalFields.${f.name} = (additionalFields.${f.name} as string).split(',').map(s => parseInt(s.trim(), 10)).filter(n => !isNaN(n));\n`;
-				code += `\t\t\t\t\t\t}\n`;
+			if (hasOptional) {
+				code += `\t\t\t\t\t\tconst additionalFields = this.getNodeParameter('additionalFields', i) as IDataObject;\n`;
+				code += `\t\t\t\t\t\tfor (const k of Object.keys(additionalFields)) { if (additionalFields[k] === '') delete additionalFields[k]; }\n`;
+				code += `\t\t\t\t\t\tObject.assign(qs, additionalFields);\n`;
 			}
-			// Hoist query-string-only fields out of body
-			const qsOptFields = opFields.optional.filter(f => QS_ON_MUTATION.has(f.name));
-			if (qsOptFields.length > 0) {
-				code += `\t\t\t\t\t\tconst mutationQs: IDataObject = {};\n`;
-				for (const f of qsOptFields) {
-					code += `\t\t\t\t\t\tif (additionalFields.${f.name} !== undefined) { mutationQs.${f.name} = additionalFields.${f.name}; delete additionalFields.${f.name}; }\n`;
-				}
-			}
-			// Strip empty-string values so unset optional fields are not sent
-			code += `\t\t\t\t\t\tfor (const k of Object.keys(additionalFields)) { if (additionalFields[k] === '') delete additionalFields[k]; }\n`;
-			code += `\t\t\t\t\t\tObject.assign(body, additionalFields);\n`;
-		}
-
-		// Wrap transactions in array for bulk create
-		if (resourceKey === 'transaction' && op.value === 'create') {
-			code += `\t\t\t\t\t\tresponseData = await lunchMoneyApiRequest.call(this, '${op.method}', \`${apiPath}\`, { transactions: [body] });\n`;
+			code += `\t\t\t\t\t\tresponseData = await lunchMoneyApiRequest.call(this, '${op.method}', \`${apiPath}\`, {}, qs);\n`;
 		} else {
-			const hasQsFields = hasOptional && (opFields.optional || []).some(f => QS_ON_MUTATION.has(f.name));
-			if (hasQsFields) {
-				code += `\t\t\t\t\t\tresponseData = await lunchMoneyApiRequest.call(this, '${op.method}', \`${apiPath}\`, body, mutationQs);\n`;
+			code += `\t\t\t\t\t\tconst body: IDataObject = {};\n`;
+
+			if (hasRequired) {
+				for (const f of opFields.required) {
+					if (f.type === 'json') {
+						// JSON fields go directly into body under their API key
+						const apiKey = f.name === 'child_transactions' ? 'child_transactions' : f.name;
+						const varName = f.name.replace(/_([a-z])/g, (_, c) => c.toUpperCase());
+						code += `\t\t\t\t\t\tconst ${varName}Raw = this.getNodeParameter('${f.name}', i) as string;\n`;
+						code += `\t\t\t\t\t\ttry { body.${apiKey} = JSON.parse(${varName}Raw); } catch { throw new Error('Invalid JSON in "${f.displayName}"'); }\n`;
+					} else if (ARRAY_INT_FIELDS.has(f.name)) {
+						code += `\t\t\t\t\t\tconst ${f.name}Str = this.getNodeParameter('${f.name}', i) as string;\n`;
+						code += `\t\t\t\t\t\tbody.${f.name} = ${f.name}Str.split(',').map(s => parseInt(s.trim(), 10)).filter(n => !isNaN(n));\n`;
+					} else {
+						code += `\t\t\t\t\t\tbody.${f.name} = this.getNodeParameter('${f.name}', i);\n`;
+					}
+				}
+			}
+
+			if (hasOptional) {
+				code += `\t\t\t\t\t\tconst additionalFields = this.getNodeParameter('additionalFields', i) as IDataObject;\n`;
+				// Parse JSON fields in additionalFields
+				const jsonOptFields = opFields.optional.filter(f => f.type === 'json');
+				for (const f of jsonOptFields) {
+					code += `\t\t\t\t\t\tif (additionalFields.${f.name} && typeof additionalFields.${f.name} === 'string') {\n`;
+					code += `\t\t\t\t\t\t\ttry { additionalFields.${f.name} = JSON.parse(additionalFields.${f.name} as string); } catch { throw new Error('Invalid JSON in "${f.displayName}"'); }\n`;
+					code += `\t\t\t\t\t\t}\n`;
+				}
+				// Convert any comma-separated array fields in additionalFields
+				const arrayOptFields = opFields.optional.filter(f => ARRAY_INT_FIELDS.has(f.name));
+				for (const f of arrayOptFields) {
+					code += `\t\t\t\t\t\tif (additionalFields.${f.name}) {\n`;
+					code += `\t\t\t\t\t\t\tadditionalFields.${f.name} = (additionalFields.${f.name} as string).split(',').map(s => parseInt(s.trim(), 10)).filter(n => !isNaN(n));\n`;
+					code += `\t\t\t\t\t\t}\n`;
+				}
+				// Hoist query-string-only fields out of body
+				const qsOptFields = opFields.optional.filter(f => QS_ON_MUTATION.has(f.name));
+				if (qsOptFields.length > 0) {
+					code += `\t\t\t\t\t\tconst mutationQs: IDataObject = {};\n`;
+					for (const f of qsOptFields) {
+						code += `\t\t\t\t\t\tif (additionalFields.${f.name} !== undefined) { mutationQs.${f.name} = additionalFields.${f.name}; delete additionalFields.${f.name}; }\n`;
+					}
+				}
+				// Strip empty-string values so unset optional fields are not sent
+				code += `\t\t\t\t\t\tfor (const k of Object.keys(additionalFields)) { if (additionalFields[k] === '') delete additionalFields[k]; }\n`;
+				code += `\t\t\t\t\t\tObject.assign(body, additionalFields);\n`;
+			}
+
+			// Wrap transactions in array for bulk create
+			if (resourceKey === 'transaction' && op.value === 'create') {
+				code += `\t\t\t\t\t\tresponseData = await lunchMoneyApiRequest.call(this, '${op.method}', \`${apiPath}\`, { transactions: [body] });\n`;
 			} else {
-				code += `\t\t\t\t\t\tresponseData = await lunchMoneyApiRequest.call(this, '${op.method}', \`${apiPath}\`, body);\n`;
+				const hasQsFields = hasOptional && (opFields.optional || []).some(f => QS_ON_MUTATION.has(f.name));
+				if (hasQsFields) {
+					code += `\t\t\t\t\t\tresponseData = await lunchMoneyApiRequest.call(this, '${op.method}', \`${apiPath}\`, body, mutationQs);\n`;
+				} else {
+					code += `\t\t\t\t\t\tresponseData = await lunchMoneyApiRequest.call(this, '${op.method}', \`${apiPath}\`, body);\n`;
+				}
 			}
 		}
 	} else if (op.method === 'GET') {
@@ -917,6 +981,13 @@ function generateOperationHandler(resourceKey, op) {
 				}
 				code += `\t\t\t\t\t\tresponseData = await lunchMoneyApiRequest.call(this, '${op.method}', \`${apiPath}\`, body);\n`;
 			}
+		} else if (hasOptional) {
+			// DELETE with path ID + optional query params (e.g. DELETE /categories/{id}?force=true)
+			code += `\t\t\t\t\t\tconst qs: IDataObject = {};\n`;
+			code += `\t\t\t\t\t\tconst additionalFields = this.getNodeParameter('additionalFields', i) as IDataObject;\n`;
+			code += `\t\t\t\t\t\tfor (const k of Object.keys(additionalFields)) { if (additionalFields[k] === '') delete additionalFields[k]; }\n`;
+			code += `\t\t\t\t\t\tObject.assign(qs, additionalFields);\n`;
+			code += `\t\t\t\t\t\tresponseData = await lunchMoneyApiRequest.call(this, '${op.method}', \`${apiPath}\`, {}, qs);\n`;
 		} else {
 			code += `\t\t\t\t\t\tresponseData = await lunchMoneyApiRequest.call(this, '${op.method}', \`${apiPath}\`);\n`;
 		}

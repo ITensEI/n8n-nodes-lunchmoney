@@ -258,11 +258,51 @@ export const manualAccountFields: INodeProperties[] = [
 				"description": "Optional user-defined ID for the account."
 			},
 			{
+				"displayName": "Custom Metadata (JSON)",
+				"name": "custom_metadata",
+				"type": "json",
+				"default": "",
+				"description": "Optional JSON object with additional data related to this account."
+			},
+			{
 				"displayName": "Exclude From Transactions",
 				"name": "exclude_from_transactions",
 				"type": "boolean",
 				"default": false,
 				"description": "If true, transactions may not be created or imported for this account."
+			}
+		]
+	},
+	{
+		"displayName": "Additional Fields",
+		"name": "additionalFields",
+		"type": "collection",
+		"placeholder": "Add Field",
+		"default": {},
+		"displayOptions": {
+			"show": {
+				"resource": [
+					"manualAccount"
+				],
+				"operation": [
+					"delete"
+				]
+			}
+		},
+		"options": [
+			{
+				"displayName": "Delete Items",
+				"name": "delete_items",
+				"type": "boolean",
+				"default": false,
+				"description": "If true, also delete any transactions, rules, and recurring items associated with this account."
+			},
+			{
+				"displayName": "Delete Balance History",
+				"name": "delete_balance_history",
+				"type": "boolean",
+				"default": false,
+				"description": "If true, delete any balance history associated with this account."
 			}
 		]
 	},
@@ -419,6 +459,13 @@ export const manualAccountFields: INodeProperties[] = [
 				"type": "string",
 				"default": "",
 				"description": "User-defined external ID."
+			},
+			{
+				"displayName": "Custom Metadata (JSON)",
+				"name": "custom_metadata",
+				"type": "json",
+				"default": "",
+				"description": "Optional JSON object with additional data related to this account."
 			},
 			{
 				"displayName": "Exclude From Transactions",

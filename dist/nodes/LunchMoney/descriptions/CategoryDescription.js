@@ -165,6 +165,39 @@ exports.categoryFields = [
                 "type": "boolean",
                 "default": false,
                 "description": "If true, the category group appears collapsed in the Lunch Money app. Only applicable to category groups."
+            },
+            {
+                "displayName": "Children (JSON)",
+                "name": "children",
+                "type": "json",
+                "default": "",
+                "description": "JSON array of existing category IDs or names of new categories to add to this category group. Only applicable when is_group is true."
+            }
+        ]
+    },
+    {
+        "displayName": "Additional Fields",
+        "name": "additionalFields",
+        "type": "collection",
+        "placeholder": "Add Field",
+        "default": {},
+        "displayOptions": {
+            "show": {
+                "resource": [
+                    "category"
+                ],
+                "operation": [
+                    "delete"
+                ]
+            }
+        },
+        "options": [
+            {
+                "displayName": "Force",
+                "name": "force",
+                "type": "boolean",
+                "default": false,
+                "description": "Set to true to force deletion even if there are dependencies."
             }
         ]
     },
@@ -297,6 +330,20 @@ exports.categoryFields = [
                 "type": "boolean",
                 "default": false,
                 "description": "If true, the category group appears collapsed. Only applicable to category groups."
+            },
+            {
+                "displayName": "Children (JSON)",
+                "name": "children",
+                "type": "json",
+                "default": "",
+                "description": "JSON array of existing category IDs or names of new categories to assign to this category group."
+            },
+            {
+                "displayName": "Archived At",
+                "name": "archived_at",
+                "type": "string",
+                "default": "",
+                "description": "ISO 8601 datetime for when the category was archived. Set to null to clear it."
             }
         ]
     },

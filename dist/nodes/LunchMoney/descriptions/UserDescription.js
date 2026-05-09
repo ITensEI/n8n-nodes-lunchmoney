@@ -112,6 +112,13 @@ exports.userFields = [
                 "type": "boolean",
                 "default": false,
                 "description": "Include a top-level totals section summarising inflow and outflow"
+            },
+            {
+                "displayName": "Include Rollover Pool",
+                "name": "include_rollover_pool",
+                "type": "boolean",
+                "default": false,
+                "description": "Include a rollover_pool section summarising the current rollover pool balance and previous adjustments"
             }
         ]
     },

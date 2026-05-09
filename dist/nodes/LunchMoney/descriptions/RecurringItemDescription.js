@@ -60,6 +60,41 @@ exports.recurringItemFields = [
                     "recurringItem"
                 ],
                 "operation": [
+                    "get"
+                ]
+            }
+        },
+        "options": [
+            {
+                "displayName": "Start Date",
+                "name": "start_date",
+                "type": "string",
+                "default": "",
+                "description": "Beginning of the range to populate the matching object (YYYY-MM-DD). Defaults to current month start.",
+                "placeholder": "2024-01-01"
+            },
+            {
+                "displayName": "End Date",
+                "name": "end_date",
+                "type": "string",
+                "default": "",
+                "description": "End of the range to populate the matching object (YYYY-MM-DD). Required if start_date is set.",
+                "placeholder": "2024-12-31"
+            }
+        ]
+    },
+    {
+        "displayName": "Additional Fields",
+        "name": "additionalFields",
+        "type": "collection",
+        "placeholder": "Add Field",
+        "default": {},
+        "displayOptions": {
+            "show": {
+                "resource": [
+                    "recurringItem"
+                ],
+                "operation": [
                     "getAll"
                 ]
             }

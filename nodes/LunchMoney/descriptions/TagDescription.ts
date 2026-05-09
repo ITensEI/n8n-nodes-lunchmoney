@@ -145,6 +145,32 @@ export const tagFields: INodeProperties[] = [
 					"tag"
 				],
 				"operation": [
+					"delete"
+				]
+			}
+		},
+		"options": [
+			{
+				"displayName": "Force",
+				"name": "force",
+				"type": "boolean",
+				"default": false,
+				"description": "Set to true to force deletion even if there are dependencies."
+			}
+		]
+	},
+	{
+		"displayName": "Additional Fields",
+		"name": "additionalFields",
+		"type": "collection",
+		"placeholder": "Add Field",
+		"default": {},
+		"displayOptions": {
+			"show": {
+				"resource": [
+					"tag"
+				],
+				"operation": [
 					"update"
 				]
 			}
@@ -184,6 +210,13 @@ export const tagFields: INodeProperties[] = [
 				"type": "boolean",
 				"default": false,
 				"description": "If set, indicates whether the tag is archived."
+			},
+			{
+				"displayName": "Archived At",
+				"name": "archived_at",
+				"type": "string",
+				"default": "",
+				"description": "ISO 8601 datetime for when the tag was archived. Set to null to clear it."
 			}
 		]
 	},

@@ -41,7 +41,7 @@ exports.budgetFields = [
         "name": "start_date",
         "type": "string",
         "default": "",
-        "description": "Start date of the budget period to remove (YYYY-MM-DD)",
+        "description": "Start date of the budget period to remove (YYYY-MM-DD).",
         "displayOptions": {
             "show": {
                 "resource": [
@@ -60,7 +60,7 @@ exports.budgetFields = [
         "name": "category_id",
         "type": "number",
         "default": 0,
-        "description": "Category ID of the budget to remove",
+        "description": "Category ID of the budget to remove.",
         "displayOptions": {
             "show": {
                 "resource": [
@@ -78,7 +78,7 @@ exports.budgetFields = [
         "name": "start_date",
         "type": "string",
         "default": "",
-        "description": "Start date for the budget period (YYYY-MM-DD, first of month)",
+        "description": "Start date of the budget period (YYYY-MM-DD). Must be a valid budget period start for the account.",
         "displayOptions": {
             "show": {
                 "resource": [
@@ -97,7 +97,7 @@ exports.budgetFields = [
         "name": "category_id",
         "type": "number",
         "default": 0,
-        "description": "Category ID for the budget",
+        "description": "Category ID for the budget.",
         "displayOptions": {
             "show": {
                 "resource": [
@@ -115,7 +115,7 @@ exports.budgetFields = [
         "name": "amount",
         "type": "string",
         "default": "",
-        "description": "Budget amount as decimal string",
+        "description": "Budget amount as a number or decimal string.",
         "displayOptions": {
             "show": {
                 "resource": [
@@ -151,8 +151,15 @@ exports.budgetFields = [
                 "name": "currency",
                 "type": "string",
                 "default": "",
-                "description": "ISO 4217 currency code",
+                "description": "Three-letter currency code. Defaults to the account primary currency.",
                 "placeholder": "usd"
+            },
+            {
+                "displayName": "Notes",
+                "name": "notes",
+                "type": "string",
+                "default": "",
+                "description": "Optional notes for the budget period."
             }
         ]
     },

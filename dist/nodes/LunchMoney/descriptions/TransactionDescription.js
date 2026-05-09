@@ -117,7 +117,7 @@ exports.transactionFields = [
         "name": "date",
         "type": "string",
         "default": "",
-        "description": "Date of the transaction (YYYY-MM-DD)",
+        "description": "Date of the transaction in ISO 8601 format (YYYY-MM-DD).",
         "displayOptions": {
             "show": {
                 "resource": [
@@ -136,7 +136,7 @@ exports.transactionFields = [
         "name": "amount",
         "type": "string",
         "default": "",
-        "description": "Amount as a decimal string (e.g. \"25.00\")",
+        "description": "Numeric amount without currency symbol (e.g. 4.25 for $4.25). Negative for credits.",
         "displayOptions": {
             "show": {
                 "resource": [
@@ -155,7 +155,7 @@ exports.transactionFields = [
         "name": "payee",
         "type": "string",
         "default": "",
-        "description": "Payee or merchant name",
+        "description": "Payee or merchant name.",
         "displayOptions": {
             "show": {
                 "resource": [
@@ -190,7 +190,7 @@ exports.transactionFields = [
                 "name": "currency",
                 "type": "string",
                 "default": "",
-                "description": "ISO 4217 currency code (e.g. \"usd\")",
+                "description": "Three-letter lowercase ISO 4217 currency code (e.g. \"usd\"). Defaults to the account primary currency.",
                 "placeholder": "usd"
             },
             {
@@ -198,29 +198,29 @@ exports.transactionFields = [
                 "name": "category_id",
                 "type": "number",
                 "default": 0,
-                "description": "Category to assign"
+                "description": "Unique identifier of the category to assign."
             },
             {
                 "displayName": "Notes",
                 "name": "notes",
                 "type": "string",
                 "default": "",
-                "description": "Transaction notes"
+                "description": "Notes for the transaction."
             },
             {
                 "displayName": "Status",
                 "name": "status",
                 "type": "options",
                 "default": "",
-                "description": "Transaction status",
+                "description": "Transaction status.",
                 "options": [
                     {
-                        "name": "Cleared",
-                        "value": "cleared"
+                        "name": "Reviewed",
+                        "value": "reviewed"
                     },
                     {
-                        "name": "Uncleared",
-                        "value": "uncleared"
+                        "name": "Unreviewed",
+                        "value": "unreviewed"
                     }
                 ]
             },
@@ -229,28 +229,49 @@ exports.transactionFields = [
                 "name": "external_id",
                 "type": "string",
                 "default": "",
-                "description": "External ID for deduplication"
+                "description": "User-defined external ID for deduplication (requires manual_account_id)."
             },
             {
                 "displayName": "Manual Account ID",
                 "name": "manual_account_id",
                 "type": "number",
                 "default": 0,
-                "description": "Manual account to associate with"
+                "description": "ID of the manual account to associate with this transaction."
             },
             {
                 "displayName": "Tag IDs",
                 "name": "tag_ids",
                 "type": "string",
                 "default": "",
-                "description": "Comma-separated list of tag IDs to assign"
+                "description": "Comma-separated list of tag IDs to assign to the transaction."
             },
             {
                 "displayName": "Recurring Item ID",
                 "name": "recurring_id",
                 "type": "number",
                 "default": 0,
-                "description": "Recurring item to link to"
+                "description": "ID of the recurring item to link to this transaction."
+            },
+            {
+                "displayName": "Apply Rules",
+                "name": "apply_rules",
+                "type": "boolean",
+                "default": false,
+                "description": "If true, any rules associated with the manual_account_id will be applied to the transaction."
+            },
+            {
+                "displayName": "Skip Duplicates",
+                "name": "skip_duplicates",
+                "type": "boolean",
+                "default": false,
+                "description": "If true, flag transactions as duplicates if they share the same date, payee, amount, and account."
+            },
+            {
+                "displayName": "Skip Balance Update",
+                "name": "skip_balance_update",
+                "type": "boolean",
+                "default": false,
+                "description": "If true, the balance of the associated manual account will not be updated."
             }
         ]
     },
@@ -259,7 +280,7 @@ exports.transactionFields = [
         "name": "date",
         "type": "string",
         "default": "",
-        "description": "Date for the group transaction (YYYY-MM-DD)",
+        "description": "Date for the new grouped transaction in ISO 8601 format (YYYY-MM-DD).",
         "displayOptions": {
             "show": {
                 "resource": [
@@ -278,7 +299,7 @@ exports.transactionFields = [
         "name": "payee",
         "type": "string",
         "default": "",
-        "description": "Payee for the group transaction",
+        "description": "Payee for the new grouped transaction.",
         "displayOptions": {
             "show": {
                 "resource": [
@@ -293,10 +314,10 @@ exports.transactionFields = [
     },
     {
         "displayName": "Transaction IDs",
-        "name": "transaction_ids",
+        "name": "ids",
         "type": "string",
         "default": "",
-        "description": "Comma-separated list of transaction IDs to group",
+        "description": "Comma-separated list of existing transaction IDs to group. Split and recurring transactions may not be grouped.",
         "displayOptions": {
             "show": {
                 "resource": [
@@ -331,21 +352,38 @@ exports.transactionFields = [
                 "name": "category_id",
                 "type": "number",
                 "default": 0,
-                "description": "Category for the group"
+                "description": "ID of an existing category to assign to the grouped transaction."
             },
             {
                 "displayName": "Notes",
                 "name": "notes",
                 "type": "string",
                 "default": "",
-                "description": "Notes for the group"
+                "description": "Notes for the grouped transaction."
+            },
+            {
+                "displayName": "Status",
+                "name": "status",
+                "type": "options",
+                "default": "",
+                "description": "Status of the grouped transaction.",
+                "options": [
+                    {
+                        "name": "Reviewed",
+                        "value": "reviewed"
+                    },
+                    {
+                        "name": "Unreviewed",
+                        "value": "unreviewed"
+                    }
+                ]
             },
             {
                 "displayName": "Tag IDs",
                 "name": "tag_ids",
                 "type": "string",
                 "default": "",
-                "description": "Comma-separated tag IDs"
+                "description": "Comma-separated list of tag IDs to assign to the grouped transaction."
             }
         ]
     },
@@ -354,7 +392,7 @@ exports.transactionFields = [
         "name": "fileId",
         "type": "number",
         "default": 0,
-        "description": "ID of the attachment file to delete",
+        "description": "ID of the attachment file to delete.",
         "displayOptions": {
             "show": {
                 "resource": [
@@ -372,7 +410,7 @@ exports.transactionFields = [
         "name": "groupId",
         "type": "number",
         "default": 0,
-        "description": "ID of the group to delete",
+        "description": "Transaction ID of the group parent to delete.",
         "displayOptions": {
             "show": {
                 "resource": [
@@ -390,7 +428,7 @@ exports.transactionFields = [
         "name": "fileId",
         "type": "number",
         "default": 0,
-        "description": "ID of the attachment file",
+        "description": "ID of the attachment file.",
         "displayOptions": {
             "show": {
                 "resource": [
@@ -425,7 +463,7 @@ exports.transactionFields = [
                 "name": "start_date",
                 "type": "string",
                 "default": "",
-                "description": "Filter by start date (YYYY-MM-DD)",
+                "description": "Beginning of the time period to fetch transactions for (YYYY-MM-DD).",
                 "placeholder": "2024-01-01"
             },
             {
@@ -433,112 +471,159 @@ exports.transactionFields = [
                 "name": "end_date",
                 "type": "string",
                 "default": "",
-                "description": "Filter by end date (YYYY-MM-DD)",
+                "description": "End of the time period to fetch transactions for (YYYY-MM-DD). Required if start_date is set.",
                 "placeholder": "2024-12-31"
+            },
+            {
+                "displayName": "Created Since",
+                "name": "created_since",
+                "type": "string",
+                "default": "",
+                "description": "Filter to transactions created after this timestamp. Accepts YYYY-MM-DD or ISO 8601 datetime.",
+                "placeholder": "2024-01-01"
+            },
+            {
+                "displayName": "Updated Since",
+                "name": "updated_since",
+                "type": "string",
+                "default": "",
+                "description": "Filter to transactions updated after this timestamp. Accepts YYYY-MM-DD or ISO 8601 datetime.",
+                "placeholder": "2024-01-01"
             },
             {
                 "displayName": "Category ID",
                 "name": "category_id",
                 "type": "number",
                 "default": 0,
-                "description": "Filter by category ID"
+                "description": "Filter to transactions associated with the specified category ID. Also matches category groups. Set to 0 to filter for uncategorized."
             },
             {
                 "displayName": "Tag ID",
                 "name": "tag_id",
                 "type": "number",
                 "default": 0,
-                "description": "Filter by tag ID"
+                "description": "Filter to transactions that have a tag with the specified Tag ID."
             },
             {
                 "displayName": "Recurring ID",
                 "name": "recurring_id",
                 "type": "number",
                 "default": 0,
-                "description": "Filter by recurring item ID"
+                "description": "Filter to transactions associated with the specified Recurring Item ID."
             },
             {
                 "displayName": "Plaid Account ID",
                 "name": "plaid_account_id",
                 "type": "number",
                 "default": 0,
-                "description": "Filter by Plaid account ID"
+                "description": "Filter to transactions associated with the specified Plaid account ID. Set to 0 to omit Plaid transactions."
             },
             {
                 "displayName": "Manual Account ID",
                 "name": "manual_account_id",
                 "type": "number",
                 "default": 0,
-                "description": "Filter by manual account ID"
+                "description": "Filter to transactions associated with the specified manual account ID. Set to 0 to omit manual account transactions."
             },
             {
                 "displayName": "Status",
                 "name": "status",
                 "type": "options",
                 "default": "",
-                "description": "Filter by status",
+                "description": "Filter to transactions with the specified status.",
                 "options": [
-                    {
-                        "name": "Cleared",
-                        "value": "cleared"
-                    },
-                    {
-                        "name": "Uncleared",
-                        "value": "uncleared"
-                    },
                     {
                         "name": "Reviewed",
                         "value": "reviewed"
                     },
                     {
-                        "name": "Pending",
-                        "value": "pending"
+                        "name": "Unreviewed",
+                        "value": "unreviewed"
+                    },
+                    {
+                        "name": "Delete pending",
+                        "value": "delete_pending"
                     }
                 ]
             },
             {
-                "displayName": "Is Group",
-                "name": "is_group",
+                "displayName": "Is Group Parent",
+                "name": "is_group_parent",
                 "type": "boolean",
                 "default": false,
-                "description": "Filter for group parent transactions only"
+                "description": "If true, return only transaction groups (parent transactions)."
             },
             {
-                "displayName": "Has Notes",
-                "name": "has_notes",
+                "displayName": "Is Pending",
+                "name": "is_pending",
                 "type": "boolean",
                 "default": false,
-                "description": "Filter for transactions with notes"
+                "description": "If true, return only pending transactions. If false, return only non-pending transactions."
             },
             {
-                "displayName": "Has Attachments",
-                "name": "has_attachments",
+                "displayName": "Include Pending",
+                "name": "include_pending",
                 "type": "boolean",
                 "default": false,
-                "description": "Filter for transactions with attachments"
+                "description": "By default, pending transactions are excluded. Set to true to include imported transactions with a pending status."
             },
             {
-                "displayName": "Offset",
-                "name": "offset",
-                "type": "number",
-                "default": 0,
-                "description": "Number of records to skip for pagination"
+                "displayName": "Include Metadata",
+                "name": "include_metadata",
+                "type": "boolean",
+                "default": false,
+                "description": "If true, include custom and Plaid metadata in the response."
+            },
+            {
+                "displayName": "Include Split Parents",
+                "name": "include_split_parents",
+                "type": "boolean",
+                "default": false,
+                "description": "By default, transactions that were split are not included. Set to true to include them."
+            },
+            {
+                "displayName": "Include Group Children",
+                "name": "include_group_children",
+                "type": "boolean",
+                "default": false,
+                "description": "By default, individual transactions that joined a transaction group are not included. Set to true to include them."
+            },
+            {
+                "displayName": "Include Children",
+                "name": "include_children",
+                "type": "boolean",
+                "default": false,
+                "description": "If true, include the children property containing split or grouped child transactions."
+            },
+            {
+                "displayName": "Include Files",
+                "name": "include_files",
+                "type": "boolean",
+                "default": false,
+                "description": "If true, include the files property containing a list of attached files for each transaction."
             },
             {
                 "displayName": "Limit",
                 "name": "limit",
                 "type": "number",
                 "default": 0,
-                "description": "Maximum number of records to return"
+                "description": "Maximum number of transactions to return."
+            },
+            {
+                "displayName": "Offset",
+                "name": "offset",
+                "type": "number",
+                "default": 0,
+                "description": "Number of records to skip for pagination."
             }
         ]
     },
     {
-        "displayName": "Split Parts (JSON)",
-        "name": "splitData",
+        "displayName": "Child Transactions (JSON)",
+        "name": "child_transactions",
         "type": "json",
         "default": "[]",
-        "description": "JSON array of split parts, each with amount and optionally category_id, payee, notes",
+        "description": "JSON array of child transactions. The sum of amounts must match the parent transaction amount. Each item needs at minimum an \"amount\" field.",
         "displayOptions": {
             "show": {
                 "resource": [
@@ -573,77 +658,101 @@ exports.transactionFields = [
                 "name": "date",
                 "type": "string",
                 "default": "",
-                "description": "Date of the transaction (YYYY-MM-DD)"
+                "description": "Date of the transaction in ISO 8601 format (YYYY-MM-DD)."
             },
             {
                 "displayName": "Amount",
                 "name": "amount",
                 "type": "string",
                 "default": "",
-                "description": "Amount as a decimal string"
+                "description": "Numeric amount without currency symbol."
             },
             {
                 "displayName": "Payee",
                 "name": "payee",
                 "type": "string",
                 "default": "",
-                "description": "Payee or merchant name"
+                "description": "New payee for the transaction."
             },
             {
                 "displayName": "Currency",
                 "name": "currency",
                 "type": "string",
                 "default": "",
-                "description": "ISO 4217 currency code"
+                "description": "Three-letter lowercase ISO 4217 currency code."
             },
             {
                 "displayName": "Category ID",
                 "name": "category_id",
                 "type": "number",
                 "default": 0,
-                "description": "Category to assign"
+                "description": "Category to assign. Set to null to clear."
             },
             {
                 "displayName": "Notes",
                 "name": "notes",
                 "type": "string",
                 "default": "",
-                "description": "Transaction notes"
+                "description": "New notes. Set to empty string to clear."
             },
             {
                 "displayName": "Status",
                 "name": "status",
                 "type": "options",
                 "default": "",
-                "description": "Transaction status",
+                "description": "Transaction status.",
                 "options": [
-                    {
-                        "name": "Cleared",
-                        "value": "cleared"
-                    },
-                    {
-                        "name": "Uncleared",
-                        "value": "uncleared"
-                    },
                     {
                         "name": "Reviewed",
                         "value": "reviewed"
+                    },
+                    {
+                        "name": "Unreviewed",
+                        "value": "unreviewed"
                     }
                 ]
+            },
+            {
+                "displayName": "Recurring Item ID",
+                "name": "recurring_id",
+                "type": "number",
+                "default": 0,
+                "description": "ID of a recurring item to associate. Set to null to clear."
+            },
+            {
+                "displayName": "Tag IDs (replace)",
+                "name": "tag_ids",
+                "type": "string",
+                "default": "",
+                "description": "Comma-separated tag IDs. Overwrites any existing tags on the transaction."
+            },
+            {
+                "displayName": "Tag IDs (add)",
+                "name": "additional_tag_ids",
+                "type": "string",
+                "default": "",
+                "description": "Comma-separated tag IDs to add without replacing existing tags."
             },
             {
                 "displayName": "External ID",
                 "name": "external_id",
                 "type": "string",
                 "default": "",
-                "description": "External identifier"
+                "description": "User-defined external ID (requires manual_account_id)."
             },
             {
-                "displayName": "Tag IDs",
-                "name": "tag_ids",
-                "type": "string",
-                "default": "",
-                "description": "Comma-separated list of tag IDs"
+                "displayName": "Manual Account ID",
+                "name": "manual_account_id",
+                "type": "number",
+                "default": 0,
+                "description": "ID of the manual account. Set to null to disassociate."
+            },
+            {
+                "displayName": "Update Balance",
+                "name": "update_balance",
+                "type": "boolean",
+                "default": false,
+                "description": "Set to false to skip updating the account's balance when changing the transaction."
             }
         ]
     },
@@ -652,7 +761,7 @@ exports.transactionFields = [
         "name": "uploadTransactionId",
         "type": "number",
         "default": 0,
-        "description": "ID of the transaction to attach the file to",
+        "description": "ID of the transaction to attach the file to.",
         "displayOptions": {
             "show": {
                 "resource": [
@@ -670,7 +779,7 @@ exports.transactionFields = [
         "name": "fileUrl",
         "type": "string",
         "default": "",
-        "description": "URL of the file to attach",
+        "description": "URL of the file to attach.",
         "displayOptions": {
             "show": {
                 "resource": [
@@ -705,7 +814,7 @@ exports.transactionFields = [
                 "name": "fileName",
                 "type": "string",
                 "default": "",
-                "description": "Name for the attachment file"
+                "description": "Name for the attachment file."
             }
         ]
     },

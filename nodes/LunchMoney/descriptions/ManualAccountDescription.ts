@@ -73,7 +73,7 @@ export const manualAccountFields: INodeProperties[] = [
 		"name": "name",
 		"type": "string",
 		"default": "",
-		"description": "Name of the account",
+		"description": "Name of the manual account.",
 		"displayOptions": {
 			"show": {
 				"resource": [
@@ -88,10 +88,10 @@ export const manualAccountFields: INodeProperties[] = [
 	},
 	{
 		"displayName": "Account Type",
-		"name": "type_name",
+		"name": "type",
 		"type": "options",
 		"default": "",
-		"description": "Type of the account",
+		"description": "The type of the manual account.",
 		"displayOptions": {
 			"show": {
 				"resource": [
@@ -117,24 +117,32 @@ export const manualAccountFields: INodeProperties[] = [
 				"value": "investment"
 			},
 			{
-				"name": "Real estate",
-				"value": "real estate"
+				"name": "Retirement",
+				"value": "retirement"
 			},
 			{
-				"name": "Loan",
-				"value": "loan"
+				"name": "Brokerage",
+				"value": "brokerage"
 			},
 			{
-				"name": "Vehicle",
-				"value": "vehicle"
+				"name": "Other asset",
+				"value": "other asset"
 			},
 			{
 				"name": "Other liability",
 				"value": "other liability"
 			},
 			{
-				"name": "Other asset",
-				"value": "other asset"
+				"name": "Loan",
+				"value": "loan"
+			},
+			{
+				"name": "Real estate",
+				"value": "real estate"
+			},
+			{
+				"name": "Vehicle",
+				"value": "vehicle"
 			},
 			{
 				"name": "Cryptocurrency",
@@ -151,7 +159,7 @@ export const manualAccountFields: INodeProperties[] = [
 		"name": "balance",
 		"type": "string",
 		"default": "",
-		"description": "Current balance as decimal string",
+		"description": "Current balance as a number or decimal string (up to 4 decimal places).",
 		"displayOptions": {
 			"show": {
 				"resource": [
@@ -187,7 +195,7 @@ export const manualAccountFields: INodeProperties[] = [
 				"name": "currency",
 				"type": "string",
 				"default": "",
-				"description": "ISO 4217 currency code",
+				"description": "Three-letter lowercase ISO 4217 currency code.",
 				"placeholder": "usd"
 			},
 			{
@@ -195,35 +203,66 @@ export const manualAccountFields: INodeProperties[] = [
 				"name": "institution_name",
 				"type": "string",
 				"default": "",
-				"description": "Name of the financial institution"
+				"description": "Name of institution holding the account."
 			},
 			{
-				"displayName": "Notes",
-				"name": "notes",
+				"displayName": "Display Name",
+				"name": "display_name",
 				"type": "string",
 				"default": "",
-				"description": "Notes about the account"
+				"description": "Display name for the account as shown in the app. Derived from institution_name and name if not set."
 			},
 			{
-				"displayName": "Closed",
-				"name": "closed",
-				"type": "boolean",
-				"default": false,
-				"description": "Whether the account is closed"
+				"displayName": "Subtype",
+				"name": "subtype",
+				"type": "string",
+				"default": "",
+				"description": "Optional account subtype (e.g. \"checking\", \"savings\", \"retirement\")."
 			},
 			{
-				"displayName": "Exclude From Budget",
-				"name": "exclude_from_budget",
-				"type": "boolean",
-				"default": false,
-				"description": "Whether to exclude from budget"
+				"displayName": "Balance As Of",
+				"name": "balance_as_of",
+				"type": "string",
+				"default": "",
+				"description": "Date/time the balance was last updated in ISO 8601 format."
 			},
 			{
-				"displayName": "Exclude From Totals",
-				"name": "exclude_from_totals",
+				"displayName": "Status",
+				"name": "status",
+				"type": "options",
+				"default": "",
+				"description": "Status of the account.",
+				"options": [
+					{
+						"name": "Active",
+						"value": "active"
+					},
+					{
+						"name": "Closed",
+						"value": "closed"
+					}
+				]
+			},
+			{
+				"displayName": "Closed On",
+				"name": "closed_on",
+				"type": "string",
+				"default": "",
+				"description": "Date this account was closed (YYYY-MM-DD). If set, status must also be set to \"closed\"."
+			},
+			{
+				"displayName": "External ID",
+				"name": "external_id",
+				"type": "string",
+				"default": "",
+				"description": "Optional user-defined ID for the account."
+			},
+			{
+				"displayName": "Exclude From Transactions",
+				"name": "exclude_from_transactions",
 				"type": "boolean",
 				"default": false,
-				"description": "Whether to exclude from totals"
+				"description": "If true, transactions may not be created or imported for this account."
 			}
 		]
 	},
@@ -249,56 +288,144 @@ export const manualAccountFields: INodeProperties[] = [
 				"name": "name",
 				"type": "string",
 				"default": "",
-				"description": "Name of the account"
-			},
-			{
-				"displayName": "Balance",
-				"name": "balance",
-				"type": "string",
-				"default": "",
-				"description": "Current balance as decimal string"
-			},
-			{
-				"displayName": "Currency",
-				"name": "currency",
-				"type": "string",
-				"default": "",
-				"description": "ISO 4217 currency code"
+				"description": "New name for the account."
 			},
 			{
 				"displayName": "Institution Name",
 				"name": "institution_name",
 				"type": "string",
 				"default": "",
-				"description": "Name of the financial institution"
+				"description": "New name of the institution holding the account."
 			},
 			{
-				"displayName": "Notes",
-				"name": "notes",
+				"displayName": "Display Name",
+				"name": "display_name",
 				"type": "string",
 				"default": "",
-				"description": "Notes about the account"
+				"description": "New display name. Must be unique for the user."
 			},
 			{
-				"displayName": "Closed",
-				"name": "closed",
-				"type": "boolean",
-				"default": false,
-				"description": "Whether the account is closed"
+				"displayName": "Account Type",
+				"name": "type",
+				"type": "options",
+				"default": "",
+				"description": "New type for the account.",
+				"options": [
+					{
+						"name": "Cash",
+						"value": "cash"
+					},
+					{
+						"name": "Credit",
+						"value": "credit"
+					},
+					{
+						"name": "Investment",
+						"value": "investment"
+					},
+					{
+						"name": "Retirement",
+						"value": "retirement"
+					},
+					{
+						"name": "Brokerage",
+						"value": "brokerage"
+					},
+					{
+						"name": "Other asset",
+						"value": "other asset"
+					},
+					{
+						"name": "Other liability",
+						"value": "other liability"
+					},
+					{
+						"name": "Loan",
+						"value": "loan"
+					},
+					{
+						"name": "Real estate",
+						"value": "real estate"
+					},
+					{
+						"name": "Vehicle",
+						"value": "vehicle"
+					},
+					{
+						"name": "Cryptocurrency",
+						"value": "cryptocurrency"
+					},
+					{
+						"name": "Employee compensation",
+						"value": "employee compensation"
+					}
+				]
 			},
 			{
-				"displayName": "Exclude From Budget",
-				"name": "exclude_from_budget",
-				"type": "boolean",
-				"default": false,
-				"description": "Whether to exclude from budget"
+				"displayName": "Subtype",
+				"name": "subtype",
+				"type": "string",
+				"default": "",
+				"description": "New account subtype (e.g. \"checking\", \"savings\")."
 			},
 			{
-				"displayName": "Exclude From Totals",
-				"name": "exclude_from_totals",
+				"displayName": "Balance",
+				"name": "balance",
+				"type": "string",
+				"default": "",
+				"description": "New balance as a number or decimal string."
+			},
+			{
+				"displayName": "Currency",
+				"name": "currency",
+				"type": "string",
+				"default": "",
+				"description": "New three-letter lowercase ISO 4217 currency code."
+			},
+			{
+				"displayName": "Balance As Of",
+				"name": "balance_as_of",
+				"type": "string",
+				"default": "",
+				"description": "New date for the balance timestamp (YYYY-MM-DD or ISO 8601 datetime)."
+			},
+			{
+				"displayName": "Status",
+				"name": "status",
+				"type": "options",
+				"default": "",
+				"description": "New status. If set to \"closed\", closed_on will be set to today if not provided.",
+				"options": [
+					{
+						"name": "Active",
+						"value": "active"
+					},
+					{
+						"name": "Closed",
+						"value": "closed"
+					}
+				]
+			},
+			{
+				"displayName": "Closed On",
+				"name": "closed_on",
+				"type": "string",
+				"default": "",
+				"description": "Date this account was closed (YYYY-MM-DD). Account must currently be closed or being set to closed."
+			},
+			{
+				"displayName": "External ID",
+				"name": "external_id",
+				"type": "string",
+				"default": "",
+				"description": "User-defined external ID."
+			},
+			{
+				"displayName": "Exclude From Transactions",
+				"name": "exclude_from_transactions",
 				"type": "boolean",
 				"default": false,
-				"description": "Whether to exclude from totals"
+				"description": "If true, transactions may not be created or imported for this account."
 			}
 		]
 	},

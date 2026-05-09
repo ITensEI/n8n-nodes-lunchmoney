@@ -73,7 +73,7 @@ export const categoryFields: INodeProperties[] = [
 		"name": "name",
 		"type": "string",
 		"default": "",
-		"description": "Name of the category",
+		"description": "Name of the category. Must be between 1 and 100 characters and unique.",
 		"displayOptions": {
 			"show": {
 				"resource": [
@@ -108,35 +108,63 @@ export const categoryFields: INodeProperties[] = [
 				"name": "description",
 				"type": "string",
 				"default": "",
-				"description": "Description of the category"
+				"description": "Description of the category. Must not exceed 200 characters."
 			},
 			{
 				"displayName": "Is Income",
 				"name": "is_income",
 				"type": "boolean",
 				"default": false,
-				"description": "Whether transactions in this category are treated as income"
+				"description": "If true, transactions in this category are treated as income."
 			},
 			{
 				"displayName": "Exclude From Budget",
 				"name": "exclude_from_budget",
 				"type": "boolean",
 				"default": false,
-				"description": "Whether to exclude from budget calculations"
+				"description": "If true, transactions in this category are excluded from the budget."
 			},
 			{
 				"displayName": "Exclude From Totals",
 				"name": "exclude_from_totals",
 				"type": "boolean",
 				"default": false,
-				"description": "Whether to exclude from totals"
+				"description": "If true, transactions in this category are excluded from totals."
+			},
+			{
+				"displayName": "Is Group",
+				"name": "is_group",
+				"type": "boolean",
+				"default": false,
+				"description": "If true, the category is created as a category group."
 			},
 			{
 				"displayName": "Group ID",
 				"name": "group_id",
 				"type": "number",
 				"default": 0,
-				"description": "ID of the category group this belongs to"
+				"description": "If set to the ID of an existing category group, this new category will be assigned to that group. Cannot be set if is_group is true."
+			},
+			{
+				"displayName": "Archived",
+				"name": "archived",
+				"type": "boolean",
+				"default": false,
+				"description": "If true, the category is archived and not displayed in the Lunch Money app."
+			},
+			{
+				"displayName": "Order",
+				"name": "order",
+				"type": "number",
+				"default": 0,
+				"description": "Index specifying the display position on the categories page."
+			},
+			{
+				"displayName": "Collapsed",
+				"name": "collapsed",
+				"type": "boolean",
+				"default": false,
+				"description": "If true, the category group appears collapsed in the Lunch Money app. Only applicable to category groups."
 			}
 		]
 	},
@@ -162,7 +190,7 @@ export const categoryFields: INodeProperties[] = [
 				"name": "format",
 				"type": "options",
 				"default": "",
-				"description": "Response format. \"nested\" groups child categories under their parent; \"flattened\" includes all at the top level",
+				"description": "\"nested\" returns grouped categories under their parent; \"flattened\" returns all at the top level sorted by order",
 				"options": [
 					{
 						"name": "Nested",
@@ -175,7 +203,7 @@ export const categoryFields: INodeProperties[] = [
 				]
 			},
 			{
-				"displayName": "Is Group",
+				"displayName": "Is Group Filter",
 				"name": "is_group",
 				"type": "boolean",
 				"default": false,
@@ -205,49 +233,70 @@ export const categoryFields: INodeProperties[] = [
 				"name": "name",
 				"type": "string",
 				"default": "",
-				"description": "Name of the category"
+				"description": "New name for the category. Must be between 1 and 100 characters."
 			},
 			{
 				"displayName": "Description",
 				"name": "description",
 				"type": "string",
 				"default": "",
-				"description": "Description of the category"
+				"description": "New description. Must not exceed 200 characters."
 			},
 			{
 				"displayName": "Is Income",
 				"name": "is_income",
 				"type": "boolean",
 				"default": false,
-				"description": "Whether transactions in this category are treated as income"
+				"description": "If set, indicates whether transactions in this category are treated as income."
 			},
 			{
 				"displayName": "Exclude From Budget",
 				"name": "exclude_from_budget",
 				"type": "boolean",
 				"default": false,
-				"description": "Whether to exclude from budget calculations"
+				"description": "If set, indicates whether transactions are excluded from the budget."
 			},
 			{
 				"displayName": "Exclude From Totals",
 				"name": "exclude_from_totals",
 				"type": "boolean",
 				"default": false,
-				"description": "Whether to exclude from totals"
+				"description": "If set, indicates whether transactions are excluded from totals."
 			},
 			{
 				"displayName": "Group ID",
 				"name": "group_id",
 				"type": "number",
 				"default": 0,
-				"description": "ID of the category group this belongs to"
+				"description": "If set to an existing category group ID, assigns this category to that group."
+			},
+			{
+				"displayName": "Is Group",
+				"name": "is_group",
+				"type": "boolean",
+				"default": false,
+				"description": "May not be changed from the current status of the category."
 			},
 			{
 				"displayName": "Archived",
 				"name": "archived",
 				"type": "boolean",
 				"default": false,
-				"description": "Whether the category is archived"
+				"description": "If set, indicates whether the category is archived."
+			},
+			{
+				"displayName": "Order",
+				"name": "order",
+				"type": "number",
+				"default": 0,
+				"description": "Index specifying the display position on the categories page."
+			},
+			{
+				"displayName": "Collapsed",
+				"name": "collapsed",
+				"type": "boolean",
+				"default": false,
+				"description": "If true, the category group appears collapsed. Only applicable to category groups."
 			}
 		]
 	},

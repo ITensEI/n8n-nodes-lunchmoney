@@ -73,7 +73,7 @@ export const tagFields: INodeProperties[] = [
 		"name": "name",
 		"type": "string",
 		"default": "",
-		"description": "Name of the tag",
+		"description": "Name of the tag. Must be between 1 and 100 characters and must not match any existing tag name.",
 		"displayOptions": {
 			"show": {
 				"resource": [
@@ -108,7 +108,28 @@ export const tagFields: INodeProperties[] = [
 				"name": "description",
 				"type": "string",
 				"default": "",
-				"description": "Description of the tag"
+				"description": "Description of the tag. Must not exceed 200 characters."
+			},
+			{
+				"displayName": "Text Color",
+				"name": "text_color",
+				"type": "string",
+				"default": "",
+				"description": "Text color for the tag (e.g. \"#ffffff\")."
+			},
+			{
+				"displayName": "Background Color",
+				"name": "background_color",
+				"type": "string",
+				"default": "",
+				"description": "Background color for the tag (e.g. \"#1a73e8\")."
+			},
+			{
+				"displayName": "Archived",
+				"name": "archived",
+				"type": "boolean",
+				"default": false,
+				"description": "If true, the tag is archived and not displayed in the Lunch Money app."
 			}
 		]
 	},
@@ -134,14 +155,35 @@ export const tagFields: INodeProperties[] = [
 				"name": "name",
 				"type": "string",
 				"default": "",
-				"description": "Name of the tag"
+				"description": "New name for the tag. Must be between 1 and 100 characters."
 			},
 			{
 				"displayName": "Description",
 				"name": "description",
 				"type": "string",
 				"default": "",
-				"description": "Description of the tag"
+				"description": "New description. Must not exceed 200 characters."
+			},
+			{
+				"displayName": "Text Color",
+				"name": "text_color",
+				"type": "string",
+				"default": "",
+				"description": "Text color for the tag (e.g. \"#ffffff\")."
+			},
+			{
+				"displayName": "Background Color",
+				"name": "background_color",
+				"type": "string",
+				"default": "",
+				"description": "Background color for the tag (e.g. \"#1a73e8\")."
+			},
+			{
+				"displayName": "Archived",
+				"name": "archived",
+				"type": "boolean",
+				"default": false,
+				"description": "If set, indicates whether the tag is archived."
 			}
 		]
 	},

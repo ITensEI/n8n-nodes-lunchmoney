@@ -70,7 +70,7 @@ export const recurringItemFields: INodeProperties[] = [
 				"name": "start_date",
 				"type": "string",
 				"default": "",
-				"description": "Start date for the recurring items window (YYYY-MM-DD)",
+				"description": "Beginning of the range to populate the matching object (YYYY-MM-DD). Defaults to current month start if omitted.",
 				"placeholder": "2024-01-01"
 			},
 			{
@@ -78,8 +78,15 @@ export const recurringItemFields: INodeProperties[] = [
 				"name": "end_date",
 				"type": "string",
 				"default": "",
-				"description": "End date for the recurring items window (YYYY-MM-DD)",
+				"description": "End of the range to populate the matching object (YYYY-MM-DD). Required if start_date is set.",
 				"placeholder": "2024-12-31"
+			},
+			{
+				"displayName": "Include Suggested",
+				"name": "include_suggested",
+				"type": "boolean",
+				"default": false,
+				"description": "If true, include suggested recurring items that Lunch Money has identified but not yet confirmed."
 			}
 		]
 	},

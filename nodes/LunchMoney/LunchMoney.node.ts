@@ -172,7 +172,7 @@ export class LunchMoney implements INodeType {
 						body.payee = this.getNodeParameter('payee', i);
 						const additionalFields = this.getNodeParameter('additionalFields', i) as IDataObject;
 						if (additionalFields.tag_ids) {
-							additionalFields.tag_ids = (additionalFields.tag_ids as string).split(',').map(s => parseInt(s.trim(), 10));
+							additionalFields.tag_ids = (additionalFields.tag_ids as string).split(',').map(s => parseInt(s.trim(), 10)).filter(n => !isNaN(n));
 						}
 						Object.assign(body, additionalFields);
 						responseData = await lunchMoneyApiRequest.call(this, 'POST', `/transactions`, { transactions: [body] });
@@ -182,11 +182,11 @@ export class LunchMoney implements INodeType {
 						const body: IDataObject = {};
 						body.date = this.getNodeParameter('date', i);
 						body.payee = this.getNodeParameter('payee', i);
-						const transaction_idsStr = this.getNodeParameter('transaction_ids', i) as string;
-						body.transaction_ids = transaction_idsStr.split(',').map(s => parseInt(s.trim(), 10));
+						const idsStr = this.getNodeParameter('ids', i) as string;
+						body.ids = idsStr.split(',').map(s => parseInt(s.trim(), 10)).filter(n => !isNaN(n));
 						const additionalFields = this.getNodeParameter('additionalFields', i) as IDataObject;
 						if (additionalFields.tag_ids) {
-							additionalFields.tag_ids = (additionalFields.tag_ids as string).split(',').map(s => parseInt(s.trim(), 10));
+							additionalFields.tag_ids = (additionalFields.tag_ids as string).split(',').map(s => parseInt(s.trim(), 10)).filter(n => !isNaN(n));
 						}
 						Object.assign(body, additionalFields);
 						responseData = await lunchMoneyApiRequest.call(this, 'POST', `/transactions/group`, body);
@@ -234,8 +234,8 @@ export class LunchMoney implements INodeType {
 					if (operation === 'split') {
 						const id = this.getNodeParameter('transactionId', i) as number;
 						const body: IDataObject = {};
-						const splitDataRaw = this.getNodeParameter('splitData', i) as string;
-						try { Object.assign(body, { splits: JSON.parse(splitDataRaw) }); } catch { throw new Error('Invalid JSON in Split Parts (JSON)'); }
+						const childTransactionsRaw = this.getNodeParameter('child_transactions', i) as string;
+						try { body.child_transactions = JSON.parse(childTransactionsRaw); } catch { throw new Error('Invalid JSON in "Child Transactions (JSON)"'); }
 						responseData = await lunchMoneyApiRequest.call(this, 'POST', `/transactions/split/${id}`, body);
 					}
 
@@ -249,10 +249,15 @@ export class LunchMoney implements INodeType {
 						const body: IDataObject = {};
 						const additionalFields = this.getNodeParameter('additionalFields', i) as IDataObject;
 						if (additionalFields.tag_ids) {
-							additionalFields.tag_ids = (additionalFields.tag_ids as string).split(',').map(s => parseInt(s.trim(), 10));
+							additionalFields.tag_ids = (additionalFields.tag_ids as string).split(',').map(s => parseInt(s.trim(), 10)).filter(n => !isNaN(n));
 						}
+						if (additionalFields.additional_tag_ids) {
+							additionalFields.additional_tag_ids = (additionalFields.additional_tag_ids as string).split(',').map(s => parseInt(s.trim(), 10)).filter(n => !isNaN(n));
+						}
+						const mutationQs: IDataObject = {};
+						if (additionalFields.update_balance !== undefined) { mutationQs.update_balance = additionalFields.update_balance; delete additionalFields.update_balance; }
 						Object.assign(body, additionalFields);
-						responseData = await lunchMoneyApiRequest.call(this, 'PUT', `/transactions/${id}`, body);
+						responseData = await lunchMoneyApiRequest.call(this, 'PUT', `/transactions/${id}`, body, mutationQs);
 					}
 
 					if (operation === 'uploadAttachment') {
@@ -323,10 +328,10 @@ export class LunchMoney implements INodeType {
 					}
 
 					if (operation === 'remove') {
-						const body: IDataObject = {};
-						body.start_date = this.getNodeParameter('start_date', i);
-						body.category_id = this.getNodeParameter('category_id', i);
-						responseData = await lunchMoneyApiRequest.call(this, 'DELETE', `/budgets`, body);
+						const qs: IDataObject = {};
+						qs.start_date = this.getNodeParameter('start_date', i);
+						qs.category_id = this.getNodeParameter('category_id', i);
+						responseData = await lunchMoneyApiRequest.call(this, 'DELETE', `/budgets`, {}, qs);
 					}
 
 					if (operation === 'upsert') {
@@ -345,7 +350,7 @@ export class LunchMoney implements INodeType {
 					if (operation === 'create') {
 						const body: IDataObject = {};
 						body.name = this.getNodeParameter('name', i);
-						body.type_name = this.getNodeParameter('type_name', i);
+						body.type = this.getNodeParameter('type', i);
 						body.balance = this.getNodeParameter('balance', i);
 						const additionalFields = this.getNodeParameter('additionalFields', i) as IDataObject;
 						Object.assign(body, additionalFields);
@@ -504,7 +509,7 @@ export class LunchMoney implements INodeType {
 						body.account_type = this.getNodeParameter('account_type', i);
 						body.account_id = this.getNodeParameter('account_id', i);
 						const balanceEntriesRaw = this.getNodeParameter('balanceEntries', i) as string;
-						try { Object.assign(body, { balanceEntries: JSON.parse(balanceEntriesRaw) }); } catch { throw new Error('Invalid JSON in Balance Entries (JSON)'); }
+						try { body.balanceEntries = JSON.parse(balanceEntriesRaw); } catch { throw new Error('Invalid JSON in "Balance Entries (JSON)"'); }
 						responseData = await lunchMoneyApiRequest.call(this, 'PUT', `/balance_history/${accountType}/${accountId}`, body);
 					}
 
@@ -530,7 +535,7 @@ export class LunchMoney implements INodeType {
 						body.cryptoSyncedAccountId = this.getNodeParameter('cryptoSyncedAccountId', i);
 						body.cryptoSyncedSymbol = this.getNodeParameter('cryptoSyncedSymbol', i);
 						const balanceEntriesRaw = this.getNodeParameter('balanceEntries', i) as string;
-						try { Object.assign(body, { balanceEntries: JSON.parse(balanceEntriesRaw) }); } catch { throw new Error('Invalid JSON in Balance Entries (JSON)'); }
+						try { body.balanceEntries = JSON.parse(balanceEntriesRaw); } catch { throw new Error('Invalid JSON in "Balance Entries (JSON)"'); }
 						responseData = await lunchMoneyApiRequest.call(this, 'PUT', `/balance_history/crypto_synced/${csAccountId}/${csSymbol}`, body);
 					}
 
@@ -553,7 +558,7 @@ export class LunchMoney implements INodeType {
 						const body: IDataObject = {};
 						body.deletedAccountId = this.getNodeParameter('deletedAccountId', i);
 						const detailsDataRaw = this.getNodeParameter('detailsData', i) as string;
-						try { Object.assign(body, { detailsData: JSON.parse(detailsDataRaw) }); } catch { throw new Error('Invalid JSON in Details (JSON)'); }
+						try { body.detailsData = JSON.parse(detailsDataRaw); } catch { throw new Error('Invalid JSON in "Details (JSON)"'); }
 						responseData = await lunchMoneyApiRequest.call(this, 'PUT', `/balance_history/deleted/${delAccountId}/details`, body);
 					}
 

@@ -35,7 +35,7 @@ exports.userFields = [
         "name": "start_date",
         "type": "string",
         "default": "",
-        "description": "Start of date range (YYYY-MM-DD)",
+        "description": "Start of date range in ISO 8601 date format (YYYY-MM-DD)",
         "displayOptions": {
             "show": {
                 "resource": [
@@ -54,7 +54,7 @@ exports.userFields = [
         "name": "end_date",
         "type": "string",
         "default": "",
-        "description": "End of date range (YYYY-MM-DD)",
+        "description": "End of date range in ISO 8601 date format (YYYY-MM-DD)",
         "displayOptions": {
             "show": {
                 "resource": [
@@ -90,21 +90,21 @@ exports.userFields = [
                 "name": "include_exclude_from_budgets",
                 "type": "boolean",
                 "default": false,
-                "description": "Include categories with the \"Exclude from Budgets\" flag"
+                "description": "Include categories that have the \"Exclude from Budgets\" flag set"
             },
             {
                 "displayName": "Include Occurrences",
                 "name": "include_occurrences",
                 "type": "boolean",
                 "default": false,
-                "description": "Include an occurrences array for each category in aligned responses"
+                "description": "Include an occurrences array for each category showing activity per budget period"
             },
             {
                 "displayName": "Include Past Budget Dates",
                 "name": "include_past_budget_dates",
                 "type": "boolean",
                 "default": false,
-                "description": "Include the three budget occurrences prior to the start date (requires include_occurrences)"
+                "description": "Include three budget occurrences prior to the start date (requires Include Occurrences)"
             },
             {
                 "displayName": "Include Totals",

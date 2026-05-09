@@ -81,7 +81,12 @@ class LunchMoney {
                         responseData = await GenericFunctions_1.lunchMoneyApiRequest.call(this, 'GET', `/me`);
                     }
                     if (operation === 'getSummary') {
-                        responseData = await GenericFunctions_1.lunchMoneyApiRequest.call(this, 'GET', `/summary`);
+                        const qs = {};
+                        qs.start_date = this.getNodeParameter('start_date', i);
+                        qs.end_date = this.getNodeParameter('end_date', i);
+                        const additionalFields = this.getNodeParameter('additionalFields', i);
+                        Object.assign(qs, additionalFields);
+                        responseData = await GenericFunctions_1.lunchMoneyApiRequest.call(this, 'GET', `/summary`, {}, qs);
                     }
                 }
                 if (resource === 'category') {
@@ -101,7 +106,10 @@ class LunchMoney {
                         responseData = await GenericFunctions_1.lunchMoneyApiRequest.call(this, 'GET', `/categories/${id}`);
                     }
                     if (operation === 'getAll') {
-                        responseData = await GenericFunctions_1.lunchMoneyApiRequest.call(this, 'GET', `/categories`);
+                        const qs = {};
+                        const additionalFields = this.getNodeParameter('additionalFields', i);
+                        Object.assign(qs, additionalFields);
+                        responseData = await GenericFunctions_1.lunchMoneyApiRequest.call(this, 'GET', `/categories`, {}, qs);
                         responseData = responseData.categories || responseData;
                     }
                     if (operation === 'update') {
@@ -160,10 +168,14 @@ class LunchMoney {
                     }
                     if (operation === 'getAttachment') {
                         const fileId = this.getNodeParameter('fileId', i);
-                        responseData = await GenericFunctions_1.lunchMoneyApiRequest.call(this, 'GET', `/transactions/attachments/${fileId}`);
+                        const qs = {};
+                        qs.fileId = this.getNodeParameter('fileId', i);
+                        responseData = await GenericFunctions_1.lunchMoneyApiRequest.call(this, 'GET', `/transactions/attachments/${fileId}`, {}, qs);
                     }
                     if (operation === 'getAll') {
-                        const qs = this.getNodeParameter('additionalFields', i);
+                        const qs = {};
+                        const additionalFields = this.getNodeParameter('additionalFields', i);
+                        Object.assign(qs, additionalFields);
                         responseData = await GenericFunctions_1.lunchMoneyApiRequest.call(this, 'GET', `/transactions`, {}, qs);
                         responseData = responseData.transactions || responseData;
                     }
@@ -237,7 +249,9 @@ class LunchMoney {
                         responseData = await GenericFunctions_1.lunchMoneyApiRequest.call(this, 'GET', `/recurring_items/${id}`);
                     }
                     if (operation === 'getAll') {
-                        const qs = this.getNodeParameter('additionalFields', i);
+                        const qs = {};
+                        const additionalFields = this.getNodeParameter('additionalFields', i);
+                        Object.assign(qs, additionalFields);
                         responseData = await GenericFunctions_1.lunchMoneyApiRequest.call(this, 'GET', `/recurring_items`, {}, qs);
                         responseData = responseData.recurring_items || responseData;
                     }
@@ -339,7 +353,9 @@ class LunchMoney {
                     if (operation === 'getSyncedBySymbol') {
                         const id = this.getNodeParameter('cryptoId', i);
                         const symbol = this.getNodeParameter('cryptoSymbol', i);
-                        responseData = await GenericFunctions_1.lunchMoneyApiRequest.call(this, 'GET', `/crypto/synced/${id}/${symbol}`);
+                        const qs = {};
+                        qs.cryptoSymbol = this.getNodeParameter('cryptoSymbol', i);
+                        responseData = await GenericFunctions_1.lunchMoneyApiRequest.call(this, 'GET', `/crypto/synced/${id}/${symbol}`, {}, qs);
                     }
                     if (operation === 'refreshSynced') {
                         const id = this.getNodeParameter('cryptoId', i);
@@ -376,13 +392,19 @@ class LunchMoney {
                         responseData = await GenericFunctions_1.lunchMoneyApiRequest.call(this, 'DELETE', `/balance_history/${accountType}/${accountId}`, body);
                     }
                     if (operation === 'getAll') {
-                        const qs = this.getNodeParameter('additionalFields', i);
+                        const qs = {};
+                        const additionalFields = this.getNodeParameter('additionalFields', i);
+                        Object.assign(qs, additionalFields);
                         responseData = await GenericFunctions_1.lunchMoneyApiRequest.call(this, 'GET', `/balance_history`, {}, qs);
                     }
                     if (operation === 'getForAccount') {
                         const accountType = this.getNodeParameter('account_type', i);
                         const accountId = this.getNodeParameter('account_id', i);
-                        const qs = this.getNodeParameter('additionalFields', i);
+                        const qs = {};
+                        qs.account_type = this.getNodeParameter('account_type', i);
+                        qs.account_id = this.getNodeParameter('account_id', i);
+                        const additionalFields = this.getNodeParameter('additionalFields', i);
+                        Object.assign(qs, additionalFields);
                         responseData = await GenericFunctions_1.lunchMoneyApiRequest.call(this, 'GET', `/balance_history/${accountType}/${accountId}`, {}, qs);
                     }
                     if (operation === 'updateForAccount') {
@@ -405,7 +427,11 @@ class LunchMoney {
                         const symbol = this.getNodeParameter('cryptoSyncedSymbol', i);
                         const csAccountId = this.getNodeParameter('cryptoSyncedAccountId', i);
                         const csSymbol = this.getNodeParameter('cryptoSyncedSymbol', i);
-                        const qs = this.getNodeParameter('additionalFields', i);
+                        const qs = {};
+                        qs.cryptoSyncedAccountId = this.getNodeParameter('cryptoSyncedAccountId', i);
+                        qs.cryptoSyncedSymbol = this.getNodeParameter('cryptoSyncedSymbol', i);
+                        const additionalFields = this.getNodeParameter('additionalFields', i);
+                        Object.assign(qs, additionalFields);
                         responseData = await GenericFunctions_1.lunchMoneyApiRequest.call(this, 'GET', `/balance_history/crypto_synced/${csAccountId}/${csSymbol}`, {}, qs);
                     }
                     if (operation === 'updateCryptoSynced') {

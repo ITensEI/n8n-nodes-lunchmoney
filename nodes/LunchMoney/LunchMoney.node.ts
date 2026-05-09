@@ -117,7 +117,12 @@ export class LunchMoney implements INodeType {
 					}
 
 					if (operation === 'getSummary') {
-						responseData = await lunchMoneyApiRequest.call(this, 'GET', `/summary`);
+						const qs: IDataObject = {};
+						qs.start_date = this.getNodeParameter('start_date', i);
+						qs.end_date = this.getNodeParameter('end_date', i);
+						const additionalFields = this.getNodeParameter('additionalFields', i) as IDataObject;
+						Object.assign(qs, additionalFields);
+						responseData = await lunchMoneyApiRequest.call(this, 'GET', `/summary`, {}, qs);
 					}
 
 				}
@@ -142,7 +147,10 @@ export class LunchMoney implements INodeType {
 					}
 
 					if (operation === 'getAll') {
-						responseData = await lunchMoneyApiRequest.call(this, 'GET', `/categories`);
+						const qs: IDataObject = {};
+						const additionalFields = this.getNodeParameter('additionalFields', i) as IDataObject;
+						Object.assign(qs, additionalFields);
+						responseData = await lunchMoneyApiRequest.call(this, 'GET', `/categories`, {}, qs);
 						responseData = responseData.categories || responseData;
 					}
 
@@ -210,11 +218,15 @@ export class LunchMoney implements INodeType {
 
 					if (operation === 'getAttachment') {
 						const fileId = this.getNodeParameter('fileId', i) as number;
-						responseData = await lunchMoneyApiRequest.call(this, 'GET', `/transactions/attachments/${fileId}`);
+						const qs: IDataObject = {};
+						qs.fileId = this.getNodeParameter('fileId', i);
+						responseData = await lunchMoneyApiRequest.call(this, 'GET', `/transactions/attachments/${fileId}`, {}, qs);
 					}
 
 					if (operation === 'getAll') {
-						const qs = this.getNodeParameter('additionalFields', i) as IDataObject;
+						const qs: IDataObject = {};
+						const additionalFields = this.getNodeParameter('additionalFields', i) as IDataObject;
+						Object.assign(qs, additionalFields);
 						responseData = await lunchMoneyApiRequest.call(this, 'GET', `/transactions`, {}, qs);
 						responseData = responseData.transactions || responseData;
 					}
@@ -296,7 +308,9 @@ export class LunchMoney implements INodeType {
 					}
 
 					if (operation === 'getAll') {
-						const qs = this.getNodeParameter('additionalFields', i) as IDataObject;
+						const qs: IDataObject = {};
+						const additionalFields = this.getNodeParameter('additionalFields', i) as IDataObject;
+						Object.assign(qs, additionalFields);
 						responseData = await lunchMoneyApiRequest.call(this, 'GET', `/recurring_items`, {}, qs);
 						responseData = responseData.recurring_items || responseData;
 					}
@@ -420,7 +434,9 @@ export class LunchMoney implements INodeType {
 					if (operation === 'getSyncedBySymbol') {
 						const id = this.getNodeParameter('cryptoId', i) as number;
 						const symbol = this.getNodeParameter('cryptoSymbol', i) as string;
-						responseData = await lunchMoneyApiRequest.call(this, 'GET', `/crypto/synced/${id}/${symbol}`);
+						const qs: IDataObject = {};
+						qs.cryptoSymbol = this.getNodeParameter('cryptoSymbol', i);
+						responseData = await lunchMoneyApiRequest.call(this, 'GET', `/crypto/synced/${id}/${symbol}`, {}, qs);
 					}
 
 					if (operation === 'refreshSynced') {
@@ -464,14 +480,20 @@ export class LunchMoney implements INodeType {
 					}
 
 					if (operation === 'getAll') {
-						const qs = this.getNodeParameter('additionalFields', i) as IDataObject;
+						const qs: IDataObject = {};
+						const additionalFields = this.getNodeParameter('additionalFields', i) as IDataObject;
+						Object.assign(qs, additionalFields);
 						responseData = await lunchMoneyApiRequest.call(this, 'GET', `/balance_history`, {}, qs);
 					}
 
 					if (operation === 'getForAccount') {
 						const accountType = this.getNodeParameter('account_type', i) as string;
 						const accountId = this.getNodeParameter('account_id', i) as number;
-						const qs = this.getNodeParameter('additionalFields', i) as IDataObject;
+						const qs: IDataObject = {};
+						qs.account_type = this.getNodeParameter('account_type', i);
+						qs.account_id = this.getNodeParameter('account_id', i);
+						const additionalFields = this.getNodeParameter('additionalFields', i) as IDataObject;
+						Object.assign(qs, additionalFields);
 						responseData = await lunchMoneyApiRequest.call(this, 'GET', `/balance_history/${accountType}/${accountId}`, {}, qs);
 					}
 
@@ -491,7 +513,11 @@ export class LunchMoney implements INodeType {
 						const symbol = this.getNodeParameter('cryptoSyncedSymbol', i) as string;
 						const csAccountId = this.getNodeParameter('cryptoSyncedAccountId', i) as number;
 						const csSymbol = this.getNodeParameter('cryptoSyncedSymbol', i) as string;
-						const qs = this.getNodeParameter('additionalFields', i) as IDataObject;
+						const qs: IDataObject = {};
+						qs.cryptoSyncedAccountId = this.getNodeParameter('cryptoSyncedAccountId', i);
+						qs.cryptoSyncedSymbol = this.getNodeParameter('cryptoSyncedSymbol', i);
+						const additionalFields = this.getNodeParameter('additionalFields', i) as IDataObject;
+						Object.assign(qs, additionalFields);
 						responseData = await lunchMoneyApiRequest.call(this, 'GET', `/balance_history/crypto_synced/${csAccountId}/${csSymbol}`, {}, qs);
 					}
 

@@ -124,8 +124,28 @@ const RESOURCE_MAP = {
 // ── Custom field definitions per resource/operation ──
 
 const FIELDS = {
+	user: {
+		getSummary: {
+			required: [
+				{ name: 'start_date', displayName: 'Start Date', type: 'string', desc: 'Start of date range (YYYY-MM-DD)', placeholder: '2024-01-01' },
+				{ name: 'end_date', displayName: 'End Date', type: 'string', desc: 'End of date range (YYYY-MM-DD)', placeholder: '2024-01-31' },
+			],
+			optional: [
+				{ name: 'include_exclude_from_budgets', displayName: 'Include Excluded From Budget', type: 'boolean', desc: 'Include categories with the "Exclude from Budgets" flag' },
+				{ name: 'include_occurrences', displayName: 'Include Occurrences', type: 'boolean', desc: 'Include an occurrences array for each category in aligned responses' },
+				{ name: 'include_past_budget_dates', displayName: 'Include Past Budget Dates', type: 'boolean', desc: 'Include the three budget occurrences prior to the start date (requires include_occurrences)' },
+				{ name: 'include_totals', displayName: 'Include Totals', type: 'boolean', desc: 'Include a top-level totals section summarising inflow and outflow' },
+			],
+		},
+	},
 	category: {
 		_idField: { name: 'categoryId', displayName: 'Category ID', ops: ['get', 'update', 'delete'] },
+		getAll: {
+			optional: [
+				{ name: 'format', displayName: 'Format', type: 'options', desc: 'Response format. "nested" groups child categories under their parent; "flattened" includes all at the top level', options: ['nested', 'flattened'] },
+				{ name: 'is_group', displayName: 'Is Group', type: 'boolean', desc: 'If true, return only category groups. If false, return only non-grouped categories. When set, format is ignored.' },
+			],
+		},
 		create: {
 			required: [
 				{ name: 'name', displayName: 'Name', type: 'string', desc: 'Name of the category' },
@@ -780,8 +800,17 @@ function generateOperationHandler(resourceKey, op) {
 			code += `\t\t\t\t\t\tresponseData = await lunchMoneyApiRequest.call(this, '${op.method}', \`${apiPath}\`, body);\n`;
 		}
 	} else if (op.method === 'GET') {
-		if (hasOptional) {
-			code += `\t\t\t\t\t\tconst qs = this.getNodeParameter('additionalFields', i) as IDataObject;\n`;
+		if (hasRequired || hasOptional) {
+			code += `\t\t\t\t\t\tconst qs: IDataObject = {};\n`;
+			if (hasRequired) {
+				for (const f of opFields.required) {
+					code += `\t\t\t\t\t\tqs.${f.name} = this.getNodeParameter('${f.name}', i);\n`;
+				}
+			}
+			if (hasOptional) {
+				code += `\t\t\t\t\t\tconst additionalFields = this.getNodeParameter('additionalFields', i) as IDataObject;\n`;
+				code += `\t\t\t\t\t\tObject.assign(qs, additionalFields);\n`;
+			}
 			code += `\t\t\t\t\t\tresponseData = await lunchMoneyApiRequest.call(this, '${op.method}', \`${apiPath}\`, {}, qs);\n`;
 		} else {
 			code += `\t\t\t\t\t\tresponseData = await lunchMoneyApiRequest.call(this, '${op.method}', \`${apiPath}\`);\n`;

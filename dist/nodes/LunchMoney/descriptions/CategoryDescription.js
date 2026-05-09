@@ -152,6 +152,49 @@ exports.categoryFields = [
                     "category"
                 ],
                 "operation": [
+                    "getAll"
+                ]
+            }
+        },
+        "options": [
+            {
+                "displayName": "Format",
+                "name": "format",
+                "type": "options",
+                "default": "",
+                "description": "Response format. \"nested\" groups child categories under their parent; \"flattened\" includes all at the top level",
+                "options": [
+                    {
+                        "name": "Nested",
+                        "value": "nested"
+                    },
+                    {
+                        "name": "Flattened",
+                        "value": "flattened"
+                    }
+                ]
+            },
+            {
+                "displayName": "Is Group",
+                "name": "is_group",
+                "type": "boolean",
+                "default": false,
+                "description": "If true, return only category groups. If false, return only non-grouped categories. When set, format is ignored."
+            }
+        ]
+    },
+    {
+        "displayName": "Additional Fields",
+        "name": "additionalFields",
+        "type": "collection",
+        "placeholder": "Add Field",
+        "default": {},
+        "displayOptions": {
+            "show": {
+                "resource": [
+                    "category"
+                ],
+                "operation": [
                     "update"
                 ]
             }

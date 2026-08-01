@@ -1,0 +1,85 @@
+name: Spec sync
+
+# Keeps the node in sync with the Lunch Money v2 API spec (@lunch-money/v2-api-spec).
+# Runs daily, detects changes against the highest STABLE published version, regenerates
+# node code, and opens a PR for review. Never commits to main directly, never auto-merges.
+
+on:
+  schedule:
+    - cron: '17 6 * * *' # daily, off the hour to avoid GitHub Actions' peak-minute scheduling delays
+  workflow_dispatch: {}
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Fetch current spec
+        run: node scripts/fetch-spec.js
+
+      - name: Regenerate node code
+        run: node scripts/generate-node.js
+
+      - name: Summarize changes
+        run: node scripts/summarize-changes.js
+
+      - name: Build (sanity check the generated TypeScript compiles)
+        run: npm run build
+
+      - name: Check for changes
+        id: changes
+        run: |
+          # dist/ is committed (despite being .gitignore-listed) because the
+          # documented `npm install github:...` install path has no build
+          # step of its own — the compiled output must ship in the repo.
+          if git status --porcelain -- lm-endpoints.json .spec-version nodes/ dist/ | grep -q .; then
+            echo "changed=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "changed=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Read spec version
+        if: steps.changes.outputs.changed == 'true'
+        id: version
+        run: echo "value=$(cat .spec-version)" >> "$GITHUB_OUTPUT"
+
+      - name: Commit and push
+        if: steps.changes.outputs.changed == 'true'
+        env:
+          BRANCH: spec-sync/${{ steps.version.outputs.value }}
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git checkout -B "$BRANCH"
+          git add lm-endpoints.json .spec-version nodes/ dist/
+          git commit -m "Sync node with Lunch Money v2 API spec ${{ steps.version.outputs.value }}"
+          git push --force origin "$BRANCH"
+
+      - name: Open or update PR
+        if: steps.changes.outputs.changed == 'true'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          BRANCH: spec-sync/${{ steps.version.outputs.value }}
+        run: |
+          if gh pr view "$BRANCH" --json number >/dev/null 2>&1; then
+            gh pr edit "$BRANCH" --body-file .pr-body.md
+          else
+            gh pr create \
+              --head "$BRANCH" \
+              --title "Spec sync: ${{ steps.version.outputs.value }}" \
+              --body-file .pr-body.md
+          fi

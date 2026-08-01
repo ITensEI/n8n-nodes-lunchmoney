@@ -1,8 +1,11 @@
 const fs = require('fs');
 const path = require('path');
 
-const { byTag, endpoints } = JSON.parse(
+const { endpoints } = JSON.parse(
 	fs.readFileSync(path.join(__dirname, '..', 'lm-endpoints.json'), 'utf8'),
+);
+const overrides = JSON.parse(
+	fs.readFileSync(path.join(__dirname, '..', 'overrides.json'), 'utf8'),
 );
 
 const NODES_DIR = path.join(__dirname, '..', 'nodes', 'LunchMoney');
@@ -10,516 +13,175 @@ const DESC_DIR = path.join(NODES_DIR, 'descriptions');
 
 fs.mkdirSync(DESC_DIR, { recursive: true });
 
-// ── Resource → Operation → Endpoint mapping ──
+// ── Resource → Operation → Endpoint mapping (derived from lm-endpoints.json + overrides.json) ──
+//
+// RESOURCE_MAP (operation identity: name/value/action/path/method) is fully
+// spec-derived — that generalizes cleanly via tag→resource mapping and
+// path+method matching (which also self-corrects stale `opId` references).
+//
+// FIELDS (per-field UI metadata) is loaded VERBATIM from overrides.json rather
+// than auto-derived. The hand-written field lists turned out to be 56
+// independent editorial decisions, several of which are wrong relative to the
+// live spec (see the "Confirmed live bugs" section in the project's vault
+// doc) — a general merge algorithm can't faithfully reproduce *and* fix wrong
+// decisions at once. Divergence between an override's fields and the live
+// spec's query/body params is instead computed and written to
+// .field-divergence.json for the sync PR to surface, so real drift (like
+// those bugs) stays visible without the generator silently rewriting
+// hand-curated field lists. New spec operations with no override entry still
+// get mechanically generated — there's nothing hand-written to get wrong yet.
 
-const RESOURCE_MAP = {
-	user: {
-		displayName: 'User',
-		operations: [
-			{ name: 'Get Current User', value: 'get', opId: 'getCurrentUser', method: 'GET', path: '/me', desc: 'Get details about the current user', action: 'Get current user' },
-			{ name: 'Get Summary', value: 'getSummary', opId: 'getSummary', method: 'GET', path: '/summary', desc: 'Get a summary of the user account', action: 'Get account summary' },
-		],
-	},
-	category: {
-		displayName: 'Category',
-		operations: [
-			{ name: 'Create', value: 'create', opId: 'createCategory', method: 'POST', path: '/categories', desc: 'Create a new category', action: 'Create a category' },
-			{ name: 'Delete', value: 'delete', opId: 'deleteCategory', method: 'DELETE', path: '/categories/{id}', desc: 'Delete a category', action: 'Delete a category' },
-			{ name: 'Get', value: 'get', opId: 'getCategoryById', method: 'GET', path: '/categories/{id}', desc: 'Get a single category by ID', action: 'Get a category' },
-			{ name: 'Get Many', value: 'getAll', opId: 'getAllCategories', method: 'GET', path: '/categories', desc: 'Get all categories', action: 'Get many categories' },
-			{ name: 'Update', value: 'update', opId: 'updateCategory', method: 'PUT', path: '/categories/{id}', desc: 'Update a category', action: 'Update a category' },
-		],
-	},
-	transaction: {
-		displayName: 'Transaction',
-		operations: [
-			{ name: 'Create', value: 'create', opId: 'createTransactions', method: 'POST', path: '/transactions', desc: 'Create one or more transactions', action: 'Create transactions' },
-			{ name: 'Create Group', value: 'createGroup', opId: 'createTransactionGroup', method: 'POST', path: '/transactions/group', desc: 'Group multiple transactions', action: 'Create a transaction group' },
-			{ name: 'Delete', value: 'delete', opId: 'deleteTransaction', method: 'DELETE', path: '/transactions/{id}', desc: 'Delete a single transaction', action: 'Delete a transaction' },
-			{ name: 'Delete Attachment', value: 'deleteAttachment', opId: 'deleteTransactionAttachment', method: 'DELETE', path: '/transactions/attachments/{file_id}', desc: 'Delete a transaction attachment', action: 'Delete a transaction attachment' },
-			{ name: 'Delete Group', value: 'deleteGroup', opId: 'deleteTransactionGroup', method: 'DELETE', path: '/transactions/group/{id}', desc: 'Delete a transaction group', action: 'Delete a transaction group' },
-			{ name: 'Get', value: 'get', opId: 'getTransactionById', method: 'GET', path: '/transactions/{id}', desc: 'Get a single transaction by ID', action: 'Get a transaction' },
-			{ name: 'Get Attachment', value: 'getAttachment', opId: 'getTransactionAttachment', method: 'GET', path: '/transactions/attachments/{file_id}', desc: 'Get a transaction attachment', action: 'Get a transaction attachment' },
-			{ name: 'Get Many', value: 'getAll', opId: 'getAllTransactions', method: 'GET', path: '/transactions', desc: 'Get all transactions with optional filters', action: 'Get many transactions' },
-			{ name: 'Split', value: 'split', opId: 'splitTransaction', method: 'POST', path: '/transactions/split/{id}', desc: 'Split a transaction into parts', action: 'Split a transaction' },
-			{ name: 'Unsplit', value: 'unsplit', opId: 'unsplitTransaction', method: 'DELETE', path: '/transactions/split/{id}', desc: 'Remove split from a transaction', action: 'Unsplit a transaction' },
-			{ name: 'Update', value: 'update', opId: 'updateTransaction', method: 'PUT', path: '/transactions/{id}', desc: 'Update a single transaction', action: 'Update a transaction' },
-			{ name: 'Upload Attachment', value: 'uploadAttachment', opId: 'uploadTransactionAttachment', method: 'POST', path: '/transactions/{transaction_id}/attachments', desc: 'Upload an attachment to a transaction', action: 'Upload a transaction attachment' },
-		],
-	},
-	tag: {
-		displayName: 'Tag',
-		operations: [
-			{ name: 'Create', value: 'create', opId: 'createTag', method: 'POST', path: '/tags', desc: 'Create a new tag', action: 'Create a tag' },
-			{ name: 'Delete', value: 'delete', opId: 'deleteTag', method: 'DELETE', path: '/tags/{id}', desc: 'Delete a tag', action: 'Delete a tag' },
-			{ name: 'Get', value: 'get', opId: 'getTagById', method: 'GET', path: '/tags/{id}', desc: 'Get a single tag by ID', action: 'Get a tag' },
-			{ name: 'Get Many', value: 'getAll', opId: 'getAllTags', method: 'GET', path: '/tags', desc: 'Get all tags', action: 'Get many tags' },
-			{ name: 'Update', value: 'update', opId: 'updateTag', method: 'PUT', path: '/tags/{id}', desc: 'Update a tag', action: 'Update a tag' },
-		],
-	},
-	recurringItem: {
-		displayName: 'Recurring Item',
-		operations: [
-			{ name: 'Get', value: 'get', opId: 'getRecurringById', method: 'GET', path: '/recurring_items/{id}', desc: 'Get a single recurring item by ID', action: 'Get a recurring item' },
-			{ name: 'Get Many', value: 'getAll', opId: 'getAllRecurring', method: 'GET', path: '/recurring_items', desc: 'Get all recurring items', action: 'Get many recurring items' },
-		],
-	},
-	budget: {
-		displayName: 'Budget',
-		operations: [
-			{ name: 'Get Settings', value: 'getSettings', opId: 'getBudgetSettings', method: 'GET', path: '/budgets/settings', desc: 'Get budget settings', action: 'Get budget settings' },
-			{ name: 'Remove', value: 'remove', opId: 'removeBudget', method: 'DELETE', path: '/budgets', desc: 'Remove a budget entry', action: 'Remove a budget entry' },
-			{ name: 'Upsert', value: 'upsert', opId: 'upsertBudget', method: 'PUT', path: '/budgets', desc: 'Create or update a budget entry', action: 'Upsert a budget entry' },
-		],
-	},
-	manualAccount: {
-		displayName: 'Manual Account',
-		operations: [
-			{ name: 'Create', value: 'create', opId: 'createManualAccount', method: 'POST', path: '/manual_accounts', desc: 'Create a new manual account', action: 'Create a manual account' },
-			{ name: 'Delete', value: 'delete', opId: 'deleteManualAccount', method: 'DELETE', path: '/manual_accounts/{id}', desc: 'Delete a manual account', action: 'Delete a manual account' },
-			{ name: 'Get', value: 'get', opId: 'getManualAccountById', method: 'GET', path: '/manual_accounts/{id}', desc: 'Get a single manual account by ID', action: 'Get a manual account' },
-			{ name: 'Get Many', value: 'getAll', opId: 'getAllManualAccounts', method: 'GET', path: '/manual_accounts', desc: 'Get all manual accounts', action: 'Get many manual accounts' },
-			{ name: 'Update', value: 'update', opId: 'updateManualAccount', method: 'PUT', path: '/manual_accounts/{id}', desc: 'Update a manual account', action: 'Update a manual account' },
-		],
-	},
-	plaidAccount: {
-		displayName: 'Plaid Account',
-		operations: [
-			{ name: 'Fetch Latest', value: 'fetch', opId: 'triggerPlaidFetch', method: 'POST', path: '/plaid_accounts/fetch', desc: 'Trigger a fetch of latest data from Plaid', action: 'Fetch latest Plaid data' },
-			{ name: 'Get', value: 'get', opId: 'getPlaidAccountById', method: 'GET', path: '/plaid_accounts/{id}', desc: 'Get a single Plaid account by ID', action: 'Get a Plaid account' },
-			{ name: 'Get Many', value: 'getAll', opId: 'getAllPlaidAccounts', method: 'GET', path: '/plaid_accounts', desc: 'Get all Plaid accounts', action: 'Get many Plaid accounts' },
-		],
-	},
-	crypto: {
-		displayName: 'Crypto',
-		operations: [
-			{ name: 'Create Manual', value: 'createManual', opId: 'createCryptoManual', method: 'POST', path: '/crypto/manual', desc: 'Create a manual crypto account', action: 'Create a manual crypto account' },
-			{ name: 'Delete Manual', value: 'deleteManual', opId: 'deleteCryptoManual', method: 'DELETE', path: '/crypto/manual/{id}', desc: 'Delete a manual crypto account', action: 'Delete a manual crypto account' },
-			{ name: 'Get Manual', value: 'getManual', opId: 'getCryptoManualById', method: 'GET', path: '/crypto/manual/{id}', desc: 'Get a manual crypto account by ID', action: 'Get a manual crypto account' },
-			{ name: 'Get Many Manual', value: 'getAllManual', opId: 'getAllCryptoManual', method: 'GET', path: '/crypto/manual', desc: 'Get all manual crypto accounts', action: 'Get many manual crypto accounts' },
-			{ name: 'Get Many Synced', value: 'getAllSynced', opId: 'getAllCryptoSynced', method: 'GET', path: '/crypto/synced', desc: 'Get all synced crypto accounts', action: 'Get many synced crypto accounts' },
-			{ name: 'Get Synced', value: 'getSynced', opId: 'getCryptoSyncedById', method: 'GET', path: '/crypto/synced/{id}', desc: 'Get a synced crypto account by ID', action: 'Get a synced crypto account' },
-			{ name: 'Get Synced By Symbol', value: 'getSyncedBySymbol', opId: 'getCryptoSyncedBalanceBySymbol', method: 'GET', path: '/crypto/synced/{id}/{symbol}', desc: 'Get synced crypto balance for a specific symbol', action: 'Get synced crypto by symbol' },
-			{ name: 'Refresh Synced', value: 'refreshSynced', opId: 'refreshCryptoSynced', method: 'POST', path: '/crypto/synced/{id}/refresh', desc: 'Refresh balances for a synced crypto account', action: 'Refresh synced crypto balances' },
-			{ name: 'Update Manual', value: 'updateManual', opId: 'updateCryptoManual', method: 'PUT', path: '/crypto/manual/{id}', desc: 'Update a manual crypto account', action: 'Update a manual crypto account' },
-			{ name: 'Get All (Legacy)', value: 'getAllLegacy', opId: 'getAllCryptocurrencies', method: 'GET', path: '/cryptocurrencies', desc: 'Get all cryptocurrencies (legacy endpoint)', action: 'Get all cryptocurrencies (legacy)' },
-		],
-	},
-	balanceHistory: {
-		displayName: 'Balance History',
-		operations: [
-			{ name: 'Delete Entry', value: 'deleteEntry', opId: 'deleteBalanceHistoryEntry', method: 'DELETE', path: '/balance_history/entries/{id}', desc: 'Delete a balance history entry', action: 'Delete a balance history entry' },
-			{ name: 'Delete For Account', value: 'deleteForAccount', opId: 'deleteBalanceHistoryForAccount', method: 'DELETE', path: '/balance_history/{account_type}/{account_id}', desc: 'Delete balance history for an account', action: 'Delete balance history for account' },
-			{ name: 'Get All', value: 'getAll', opId: 'getAllBalanceHistory', method: 'GET', path: '/balance_history', desc: 'Get balance history overview', action: 'Get all balance history' },
-			{ name: 'Get For Account', value: 'getForAccount', opId: 'getBalanceHistoryForAccount', method: 'GET', path: '/balance_history/{account_type}/{account_id}', desc: 'Get balance history for an account', action: 'Get balance history for account' },
-			{ name: 'Update For Account', value: 'updateForAccount', opId: 'upsertBalanceHistoryForAccount', method: 'PUT', path: '/balance_history/{account_type}/{account_id}', desc: 'Create or update balance history for an account', action: 'Update balance history for account' },
-			{ name: 'Get Crypto Synced', value: 'getCryptoSynced', opId: 'getBalanceHistoryForCryptoSynced', method: 'GET', path: '/balance_history/crypto_synced/{account_id}/{symbol}', desc: 'Get balance history for a synced crypto account and symbol', action: 'Get crypto synced balance history' },
-			{ name: 'Update Crypto Synced', value: 'updateCryptoSynced', opId: 'upsertBalanceHistoryForCryptoSynced', method: 'PUT', path: '/balance_history/crypto_synced/{account_id}/{symbol}', desc: 'Update balance history for a synced crypto account and symbol', action: 'Update crypto synced balance history' },
-			{ name: 'Delete Crypto Synced', value: 'deleteCryptoSynced', opId: 'deleteBalanceHistoryForCryptoSynced', method: 'DELETE', path: '/balance_history/crypto_synced/{account_id}/{symbol}', desc: 'Delete balance history for a synced crypto account and symbol', action: 'Delete crypto synced balance history' },
-			{ name: 'Update Deleted Details', value: 'updateDeletedDetails', opId: 'updateBalanceHistoryDetails', method: 'PUT', path: '/balance_history/deleted/{account_id}/details', desc: 'Update display details for a deleted account in balance history', action: 'Update deleted account details' },
-		],
-	},
-};
+const tagToResource = {};
+for (const [resourceKey, resource] of Object.entries(overrides.resources)) {
+	for (const tag of resource.tags) tagToResource[tag] = resourceKey;
+}
 
-// ── Custom field definitions per resource/operation ──
-// All names, enums, and descriptions match the live API spec (api-1.json, v2.9.3).
+const excludeOperationIds = new Set(overrides.excludeOperationIds);
+const knownPathDerivedFields = new Set(overrides.knownPathDerivedFields);
 
-const FIELDS = {
-	user: {
-		getSummary: {
-			required: [
-				{ name: 'start_date', displayName: 'Start Date', type: 'string', desc: 'Start of date range in ISO 8601 date format (YYYY-MM-DD)', placeholder: '2024-01-01' },
-				{ name: 'end_date', displayName: 'End Date', type: 'string', desc: 'End of date range in ISO 8601 date format (YYYY-MM-DD)', placeholder: '2024-01-31' },
-			],
-			optional: [
-				{ name: 'include_exclude_from_budgets', displayName: 'Include Excluded From Budget', type: 'boolean', desc: 'Include categories that have the "Exclude from Budgets" flag set' },
-				{ name: 'include_occurrences', displayName: 'Include Occurrences', type: 'boolean', desc: 'Include an occurrences array for each category showing activity per budget period' },
-				{ name: 'include_past_budget_dates', displayName: 'Include Past Budget Dates', type: 'boolean', desc: 'Include three budget occurrences prior to the start date (requires Include Occurrences)' },
-				{ name: 'include_totals', displayName: 'Include Totals', type: 'boolean', desc: 'Include a top-level totals section summarising inflow and outflow' },
-				{ name: 'include_rollover_pool', displayName: 'Include Rollover Pool', type: 'boolean', desc: 'Include a rollover_pool section summarising the current rollover pool balance and previous adjustments' },
-			],
-		},
-	},
-	category: {
-		_idField: { name: 'categoryId', displayName: 'Category ID', ops: ['get', 'update', 'delete'] },
-		getAll: {
-			optional: [
-				{ name: 'format', displayName: 'Format', type: 'options', desc: '"nested" returns grouped categories under their parent; "flattened" returns all at the top level sorted by order', options: ['nested', 'flattened'] },
-				{ name: 'is_group', displayName: 'Is Group Filter', type: 'boolean', desc: 'If true, return only category groups. If false, return only non-grouped categories. When set, format is ignored.' },
-			],
-		},
-		create: {
-			required: [
-				{ name: 'name', displayName: 'Name', type: 'string', desc: 'Name of the category. Must be between 1 and 100 characters and unique.' },
-			],
-			optional: [
-				{ name: 'description', displayName: 'Description', type: 'string', desc: 'Description of the category. Must not exceed 200 characters.' },
-				{ name: 'is_income', displayName: 'Is Income', type: 'boolean', desc: 'If true, transactions in this category are treated as income.' },
-				{ name: 'exclude_from_budget', displayName: 'Exclude From Budget', type: 'boolean', desc: 'If true, transactions in this category are excluded from the budget.' },
-				{ name: 'exclude_from_totals', displayName: 'Exclude From Totals', type: 'boolean', desc: 'If true, transactions in this category are excluded from totals.' },
-				{ name: 'is_group', displayName: 'Is Group', type: 'boolean', desc: 'If true, the category is created as a category group.' },
-				{ name: 'group_id', displayName: 'Group ID', type: 'string', desc: 'If set to the ID of an existing category group, this new category will be assigned to that group. Cannot be set if is_group is true.' },
-				{ name: 'archived', displayName: 'Archived', type: 'boolean', desc: 'If true, the category is archived and not displayed in the Lunch Money app.' },
-				{ name: 'order', displayName: 'Order', type: 'string', desc: 'Index specifying the display position on the categories page.' },
-				{ name: 'collapsed', displayName: 'Collapsed', type: 'boolean', desc: 'If true, the category group appears collapsed in the Lunch Money app. Only applicable to category groups.' },
-				{ name: 'children', displayName: 'Children (JSON)', type: 'json', desc: 'JSON array of existing category IDs or names of new categories to add to this category group. Only applicable when is_group is true.' },
-			],
-		},
-		update: {
-			optional: [
-				{ name: 'name', displayName: 'Name', type: 'string', desc: 'New name for the category. Must be between 1 and 100 characters.' },
-				{ name: 'description', displayName: 'Description', type: 'string', desc: 'New description. Must not exceed 200 characters.' },
-				{ name: 'is_income', displayName: 'Is Income', type: 'boolean', desc: 'If set, indicates whether transactions in this category are treated as income.' },
-				{ name: 'exclude_from_budget', displayName: 'Exclude From Budget', type: 'boolean', desc: 'If set, indicates whether transactions are excluded from the budget.' },
-				{ name: 'exclude_from_totals', displayName: 'Exclude From Totals', type: 'boolean', desc: 'If set, indicates whether transactions are excluded from totals.' },
-				{ name: 'group_id', displayName: 'Group ID', type: 'string', desc: 'If set to an existing category group ID, assigns this category to that group.' },
-				{ name: 'is_group', displayName: 'Is Group', type: 'boolean', desc: 'May not be changed from the current status of the category.' },
-				{ name: 'archived', displayName: 'Archived', type: 'boolean', desc: 'If set, indicates whether the category is archived.' },
-				{ name: 'order', displayName: 'Order', type: 'string', desc: 'Index specifying the display position on the categories page.' },
-				{ name: 'collapsed', displayName: 'Collapsed', type: 'boolean', desc: 'If true, the category group appears collapsed. Only applicable to category groups.' },
-				{ name: 'children', displayName: 'Children (JSON)', type: 'json', desc: 'JSON array of existing category IDs or names of new categories to assign to this category group.' },
-				{ name: 'archived_at', displayName: 'Archived At', type: 'string', desc: 'ISO 8601 datetime for when the category was archived. Set to null to clear it.' },
-			],
-		},
-		delete: {
-			optional: [
-				{ name: 'force', displayName: 'Force', type: 'boolean', desc: 'Set to true to force deletion even if there are dependencies.' },
-			],
-		},
-	},
-	transaction: {
-		_idField: { name: 'transactionId', displayName: 'Transaction ID', ops: ['get', 'update', 'delete', 'split', 'unsplit'] },
-		getAll: {
-			optional: [
-				{ name: 'start_date', displayName: 'Start Date', type: 'string', desc: 'Beginning of the time period to fetch transactions for (YYYY-MM-DD).', placeholder: '2024-01-01' },
-				{ name: 'end_date', displayName: 'End Date', type: 'string', desc: 'End of the time period to fetch transactions for (YYYY-MM-DD). Required if start_date is set.', placeholder: '2024-12-31' },
-				{ name: 'created_since', displayName: 'Created Since', type: 'string', desc: 'Filter to transactions created after this timestamp. Accepts YYYY-MM-DD or ISO 8601 datetime.', placeholder: '2024-01-01' },
-				{ name: 'updated_since', displayName: 'Updated Since', type: 'string', desc: 'Filter to transactions updated after this timestamp. Accepts YYYY-MM-DD or ISO 8601 datetime.', placeholder: '2024-01-01' },
-				{ name: 'category_id', displayName: 'Category ID', type: 'string', desc: 'Filter to transactions associated with the specified category ID. Also matches category groups. Set to 0 to filter for uncategorized.' },
-				{ name: 'tag_id', displayName: 'Tag ID', type: 'string', desc: 'Filter to transactions that have a tag with the specified Tag ID.' },
-				{ name: 'recurring_id', displayName: 'Recurring ID', type: 'string', desc: 'Filter to transactions associated with the specified Recurring Item ID.' },
-				{ name: 'plaid_account_id', displayName: 'Plaid Account ID', type: 'string', desc: 'Filter to transactions associated with the specified Plaid account ID. Set to 0 to omit Plaid transactions.' },
-				{ name: 'manual_account_id', displayName: 'Manual Account ID', type: 'string', desc: 'Filter to transactions associated with the specified manual account ID. Set to 0 to omit manual account transactions.' },
-				{ name: 'status', displayName: 'Status', type: 'options', desc: 'Filter to transactions with the specified status.', options: ['reviewed', 'unreviewed', 'delete_pending'] },
-				{ name: 'is_group_parent', displayName: 'Is Group Parent', type: 'boolean', desc: 'If true, return only transaction groups (parent transactions).' },
-				{ name: 'is_pending', displayName: 'Is Pending', type: 'boolean', desc: 'If true, return only pending transactions. If false, return only non-pending transactions.' },
-				{ name: 'include_pending', displayName: 'Include Pending', type: 'boolean', desc: 'By default, pending transactions are excluded. Set to true to include imported transactions with a pending status.' },
-				{ name: 'include_metadata', displayName: 'Include Metadata', type: 'boolean', desc: 'If true, include custom and Plaid metadata in the response.' },
-				{ name: 'include_split_parents', displayName: 'Include Split Parents', type: 'boolean', desc: 'By default, transactions that were split are not included. Set to true to include them.' },
-				{ name: 'include_group_children', displayName: 'Include Group Children', type: 'boolean', desc: 'By default, individual transactions that joined a transaction group are not included. Set to true to include them.' },
-				{ name: 'include_children', displayName: 'Include Children', type: 'boolean', desc: 'If true, include the children property containing split or grouped child transactions.' },
-				{ name: 'include_files', displayName: 'Include Files', type: 'boolean', desc: 'If true, include the files property containing a list of attached files for each transaction.' },
-				{ name: 'limit', displayName: 'Limit', type: 'string', desc: 'Maximum number of transactions to return.' },
-				{ name: 'offset', displayName: 'Offset', type: 'string', desc: 'Number of records to skip for pagination.' },
-			],
-		},
-		create: {
-			required: [
-				{ name: 'date', displayName: 'Date', type: 'string', desc: 'Date of the transaction in ISO 8601 format (YYYY-MM-DD).', placeholder: '2024-01-15' },
-				{ name: 'amount', displayName: 'Amount', type: 'string', desc: 'Numeric amount without currency symbol (e.g. 4.25 for $4.25). Negative for credits.', placeholder: '25.00' },
-				{ name: 'payee', displayName: 'Payee', type: 'string', desc: 'Payee or merchant name.' },
-			],
-			optional: [
-				{ name: 'currency', displayName: 'Currency', type: 'string', desc: 'Three-letter lowercase ISO 4217 currency code (e.g. "usd"). Defaults to the account primary currency.', placeholder: 'usd' },
-				{ name: 'category_id', displayName: 'Category ID', type: 'string', desc: 'Unique identifier of the category to assign.' },
-				{ name: 'notes', displayName: 'Notes', type: 'string', desc: 'Notes for the transaction.' },
-				{ name: 'status', displayName: 'Status', type: 'options', desc: 'Transaction status.', options: ['reviewed', 'unreviewed'] },
-				{ name: 'external_id', displayName: 'External ID', type: 'string', desc: 'User-defined external ID for deduplication (requires manual_account_id).' },
-				{ name: 'manual_account_id', displayName: 'Manual Account ID', type: 'string', desc: 'ID of the manual account to associate with this transaction.' },
-				{ name: 'tag_ids', displayName: 'Tag IDs', type: 'string', desc: 'Comma-separated list of tag IDs to assign to the transaction.' },
-				{ name: 'recurring_id', displayName: 'Recurring Item ID', type: 'string', desc: 'ID of the recurring item to link to this transaction.' },
-				{ name: 'apply_rules', displayName: 'Apply Rules', type: 'boolean', desc: 'If true, any rules associated with the manual_account_id will be applied to the transaction.' },
-				{ name: 'skip_duplicates', displayName: 'Skip Duplicates', type: 'boolean', desc: 'If true, flag transactions as duplicates if they share the same date, payee, amount, and account.' },
-				{ name: 'skip_balance_update', displayName: 'Skip Balance Update', type: 'boolean', desc: 'If true, the balance of the associated manual account will not be updated.' },
-			],
-		},
-		update: {
-			optional: [
-				{ name: 'date', displayName: 'Date', type: 'string', desc: 'Date of the transaction in ISO 8601 format (YYYY-MM-DD).' },
-				{ name: 'amount', displayName: 'Amount', type: 'string', desc: 'Numeric amount without currency symbol.' },
-				{ name: 'payee', displayName: 'Payee', type: 'string', desc: 'New payee for the transaction.' },
-				{ name: 'currency', displayName: 'Currency', type: 'string', desc: 'Three-letter lowercase ISO 4217 currency code.' },
-				{ name: 'category_id', displayName: 'Category ID', type: 'string', desc: 'Category to assign. Set to null to clear.' },
-				{ name: 'notes', displayName: 'Notes', type: 'string', desc: 'New notes. Set to empty string to clear.' },
-				{ name: 'status', displayName: 'Status', type: 'options', desc: 'Transaction status.', options: ['reviewed', 'unreviewed'] },
-				{ name: 'recurring_id', displayName: 'Recurring Item ID', type: 'string', desc: 'ID of a recurring item to associate. Set to null to clear.' },
-				{ name: 'tag_ids', displayName: 'Tag IDs (replace)', type: 'string', desc: 'Comma-separated tag IDs. Overwrites any existing tags on the transaction.' },
-				{ name: 'additional_tag_ids', displayName: 'Tag IDs (add)', type: 'string', desc: 'Comma-separated tag IDs to add without replacing existing tags.' },
-				{ name: 'external_id', displayName: 'External ID', type: 'string', desc: 'User-defined external ID (requires manual_account_id).' },
-				{ name: 'manual_account_id', displayName: 'Manual Account ID', type: 'string', desc: 'ID of the manual account. Set to null to disassociate.' },
-				{ name: 'plaid_account_id', displayName: 'Plaid Account ID', type: 'string', desc: 'ID of the Plaid account to associate. If set, manual_account_id may not also be set.' },
-				{ name: 'custom_metadata', displayName: 'Custom Metadata (JSON)', type: 'json', desc: 'User-defined JSON data that can be set or cleared via the API.' },
-				{ name: 'update_balance', displayName: 'Update Balance', type: 'boolean', desc: "Set to false to skip updating the account's balance when changing the transaction." },
-			],
-		},
-		createGroup: {
-			required: [
-				{ name: 'date', displayName: 'Date', type: 'string', desc: 'Date for the new grouped transaction in ISO 8601 format (YYYY-MM-DD).', placeholder: '2024-01-15' },
-				{ name: 'payee', displayName: 'Payee', type: 'string', desc: 'Payee for the new grouped transaction.' },
-				{ name: 'ids', displayName: 'Transaction IDs', type: 'string', desc: 'Comma-separated list of existing transaction IDs to group. Split and recurring transactions may not be grouped.' },
-			],
-			optional: [
-				{ name: 'category_id', displayName: 'Category ID', type: 'string', desc: 'ID of an existing category to assign to the grouped transaction.' },
-				{ name: 'notes', displayName: 'Notes', type: 'string', desc: 'Notes for the grouped transaction.' },
-				{ name: 'status', displayName: 'Status', type: 'options', desc: 'Status of the grouped transaction.', options: ['reviewed', 'unreviewed'] },
-				{ name: 'tag_ids', displayName: 'Tag IDs', type: 'string', desc: 'Comma-separated list of tag IDs to assign to the grouped transaction.' },
-			],
-		},
-		deleteGroup: {
-			required: [
-				{ name: 'groupId', displayName: 'Group ID', type: 'string', desc: 'Transaction ID of the group parent to delete.' },
-			],
-		},
-		split: {
-			required: [
-				{ name: 'child_transactions', displayName: 'Child Transactions (JSON)', type: 'json', desc: 'JSON array of child transactions. The sum of amounts must match the parent transaction amount. Each item needs at minimum an "amount" field.' },
-			],
-		},
-		uploadAttachment: {
-			required: [
-				{ name: 'uploadTransactionId', displayName: 'Transaction ID', type: 'string', desc: 'ID of the transaction to attach the file to.' },
-				{ name: 'fileUrl', displayName: 'File URL', type: 'string', desc: 'URL of the file to attach.' },
-			],
-			optional: [
-				{ name: 'fileName', displayName: 'File Name', type: 'string', desc: 'Name for the attachment file.' },
-			],
-		},
-		getAttachment: {
-			required: [
-				{ name: 'fileId', displayName: 'File ID', type: 'string', desc: 'ID of the attachment file.' },
-			],
-		},
-		deleteAttachment: {
-			required: [
-				{ name: 'fileId', displayName: 'File ID', type: 'string', desc: 'ID of the attachment file to delete.' },
-			],
-		},
-	},
-	tag: {
-		_idField: { name: 'tagId', displayName: 'Tag ID', ops: ['get', 'update', 'delete'] },
-		create: {
-			required: [
-				{ name: 'name', displayName: 'Name', type: 'string', desc: 'Name of the tag. Must be between 1 and 100 characters and must not match any existing tag name.' },
-			],
-			optional: [
-				{ name: 'description', displayName: 'Description', type: 'string', desc: 'Description of the tag. Must not exceed 200 characters.' },
-				{ name: 'text_color', displayName: 'Text Color', type: 'string', desc: 'Text color for the tag (e.g. "#ffffff").' },
-				{ name: 'background_color', displayName: 'Background Color', type: 'string', desc: 'Background color for the tag (e.g. "#1a73e8").' },
-				{ name: 'archived', displayName: 'Archived', type: 'boolean', desc: 'If true, the tag is archived and not displayed in the Lunch Money app.' },
-			],
-		},
-		update: {
-			optional: [
-				{ name: 'name', displayName: 'Name', type: 'string', desc: 'New name for the tag. Must be between 1 and 100 characters.' },
-				{ name: 'description', displayName: 'Description', type: 'string', desc: 'New description. Must not exceed 200 characters.' },
-				{ name: 'text_color', displayName: 'Text Color', type: 'string', desc: 'Text color for the tag (e.g. "#ffffff").' },
-				{ name: 'background_color', displayName: 'Background Color', type: 'string', desc: 'Background color for the tag (e.g. "#1a73e8").' },
-				{ name: 'archived', displayName: 'Archived', type: 'boolean', desc: 'If set, indicates whether the tag is archived.' },
-				{ name: 'archived_at', displayName: 'Archived At', type: 'string', desc: 'ISO 8601 datetime for when the tag was archived. Set to null to clear it.' },
-			],
-		},
-		delete: {
-			optional: [
-				{ name: 'force', displayName: 'Force', type: 'boolean', desc: 'Set to true to force deletion even if there are dependencies.' },
-			],
-		},
-	},
-	recurringItem: {
-		_idField: { name: 'recurringItemId', displayName: 'Recurring Item ID', ops: ['get'] },
-		get: {
-			optional: [
-				{ name: 'start_date', displayName: 'Start Date', type: 'string', desc: 'Beginning of the range to populate the matching object (YYYY-MM-DD). Defaults to current month start.', placeholder: '2024-01-01' },
-				{ name: 'end_date', displayName: 'End Date', type: 'string', desc: 'End of the range to populate the matching object (YYYY-MM-DD). Required if start_date is set.', placeholder: '2024-12-31' },
-			],
-		},
-		getAll: {
-			optional: [
-				{ name: 'start_date', displayName: 'Start Date', type: 'string', desc: 'Beginning of the range to populate the matching object (YYYY-MM-DD). Defaults to current month start if omitted.', placeholder: '2024-01-01' },
-				{ name: 'end_date', displayName: 'End Date', type: 'string', desc: 'End of the range to populate the matching object (YYYY-MM-DD). Required if start_date is set.', placeholder: '2024-12-31' },
-				{ name: 'include_suggested', displayName: 'Include Suggested', type: 'boolean', desc: 'If true, include suggested recurring items that Lunch Money has identified but not yet confirmed.' },
-			],
-		},
-	},
-	budget: {
-		getSettings: {},
-		upsert: {
-			required: [
-				{ name: 'start_date', displayName: 'Start Date', type: 'string', desc: 'Start date of the budget period (YYYY-MM-DD). Must be a valid budget period start for the account.', placeholder: '2024-01-01' },
-				{ name: 'category_id', displayName: 'Category ID', type: 'string', desc: 'Category ID for the budget.' },
-				{ name: 'amount', displayName: 'Amount', type: 'string', desc: 'Budget amount as a number or decimal string.', placeholder: '500.00' },
-			],
-			optional: [
-				{ name: 'currency', displayName: 'Currency', type: 'string', desc: 'Three-letter currency code. Defaults to the account primary currency.', placeholder: 'usd' },
-				{ name: 'notes', displayName: 'Notes', type: 'string', desc: 'Optional notes for the budget period.' },
-			],
-		},
-		remove: {
-			// DELETE /budgets uses query string params, not a request body
-			_useQs: true,
-			required: [
-				{ name: 'start_date', displayName: 'Start Date', type: 'string', desc: 'Start date of the budget period to remove (YYYY-MM-DD).', placeholder: '2024-01-01' },
-				{ name: 'category_id', displayName: 'Category ID', type: 'string', desc: 'Category ID of the budget to remove.' },
-			],
-		},
-	},
-	manualAccount: {
-		_idField: { name: 'accountId', displayName: 'Account ID', ops: ['get', 'update', 'delete'] },
-		create: {
-			required: [
-				{ name: 'name', displayName: 'Name', type: 'string', desc: 'Name of the manual account.' },
-				{ name: 'type', displayName: 'Account Type', type: 'options', desc: 'The type of the manual account.', options: ['cash', 'credit', 'investment', 'retirement', 'brokerage', 'other asset', 'other liability', 'loan', 'real estate', 'vehicle', 'cryptocurrency', 'employee compensation'] },
-				{ name: 'balance', displayName: 'Balance', type: 'string', desc: 'Current balance as a number or decimal string (up to 4 decimal places).', placeholder: '1000.00' },
-			],
-			optional: [
-				{ name: 'currency', displayName: 'Currency', type: 'string', desc: 'Three-letter lowercase ISO 4217 currency code.', placeholder: 'usd' },
-				{ name: 'institution_name', displayName: 'Institution Name', type: 'string', desc: 'Name of institution holding the account.' },
-				{ name: 'display_name', displayName: 'Display Name', type: 'string', desc: 'Display name for the account as shown in the app. Derived from institution_name and name if not set.' },
-				{ name: 'subtype', displayName: 'Subtype', type: 'string', desc: 'Optional account subtype (e.g. "checking", "savings", "retirement").' },
-				{ name: 'balance_as_of', displayName: 'Balance As Of', type: 'string', desc: 'Date/time the balance was last updated in ISO 8601 format.' },
-				{ name: 'status', displayName: 'Status', type: 'options', desc: 'Status of the account.', options: ['active', 'closed'] },
-				{ name: 'closed_on', displayName: 'Closed On', type: 'string', desc: 'Date this account was closed (YYYY-MM-DD). If set, status must also be set to "closed".' },
-				{ name: 'external_id', displayName: 'External ID', type: 'string', desc: 'Optional user-defined ID for the account.' },
-				{ name: 'custom_metadata', displayName: 'Custom Metadata (JSON)', type: 'json', desc: 'Optional JSON object with additional data related to this account.' },
-				{ name: 'exclude_from_transactions', displayName: 'Exclude From Transactions', type: 'boolean', desc: 'If true, transactions may not be created or imported for this account.' },
-			],
-		},
-		update: {
-			optional: [
-				{ name: 'name', displayName: 'Name', type: 'string', desc: 'New name for the account.' },
-				{ name: 'institution_name', displayName: 'Institution Name', type: 'string', desc: 'New name of the institution holding the account.' },
-				{ name: 'display_name', displayName: 'Display Name', type: 'string', desc: 'New display name. Must be unique for the user.' },
-				{ name: 'type', displayName: 'Account Type', type: 'options', desc: 'New type for the account.', options: ['cash', 'credit', 'investment', 'retirement', 'brokerage', 'other asset', 'other liability', 'loan', 'real estate', 'vehicle', 'cryptocurrency', 'employee compensation'] },
-				{ name: 'subtype', displayName: 'Subtype', type: 'string', desc: 'New account subtype (e.g. "checking", "savings").' },
-				{ name: 'balance', displayName: 'Balance', type: 'string', desc: 'New balance as a number or decimal string.' },
-				{ name: 'currency', displayName: 'Currency', type: 'string', desc: 'New three-letter lowercase ISO 4217 currency code.' },
-				{ name: 'balance_as_of', displayName: 'Balance As Of', type: 'string', desc: 'New date for the balance timestamp (YYYY-MM-DD or ISO 8601 datetime).' },
-				{ name: 'status', displayName: 'Status', type: 'options', desc: 'New status. If set to "closed", closed_on will be set to today if not provided.', options: ['active', 'closed'] },
-				{ name: 'closed_on', displayName: 'Closed On', type: 'string', desc: 'Date this account was closed (YYYY-MM-DD). Account must currently be closed or being set to closed.' },
-				{ name: 'external_id', displayName: 'External ID', type: 'string', desc: 'User-defined external ID.' },
-				{ name: 'custom_metadata', displayName: 'Custom Metadata (JSON)', type: 'json', desc: 'Optional JSON object with additional data related to this account.' },
-				{ name: 'exclude_from_transactions', displayName: 'Exclude From Transactions', type: 'boolean', desc: 'If true, transactions may not be created or imported for this account.' },
-			],
-		},
-		delete: {
-			optional: [
-				{ name: 'delete_items', displayName: 'Delete Items', type: 'boolean', desc: 'If true, also delete any transactions, rules, and recurring items associated with this account.' },
-				{ name: 'delete_balance_history', displayName: 'Delete Balance History', type: 'boolean', desc: 'If true, delete any balance history associated with this account.' },
-			],
-		},
-	},
-	plaidAccount: {
-		_idField: { name: 'plaidAccountId', displayName: 'Plaid Account ID', ops: ['get'] },
-		fetch: {
-			_useQs: true,
-			optional: [
-				{ name: 'start_date', displayName: 'Start Date', type: 'string', desc: 'Beginning of the time period to fetch transactions for (YYYY-MM-DD). If omitted, the most recent transactions are returned.', placeholder: '2024-01-01' },
-				{ name: 'end_date', displayName: 'End Date', type: 'string', desc: 'End of the time period to fetch transactions for (YYYY-MM-DD). Required if start_date is set.', placeholder: '2024-12-31' },
-				{ name: 'id', displayName: 'Plaid Account ID', type: 'string', desc: 'Specific Plaid account ID to fetch. If not set, triggers a fetch for all eligible accounts.' },
-			],
-		},
-	},
-	crypto: {
-		_idField: { name: 'cryptoId', displayName: 'Crypto Account ID', ops: ['getManual', 'updateManual', 'deleteManual', 'getSynced', 'getSyncedBySymbol', 'refreshSynced'] },
-		createManual: {
-			required: [
-				{ name: 'name', displayName: 'Name', type: 'string', desc: 'Name of the crypto account' },
-				{ name: 'currency', displayName: 'Currency/Symbol', type: 'string', desc: 'Cryptocurrency symbol (e.g. "btc")', placeholder: 'btc' },
-				{ name: 'balance', displayName: 'Balance', type: 'string', desc: 'Current balance', placeholder: '0.5' },
-			],
-			optional: [
-				{ name: 'institution_name', displayName: 'Institution Name', type: 'string', desc: 'Name of the exchange or wallet' },
-				{ name: 'notes', displayName: 'Notes', type: 'string', desc: 'Notes about this crypto account' },
-			],
-		},
-		updateManual: {
-			optional: [
-				{ name: 'name', displayName: 'Name', type: 'string', desc: 'Name of the crypto account' },
-				{ name: 'balance', displayName: 'Balance', type: 'string', desc: 'Current balance' },
-				{ name: 'currency', displayName: 'Currency/Symbol', type: 'string', desc: 'Cryptocurrency symbol' },
-				{ name: 'institution_name', displayName: 'Institution Name', type: 'string', desc: 'Exchange or wallet name' },
-				{ name: 'notes', displayName: 'Notes', type: 'string', desc: 'Notes about this account' },
-			],
-		},
-		getSyncedBySymbol: {
-			required: [
-				{ name: 'cryptoSymbol', displayName: 'Symbol', type: 'string', desc: 'Cryptocurrency symbol (e.g. "btc")', placeholder: 'btc' },
-			],
-		},
-	},
-	balanceHistory: {
-		getAll: {
-			optional: [
-				{ name: 'start_date', displayName: 'Start Date', type: 'string', desc: 'Start date (YYYY-MM-DD)', placeholder: '2024-01-01' },
-				{ name: 'end_date', displayName: 'End Date', type: 'string', desc: 'End date (YYYY-MM-DD)', placeholder: '2024-12-31' },
-			],
-		},
-		getForAccount: {
-			required: [
-				{ name: 'account_type', displayName: 'Account Type', type: 'options', desc: 'Type of account', options: ['manual', 'plaid', 'crypto_manual', 'deleted'] },
-				{ name: 'account_id', displayName: 'Account ID', type: 'string', desc: 'ID of the account' },
-			],
-			optional: [
-				{ name: 'start_date', displayName: 'Start Date', type: 'string', desc: 'Start date (YYYY-MM-DD)', placeholder: '2024-01-01' },
-				{ name: 'end_date', displayName: 'End Date', type: 'string', desc: 'End date (YYYY-MM-DD)', placeholder: '2024-12-31' },
-			],
-		},
-		updateForAccount: {
-			required: [
-				{ name: 'account_type', displayName: 'Account Type', type: 'options', desc: 'Type of account', options: ['manual', 'plaid', 'crypto_manual', 'deleted'] },
-				{ name: 'account_id', displayName: 'Account ID', type: 'string', desc: 'ID of the account' },
-				{ name: 'balanceEntries', displayName: 'Balance Entries (JSON)', type: 'json', desc: 'JSON array of balance entries with date and balance fields' },
-			],
-		},
-		deleteForAccount: {
-			required: [
-				{ name: 'account_type', displayName: 'Account Type', type: 'options', desc: 'Type of account', options: ['manual', 'plaid', 'crypto_manual', 'deleted'] },
-				{ name: 'account_id', displayName: 'Account ID', type: 'string', desc: 'ID of the account' },
-			],
-			optional: [
-				{ name: 'start_date', displayName: 'Start Date', type: 'string', desc: 'Start date of range to delete (YYYY-MM-DD)' },
-				{ name: 'end_date', displayName: 'End Date', type: 'string', desc: 'End date of range to delete (YYYY-MM-DD)' },
-			],
-		},
-		deleteEntry: {
-			required: [
-				{ name: 'entryId', displayName: 'Entry ID', type: 'string', desc: 'ID of the balance history entry to delete' },
-			],
-		},
-		getCryptoSynced: {
-			required: [
-				{ name: 'cryptoSyncedAccountId', displayName: 'Account ID', type: 'string', desc: 'ID of the synced crypto account' },
-				{ name: 'cryptoSyncedSymbol', displayName: 'Symbol', type: 'string', desc: 'Cryptocurrency symbol (e.g. "btc")', placeholder: 'btc' },
-			],
-			optional: [
-				{ name: 'start_date', displayName: 'Start Date', type: 'string', desc: 'Start date (YYYY-MM-DD)', placeholder: '2024-01-01' },
-				{ name: 'end_date', displayName: 'End Date', type: 'string', desc: 'End date (YYYY-MM-DD)', placeholder: '2024-12-31' },
-			],
-		},
-		updateCryptoSynced: {
-			required: [
-				{ name: 'cryptoSyncedAccountId', displayName: 'Account ID', type: 'string', desc: 'ID of the synced crypto account' },
-				{ name: 'cryptoSyncedSymbol', displayName: 'Symbol', type: 'string', desc: 'Cryptocurrency symbol (e.g. "btc")', placeholder: 'btc' },
-				{ name: 'balanceEntries', displayName: 'Balance Entries (JSON)', type: 'json', desc: 'JSON array of balance entries with date and balance fields' },
-			],
-		},
-		deleteCryptoSynced: {
-			required: [
-				{ name: 'cryptoSyncedAccountId', displayName: 'Account ID', type: 'string', desc: 'ID of the synced crypto account' },
-				{ name: 'cryptoSyncedSymbol', displayName: 'Symbol', type: 'string', desc: 'Cryptocurrency symbol (e.g. "btc")', placeholder: 'btc' },
-			],
-			optional: [
-				{ name: 'start_date', displayName: 'Start Date', type: 'string', desc: 'Start date of range to delete (YYYY-MM-DD)' },
-				{ name: 'end_date', displayName: 'End Date', type: 'string', desc: 'End date of range to delete (YYYY-MM-DD)' },
-			],
-		},
-		updateDeletedDetails: {
-			required: [
-				{ name: 'deletedAccountId', displayName: 'Deleted Account ID', type: 'string', desc: 'ID of the deleted account source' },
-				{ name: 'detailsData', displayName: 'Details (JSON)', type: 'json', desc: 'JSON object with display_name and/or other metadata fields' },
-			],
-		},
-	},
-};
+function toTitleCase(snakeName) {
+	return snakeName.replace(/_/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase());
+}
+
+// Splits a camelCase operationId into words, e.g. "getAllCryptoManual" -> ['get','All','Crypto','Manual']
+function splitCamelCase(id) {
+	return id.match(/[A-Z]?[a-z0-9]+|[A-Z]+(?=[A-Z]|$)/g) || [id];
+}
+
+// Best-effort fallback for spec operations with no override entry yet.
+// Flagged in .new-operations.json for review rather than trusted silently.
+function deriveOperationDisplay(endpoint) {
+	const words = splitCamelCase(endpoint.operationId);
+	const name = words.map((w, i) => (i === 0 ? w.charAt(0).toUpperCase() + w.slice(1) : w)).join(' ');
+	const value = words.map((w, i) => (i === 0 ? w.toLowerCase() : w.charAt(0).toUpperCase() + w.slice(1))).join('');
+	return { name, value, action: endpoint.summary || name };
+}
+
+function deriveFieldType(specField) {
+	if (specField.enum) return 'options';
+	if (specField.type === 'boolean') return 'boolean';
+	if (specField.type === 'array' || specField.type === 'object') return 'json';
+	return 'string';
+}
+
+function deriveField(specField) {
+	const field = {
+		name: specField.name,
+		displayName: toTitleCase(specField.name),
+		type: deriveFieldType(specField),
+		desc: specField.description || '',
+	};
+	if (specField.enum) field.options = specField.enum;
+	return field;
+}
+
+// Fields a spec-sync PR should actually validate against: query params and
+// non-legacy body props. Path params are excluded — several are renamed for
+// n8n-side disambiguation (e.g. {symbol} -> cryptoSymbol) by handler code this
+// generator doesn't touch, so comparing them by name produces false positives.
+function specFieldCandidates(endpoint) {
+	return [
+		...endpoint.params.filter((p) => p.in !== 'path'),
+		...endpoint.bodyProps.filter((p) => p.updatable !== false),
+	];
+}
+
+// overrides.json's `operations` key order reflects the original hand-picked
+// operation ordering (e.g. Create, Delete, Get, Get Many, Update) — preserved
+// here so the generated dropdown order (and its `default` value) doesn't
+// silently reshuffle to spec/YAML declaration order.
+const operationOrder = new Map(Object.keys(overrides.operations).map((opId, i) => [opId, i]));
+
+const RESOURCE_MAP = {};
+const FIELDS = {};
+for (const [resourceKey, resource] of Object.entries(overrides.resources)) {
+	RESOURCE_MAP[resourceKey] = { displayName: resource.displayName, operations: [] };
+	FIELDS[resourceKey] = {};
+	if (resource.idField) FIELDS[resourceKey]._idField = resource.idField;
+}
+
+const newOperations = [];
+const fieldDivergence = [];
+
+for (const endpoint of endpoints) {
+	if (excludeOperationIds.has(endpoint.operationId)) continue;
+
+	const tag = endpoint.tags[0];
+	const resourceKey = tagToResource[tag];
+	if (!resourceKey) {
+		console.warn(
+			`WARNING: tag "${tag}" (operationId=${endpoint.operationId}) has no resource mapping in overrides.json - skipped. Add it under "resources".`,
+		);
+		continue;
+	}
+
+	const override = overrides.operations[endpoint.operationId];
+	let name, value, desc, action;
+	if (override) {
+		({ name, value, desc, action } = override);
+	} else {
+		({ name, value, action } = deriveOperationDisplay(endpoint));
+		desc = endpoint.summary;
+		newOperations.push({ resourceKey, operationId: endpoint.operationId, value, name, method: endpoint.method, path: endpoint.path });
+	}
+
+	RESOURCE_MAP[resourceKey].operations.push({
+		name,
+		value,
+		opId: endpoint.operationId,
+		method: endpoint.method,
+		path: endpoint.path,
+		desc,
+		action,
+	});
+
+	if (override && override.fields) {
+		FIELDS[resourceKey][value] = override.fields;
+
+		const candidates = specFieldCandidates(endpoint);
+		const overrideFieldNames = new Set(
+			[...(override.fields.required || []), ...(override.fields.optional || [])].map((f) => f.name),
+		);
+		const missingFromOverride = candidates
+			.filter((c) => !overrideFieldNames.has(c.name))
+			.map((c) => c.name);
+		const staleInOverride = [...overrideFieldNames].filter(
+			(n) => !knownPathDerivedFields.has(n) && !candidates.some((c) => c.name === n),
+		);
+		if (missingFromOverride.length || staleInOverride.length) {
+			fieldDivergence.push({ resourceKey, value, operationId: endpoint.operationId, missingFromOverride, staleInOverride });
+		}
+	} else if (!override) {
+		// New operation, no hand-written fields to diverge from - derive from spec directly.
+		const candidates = specFieldCandidates(endpoint);
+		const required = candidates.filter((c) => c.required).map(deriveField);
+		const optional = candidates.filter((c) => !c.required).map(deriveField);
+		const fieldsEntry = {};
+		if (required.length) fieldsEntry.required = required;
+		if (optional.length) fieldsEntry.optional = optional;
+		if (Object.keys(fieldsEntry).length) FIELDS[resourceKey][value] = fieldsEntry;
+	}
+}
+
+// New operations (no entry in operationOrder) sort to the end, in the order encountered.
+for (const resource of Object.values(RESOURCE_MAP)) {
+	resource.operations.sort((a, b) => (operationOrder.get(a.opId) ?? Infinity) - (operationOrder.get(b.opId) ?? Infinity));
+}
+
+if (newOperations.length) {
+	fs.writeFileSync(
+		path.join(__dirname, '..', '.new-operations.json'),
+		JSON.stringify(newOperations, null, '\t') + '\n',
+	);
+	console.log(`${newOperations.length} new operation(s) had no override - auto-derived, see .new-operations.json for review.\n`);
+}
+if (fieldDivergence.length) {
+	fs.writeFileSync(
+		path.join(__dirname, '..', '.field-divergence.json'),
+		JSON.stringify(fieldDivergence, null, '\t') + '\n',
+	);
+	console.log(`${fieldDivergence.length} operation(s) have field divergence from the live spec, see .field-divergence.json for review.\n`);
+}
 
 // ── Code generators ──
 

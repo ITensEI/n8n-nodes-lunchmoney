@@ -1,0 +1,1966 @@
+{
+	"_comment": "Hand-maintained overrides for scripts/generate-node.js. Existing operations carry their current display name/value/action and per-field UI metadata verbatim (FIELDS is not auto-rewritten — see the Lunch Money n8n Custom Node vault doc, 2026-08-01, for why). New spec operations without an entry here fall back to mechanical derivation and are flagged in the sync PR for review. knownPathDerivedFields are field names driven by generateOperationHandler special-case routing code (not general spec params/bodyProps) and are excluded from the spec-divergence check to avoid false positives.",
+	"knownPathDerivedFields": [
+		"fileId",
+		"uploadTransactionId",
+		"groupId",
+		"entryId",
+		"cryptoSymbol",
+		"cryptoSyncedAccountId",
+		"cryptoSyncedSymbol",
+		"deletedAccountId",
+		"account_type",
+		"account_id"
+	],
+	"resources": {
+		"user": {
+			"displayName": "User",
+			"tags": [
+				"me",
+				"summary"
+			]
+		},
+		"category": {
+			"displayName": "Category",
+			"tags": [
+				"categories"
+			],
+			"idField": {
+				"name": "categoryId",
+				"displayName": "Category ID",
+				"ops": [
+					"get",
+					"update",
+					"delete"
+				]
+			}
+		},
+		"transaction": {
+			"displayName": "Transaction",
+			"tags": [
+				"transactions (bulk)",
+				"transactions (group)",
+				"transactions",
+				"transactions (files)",
+				"transactions (split)"
+			],
+			"idField": {
+				"name": "transactionId",
+				"displayName": "Transaction ID",
+				"ops": [
+					"get",
+					"update",
+					"delete",
+					"split",
+					"unsplit"
+				]
+			}
+		},
+		"tag": {
+			"displayName": "Tag",
+			"tags": [
+				"tags"
+			],
+			"idField": {
+				"name": "tagId",
+				"displayName": "Tag ID",
+				"ops": [
+					"get",
+					"update",
+					"delete"
+				]
+			}
+		},
+		"recurringItem": {
+			"displayName": "Recurring Item",
+			"tags": [
+				"recurring_items"
+			],
+			"idField": {
+				"name": "recurringItemId",
+				"displayName": "Recurring Item ID",
+				"ops": [
+					"get"
+				]
+			}
+		},
+		"budget": {
+			"displayName": "Budget",
+			"tags": [
+				"budgets"
+			]
+		},
+		"manualAccount": {
+			"displayName": "Manual Account",
+			"tags": [
+				"manual_accounts"
+			],
+			"idField": {
+				"name": "accountId",
+				"displayName": "Account ID",
+				"ops": [
+					"get",
+					"update",
+					"delete"
+				]
+			}
+		},
+		"plaidAccount": {
+			"displayName": "Plaid Account",
+			"tags": [
+				"plaid_accounts"
+			],
+			"idField": {
+				"name": "plaidAccountId",
+				"displayName": "Plaid Account ID",
+				"ops": [
+					"get"
+				]
+			}
+		},
+		"crypto": {
+			"displayName": "Crypto",
+			"tags": [
+				"crypto-manual",
+				"crypto-synced"
+			],
+			"idField": {
+				"name": "cryptoId",
+				"displayName": "Crypto Account ID",
+				"ops": [
+					"getManual",
+					"updateManual",
+					"deleteManual",
+					"getSynced",
+					"getSyncedBySymbol",
+					"refreshSynced"
+				]
+			}
+		},
+		"balanceHistory": {
+			"displayName": "Balance History",
+			"tags": [
+				"balance_history"
+			]
+		}
+	},
+	"excludeOperationIds": [
+		"createCryptocurrency",
+		"updateTransactions",
+		"deleteTransactions"
+	],
+	"operations": {
+		"getMe": {
+			"resource": "user",
+			"value": "get",
+			"name": "Get Current User",
+			"desc": "Get details about the current user",
+			"action": "Get current user"
+		},
+		"getBudgetSummary": {
+			"resource": "user",
+			"value": "getSummary",
+			"name": "Get Summary",
+			"desc": "Get a summary of the user account",
+			"action": "Get account summary",
+			"fields": {
+				"required": [
+					{
+						"name": "start_date",
+						"displayName": "Start Date",
+						"type": "string",
+						"desc": "Start of date range in ISO 8601 date format (YYYY-MM-DD)",
+						"placeholder": "2024-01-01"
+					},
+					{
+						"name": "end_date",
+						"displayName": "End Date",
+						"type": "string",
+						"desc": "End of date range in ISO 8601 date format (YYYY-MM-DD)",
+						"placeholder": "2024-01-31"
+					}
+				],
+				"optional": [
+					{
+						"name": "include_exclude_from_budgets",
+						"displayName": "Include Excluded From Budget",
+						"type": "boolean",
+						"desc": "Include categories that have the \"Exclude from Budgets\" flag set"
+					},
+					{
+						"name": "include_occurrences",
+						"displayName": "Include Occurrences",
+						"type": "boolean",
+						"desc": "Include an occurrences array for each category showing activity per budget period"
+					},
+					{
+						"name": "include_past_budget_dates",
+						"displayName": "Include Past Budget Dates",
+						"type": "boolean",
+						"desc": "Include three budget occurrences prior to the start date (requires Include Occurrences)"
+					},
+					{
+						"name": "include_totals",
+						"displayName": "Include Totals",
+						"type": "boolean",
+						"desc": "Include a top-level totals section summarising inflow and outflow"
+					},
+					{
+						"name": "include_rollover_pool",
+						"displayName": "Include Rollover Pool",
+						"type": "boolean",
+						"desc": "Include a rollover_pool section summarising the current rollover pool balance and previous adjustments"
+					}
+				]
+			}
+		},
+		"createCategory": {
+			"resource": "category",
+			"value": "create",
+			"name": "Create",
+			"desc": "Create a new category",
+			"action": "Create a category",
+			"fields": {
+				"required": [
+					{
+						"name": "name",
+						"displayName": "Name",
+						"type": "string",
+						"desc": "Name of the category. Must be between 1 and 100 characters and unique."
+					}
+				],
+				"optional": [
+					{
+						"name": "description",
+						"displayName": "Description",
+						"type": "string",
+						"desc": "Description of the category. Must not exceed 200 characters."
+					},
+					{
+						"name": "is_income",
+						"displayName": "Is Income",
+						"type": "boolean",
+						"desc": "If true, transactions in this category are treated as income."
+					},
+					{
+						"name": "exclude_from_budget",
+						"displayName": "Exclude From Budget",
+						"type": "boolean",
+						"desc": "If true, transactions in this category are excluded from the budget."
+					},
+					{
+						"name": "exclude_from_totals",
+						"displayName": "Exclude From Totals",
+						"type": "boolean",
+						"desc": "If true, transactions in this category are excluded from totals."
+					},
+					{
+						"name": "is_group",
+						"displayName": "Is Group",
+						"type": "boolean",
+						"desc": "If true, the category is created as a category group."
+					},
+					{
+						"name": "group_id",
+						"displayName": "Group ID",
+						"type": "string",
+						"desc": "If set to the ID of an existing category group, this new category will be assigned to that group. Cannot be set if is_group is true."
+					},
+					{
+						"name": "archived",
+						"displayName": "Archived",
+						"type": "boolean",
+						"desc": "If true, the category is archived and not displayed in the Lunch Money app."
+					},
+					{
+						"name": "order",
+						"displayName": "Order",
+						"type": "string",
+						"desc": "Index specifying the display position on the categories page."
+					},
+					{
+						"name": "collapsed",
+						"displayName": "Collapsed",
+						"type": "boolean",
+						"desc": "If true, the category group appears collapsed in the Lunch Money app. Only applicable to category groups."
+					},
+					{
+						"name": "children",
+						"displayName": "Children (JSON)",
+						"type": "json",
+						"desc": "JSON array of existing category IDs or names of new categories to add to this category group. Only applicable when is_group is true."
+					}
+				]
+			}
+		},
+		"deleteCategory": {
+			"resource": "category",
+			"value": "delete",
+			"name": "Delete",
+			"desc": "Delete a category",
+			"action": "Delete a category",
+			"fields": {
+				"optional": [
+					{
+						"name": "force",
+						"displayName": "Force",
+						"type": "boolean",
+						"desc": "Set to true to force deletion even if there are dependencies."
+					}
+				]
+			}
+		},
+		"getCategoryById": {
+			"resource": "category",
+			"value": "get",
+			"name": "Get",
+			"desc": "Get a single category by ID",
+			"action": "Get a category"
+		},
+		"getAllCategories": {
+			"resource": "category",
+			"value": "getAll",
+			"name": "Get Many",
+			"desc": "Get all categories",
+			"action": "Get many categories",
+			"fields": {
+				"optional": [
+					{
+						"name": "format",
+						"displayName": "Format",
+						"type": "options",
+						"desc": "\"nested\" returns grouped categories under their parent; \"flattened\" returns all at the top level sorted by order",
+						"options": [
+							"nested",
+							"flattened"
+						]
+					},
+					{
+						"name": "is_group",
+						"displayName": "Is Group Filter",
+						"type": "boolean",
+						"desc": "If true, return only category groups. If false, return only non-grouped categories. When set, format is ignored."
+					}
+				]
+			}
+		},
+		"updateCategory": {
+			"resource": "category",
+			"value": "update",
+			"name": "Update",
+			"desc": "Update a category",
+			"action": "Update a category",
+			"fields": {
+				"optional": [
+					{
+						"name": "name",
+						"displayName": "Name",
+						"type": "string",
+						"desc": "New name for the category. Must be between 1 and 100 characters."
+					},
+					{
+						"name": "description",
+						"displayName": "Description",
+						"type": "string",
+						"desc": "New description. Must not exceed 200 characters."
+					},
+					{
+						"name": "is_income",
+						"displayName": "Is Income",
+						"type": "boolean",
+						"desc": "If set, indicates whether transactions in this category are treated as income."
+					},
+					{
+						"name": "exclude_from_budget",
+						"displayName": "Exclude From Budget",
+						"type": "boolean",
+						"desc": "If set, indicates whether transactions are excluded from the budget."
+					},
+					{
+						"name": "exclude_from_totals",
+						"displayName": "Exclude From Totals",
+						"type": "boolean",
+						"desc": "If set, indicates whether transactions are excluded from totals."
+					},
+					{
+						"name": "group_id",
+						"displayName": "Group ID",
+						"type": "string",
+						"desc": "If set to an existing category group ID, assigns this category to that group."
+					},
+					{
+						"name": "is_group",
+						"displayName": "Is Group",
+						"type": "boolean",
+						"desc": "May not be changed from the current status of the category."
+					},
+					{
+						"name": "archived",
+						"displayName": "Archived",
+						"type": "boolean",
+						"desc": "If set, indicates whether the category is archived."
+					},
+					{
+						"name": "order",
+						"displayName": "Order",
+						"type": "string",
+						"desc": "Index specifying the display position on the categories page."
+					},
+					{
+						"name": "collapsed",
+						"displayName": "Collapsed",
+						"type": "boolean",
+						"desc": "If true, the category group appears collapsed. Only applicable to category groups."
+					},
+					{
+						"name": "children",
+						"displayName": "Children (JSON)",
+						"type": "json",
+						"desc": "JSON array of existing category IDs or names of new categories to assign to this category group."
+					},
+					{
+						"name": "archived_at",
+						"displayName": "Archived At",
+						"type": "string",
+						"desc": "ISO 8601 datetime for when the category was archived. Set to null to clear it."
+					}
+				]
+			}
+		},
+		"createNewTransactions": {
+			"resource": "transaction",
+			"value": "create",
+			"name": "Create",
+			"desc": "Create one or more transactions",
+			"action": "Create transactions",
+			"fields": {
+				"required": [
+					{
+						"name": "date",
+						"displayName": "Date",
+						"type": "string",
+						"desc": "Date of the transaction in ISO 8601 format (YYYY-MM-DD).",
+						"placeholder": "2024-01-15"
+					},
+					{
+						"name": "amount",
+						"displayName": "Amount",
+						"type": "string",
+						"desc": "Numeric amount without currency symbol (e.g. 4.25 for $4.25). Negative for credits.",
+						"placeholder": "25.00"
+					},
+					{
+						"name": "payee",
+						"displayName": "Payee",
+						"type": "string",
+						"desc": "Payee or merchant name."
+					}
+				],
+				"optional": [
+					{
+						"name": "currency",
+						"displayName": "Currency",
+						"type": "string",
+						"desc": "Three-letter lowercase ISO 4217 currency code (e.g. \"usd\"). Defaults to the account primary currency.",
+						"placeholder": "usd"
+					},
+					{
+						"name": "category_id",
+						"displayName": "Category ID",
+						"type": "string",
+						"desc": "Unique identifier of the category to assign."
+					},
+					{
+						"name": "notes",
+						"displayName": "Notes",
+						"type": "string",
+						"desc": "Notes for the transaction."
+					},
+					{
+						"name": "status",
+						"displayName": "Status",
+						"type": "options",
+						"desc": "Transaction status.",
+						"options": [
+							"reviewed",
+							"unreviewed"
+						]
+					},
+					{
+						"name": "external_id",
+						"displayName": "External ID",
+						"type": "string",
+						"desc": "User-defined external ID for deduplication (requires manual_account_id)."
+					},
+					{
+						"name": "manual_account_id",
+						"displayName": "Manual Account ID",
+						"type": "string",
+						"desc": "ID of the manual account to associate with this transaction."
+					},
+					{
+						"name": "tag_ids",
+						"displayName": "Tag IDs",
+						"type": "string",
+						"desc": "Comma-separated list of tag IDs to assign to the transaction."
+					},
+					{
+						"name": "recurring_id",
+						"displayName": "Recurring Item ID",
+						"type": "string",
+						"desc": "ID of the recurring item to link to this transaction."
+					},
+					{
+						"name": "apply_rules",
+						"displayName": "Apply Rules",
+						"type": "boolean",
+						"desc": "If true, any rules associated with the manual_account_id will be applied to the transaction."
+					},
+					{
+						"name": "skip_duplicates",
+						"displayName": "Skip Duplicates",
+						"type": "boolean",
+						"desc": "If true, flag transactions as duplicates if they share the same date, payee, amount, and account."
+					},
+					{
+						"name": "skip_balance_update",
+						"displayName": "Skip Balance Update",
+						"type": "boolean",
+						"desc": "If true, the balance of the associated manual account will not be updated."
+					}
+				]
+			}
+		},
+		"groupTransactions": {
+			"resource": "transaction",
+			"value": "createGroup",
+			"name": "Create Group",
+			"desc": "Group multiple transactions",
+			"action": "Create a transaction group",
+			"fields": {
+				"required": [
+					{
+						"name": "date",
+						"displayName": "Date",
+						"type": "string",
+						"desc": "Date for the new grouped transaction in ISO 8601 format (YYYY-MM-DD).",
+						"placeholder": "2024-01-15"
+					},
+					{
+						"name": "payee",
+						"displayName": "Payee",
+						"type": "string",
+						"desc": "Payee for the new grouped transaction."
+					},
+					{
+						"name": "ids",
+						"displayName": "Transaction IDs",
+						"type": "string",
+						"desc": "Comma-separated list of existing transaction IDs to group. Split and recurring transactions may not be grouped."
+					}
+				],
+				"optional": [
+					{
+						"name": "category_id",
+						"displayName": "Category ID",
+						"type": "string",
+						"desc": "ID of an existing category to assign to the grouped transaction."
+					},
+					{
+						"name": "notes",
+						"displayName": "Notes",
+						"type": "string",
+						"desc": "Notes for the grouped transaction."
+					},
+					{
+						"name": "status",
+						"displayName": "Status",
+						"type": "options",
+						"desc": "Status of the grouped transaction.",
+						"options": [
+							"reviewed",
+							"unreviewed"
+						]
+					},
+					{
+						"name": "tag_ids",
+						"displayName": "Tag IDs",
+						"type": "string",
+						"desc": "Comma-separated list of tag IDs to assign to the grouped transaction."
+					}
+				]
+			}
+		},
+		"deleteTransactionById": {
+			"resource": "transaction",
+			"value": "delete",
+			"name": "Delete",
+			"desc": "Delete a single transaction",
+			"action": "Delete a transaction"
+		},
+		"deleteTransactionAttachment": {
+			"resource": "transaction",
+			"value": "deleteAttachment",
+			"name": "Delete Attachment",
+			"desc": "Delete a transaction attachment",
+			"action": "Delete a transaction attachment",
+			"fields": {
+				"required": [
+					{
+						"name": "fileId",
+						"displayName": "File ID",
+						"type": "string",
+						"desc": "ID of the attachment file to delete."
+					}
+				]
+			}
+		},
+		"ungroupTransactions": {
+			"resource": "transaction",
+			"value": "deleteGroup",
+			"name": "Delete Group",
+			"desc": "Delete a transaction group",
+			"action": "Delete a transaction group",
+			"fields": {
+				"required": [
+					{
+						"name": "groupId",
+						"displayName": "Group ID",
+						"type": "string",
+						"desc": "Transaction ID of the group parent to delete."
+					}
+				]
+			}
+		},
+		"getTransactionById": {
+			"resource": "transaction",
+			"value": "get",
+			"name": "Get",
+			"desc": "Get a single transaction by ID",
+			"action": "Get a transaction"
+		},
+		"getTransactionAttachmentUrl": {
+			"resource": "transaction",
+			"value": "getAttachment",
+			"name": "Get Attachment",
+			"desc": "Get a transaction attachment",
+			"action": "Get a transaction attachment",
+			"fields": {
+				"required": [
+					{
+						"name": "fileId",
+						"displayName": "File ID",
+						"type": "string",
+						"desc": "ID of the attachment file."
+					}
+				]
+			}
+		},
+		"getAllTransactions": {
+			"resource": "transaction",
+			"value": "getAll",
+			"name": "Get Many",
+			"desc": "Get all transactions with optional filters",
+			"action": "Get many transactions",
+			"fields": {
+				"optional": [
+					{
+						"name": "start_date",
+						"displayName": "Start Date",
+						"type": "string",
+						"desc": "Beginning of the time period to fetch transactions for (YYYY-MM-DD).",
+						"placeholder": "2024-01-01"
+					},
+					{
+						"name": "end_date",
+						"displayName": "End Date",
+						"type": "string",
+						"desc": "End of the time period to fetch transactions for (YYYY-MM-DD). Required if start_date is set.",
+						"placeholder": "2024-12-31"
+					},
+					{
+						"name": "created_since",
+						"displayName": "Created Since",
+						"type": "string",
+						"desc": "Filter to transactions created after this timestamp. Accepts YYYY-MM-DD or ISO 8601 datetime.",
+						"placeholder": "2024-01-01"
+					},
+					{
+						"name": "updated_since",
+						"displayName": "Updated Since",
+						"type": "string",
+						"desc": "Filter to transactions updated after this timestamp. Accepts YYYY-MM-DD or ISO 8601 datetime.",
+						"placeholder": "2024-01-01"
+					},
+					{
+						"name": "category_id",
+						"displayName": "Category ID",
+						"type": "string",
+						"desc": "Filter to transactions associated with the specified category ID. Also matches category groups. Set to 0 to filter for uncategorized."
+					},
+					{
+						"name": "tag_id",
+						"displayName": "Tag ID",
+						"type": "string",
+						"desc": "Filter to transactions that have a tag with the specified Tag ID."
+					},
+					{
+						"name": "recurring_id",
+						"displayName": "Recurring ID",
+						"type": "string",
+						"desc": "Filter to transactions associated with the specified Recurring Item ID."
+					},
+					{
+						"name": "plaid_account_id",
+						"displayName": "Plaid Account ID",
+						"type": "string",
+						"desc": "Filter to transactions associated with the specified Plaid account ID. Set to 0 to omit Plaid transactions."
+					},
+					{
+						"name": "manual_account_id",
+						"displayName": "Manual Account ID",
+						"type": "string",
+						"desc": "Filter to transactions associated with the specified manual account ID. Set to 0 to omit manual account transactions."
+					},
+					{
+						"name": "status",
+						"displayName": "Status",
+						"type": "options",
+						"desc": "Filter to transactions with the specified status.",
+						"options": [
+							"reviewed",
+							"unreviewed",
+							"delete_pending"
+						]
+					},
+					{
+						"name": "is_group_parent",
+						"displayName": "Is Group Parent",
+						"type": "boolean",
+						"desc": "If true, return only transaction groups (parent transactions)."
+					},
+					{
+						"name": "is_pending",
+						"displayName": "Is Pending",
+						"type": "boolean",
+						"desc": "If true, return only pending transactions. If false, return only non-pending transactions."
+					},
+					{
+						"name": "include_pending",
+						"displayName": "Include Pending",
+						"type": "boolean",
+						"desc": "By default, pending transactions are excluded. Set to true to include imported transactions with a pending status."
+					},
+					{
+						"name": "include_metadata",
+						"displayName": "Include Metadata",
+						"type": "boolean",
+						"desc": "If true, include custom and Plaid metadata in the response."
+					},
+					{
+						"name": "include_split_parents",
+						"displayName": "Include Split Parents",
+						"type": "boolean",
+						"desc": "By default, transactions that were split are not included. Set to true to include them."
+					},
+					{
+						"name": "include_group_children",
+						"displayName": "Include Group Children",
+						"type": "boolean",
+						"desc": "By default, individual transactions that joined a transaction group are not included. Set to true to include them."
+					},
+					{
+						"name": "include_children",
+						"displayName": "Include Children",
+						"type": "boolean",
+						"desc": "If true, include the children property containing split or grouped child transactions."
+					},
+					{
+						"name": "include_files",
+						"displayName": "Include Files",
+						"type": "boolean",
+						"desc": "If true, include the files property containing a list of attached files for each transaction."
+					},
+					{
+						"name": "limit",
+						"displayName": "Limit",
+						"type": "string",
+						"desc": "Maximum number of transactions to return."
+					},
+					{
+						"name": "offset",
+						"displayName": "Offset",
+						"type": "string",
+						"desc": "Number of records to skip for pagination."
+					}
+				]
+			}
+		},
+		"splitTransaction": {
+			"resource": "transaction",
+			"value": "split",
+			"name": "Split",
+			"desc": "Split a transaction into parts",
+			"action": "Split a transaction",
+			"fields": {
+				"required": [
+					{
+						"name": "child_transactions",
+						"displayName": "Child Transactions (JSON)",
+						"type": "json",
+						"desc": "JSON array of child transactions. The sum of amounts must match the parent transaction amount. Each item needs at minimum an \"amount\" field."
+					}
+				]
+			}
+		},
+		"unsplitTransaction": {
+			"resource": "transaction",
+			"value": "unsplit",
+			"name": "Unsplit",
+			"desc": "Remove split from a transaction",
+			"action": "Unsplit a transaction"
+		},
+		"updateTransaction": {
+			"resource": "transaction",
+			"value": "update",
+			"name": "Update",
+			"desc": "Update a single transaction",
+			"action": "Update a transaction",
+			"fields": {
+				"optional": [
+					{
+						"name": "date",
+						"displayName": "Date",
+						"type": "string",
+						"desc": "Date of the transaction in ISO 8601 format (YYYY-MM-DD)."
+					},
+					{
+						"name": "amount",
+						"displayName": "Amount",
+						"type": "string",
+						"desc": "Numeric amount without currency symbol."
+					},
+					{
+						"name": "payee",
+						"displayName": "Payee",
+						"type": "string",
+						"desc": "New payee for the transaction."
+					},
+					{
+						"name": "currency",
+						"displayName": "Currency",
+						"type": "string",
+						"desc": "Three-letter lowercase ISO 4217 currency code."
+					},
+					{
+						"name": "category_id",
+						"displayName": "Category ID",
+						"type": "string",
+						"desc": "Category to assign. Set to null to clear."
+					},
+					{
+						"name": "notes",
+						"displayName": "Notes",
+						"type": "string",
+						"desc": "New notes. Set to empty string to clear."
+					},
+					{
+						"name": "status",
+						"displayName": "Status",
+						"type": "options",
+						"desc": "Transaction status.",
+						"options": [
+							"reviewed",
+							"unreviewed"
+						]
+					},
+					{
+						"name": "recurring_id",
+						"displayName": "Recurring Item ID",
+						"type": "string",
+						"desc": "ID of a recurring item to associate. Set to null to clear."
+					},
+					{
+						"name": "tag_ids",
+						"displayName": "Tag IDs (replace)",
+						"type": "string",
+						"desc": "Comma-separated tag IDs. Overwrites any existing tags on the transaction."
+					},
+					{
+						"name": "additional_tag_ids",
+						"displayName": "Tag IDs (add)",
+						"type": "string",
+						"desc": "Comma-separated tag IDs to add without replacing existing tags."
+					},
+					{
+						"name": "external_id",
+						"displayName": "External ID",
+						"type": "string",
+						"desc": "User-defined external ID (requires manual_account_id)."
+					},
+					{
+						"name": "manual_account_id",
+						"displayName": "Manual Account ID",
+						"type": "string",
+						"desc": "ID of the manual account. Set to null to disassociate."
+					},
+					{
+						"name": "plaid_account_id",
+						"displayName": "Plaid Account ID",
+						"type": "string",
+						"desc": "ID of the Plaid account to associate. If set, manual_account_id may not also be set."
+					},
+					{
+						"name": "custom_metadata",
+						"displayName": "Custom Metadata (JSON)",
+						"type": "json",
+						"desc": "User-defined JSON data that can be set or cleared via the API."
+					},
+					{
+						"name": "update_balance",
+						"displayName": "Update Balance",
+						"type": "boolean",
+						"desc": "Set to false to skip updating the account's balance when changing the transaction."
+					}
+				]
+			}
+		},
+		"attachFileToTransaction": {
+			"resource": "transaction",
+			"value": "uploadAttachment",
+			"name": "Upload Attachment",
+			"desc": "Upload an attachment to a transaction",
+			"action": "Upload a transaction attachment",
+			"fields": {
+				"required": [
+					{
+						"name": "uploadTransactionId",
+						"displayName": "Transaction ID",
+						"type": "string",
+						"desc": "ID of the transaction to attach the file to."
+					},
+					{
+						"name": "fileUrl",
+						"displayName": "File URL",
+						"type": "string",
+						"desc": "URL of the file to attach."
+					}
+				],
+				"optional": [
+					{
+						"name": "fileName",
+						"displayName": "File Name",
+						"type": "string",
+						"desc": "Name for the attachment file."
+					}
+				]
+			}
+		},
+		"createTag": {
+			"resource": "tag",
+			"value": "create",
+			"name": "Create",
+			"desc": "Create a new tag",
+			"action": "Create a tag",
+			"fields": {
+				"required": [
+					{
+						"name": "name",
+						"displayName": "Name",
+						"type": "string",
+						"desc": "Name of the tag. Must be between 1 and 100 characters and must not match any existing tag name."
+					}
+				],
+				"optional": [
+					{
+						"name": "description",
+						"displayName": "Description",
+						"type": "string",
+						"desc": "Description of the tag. Must not exceed 200 characters."
+					},
+					{
+						"name": "text_color",
+						"displayName": "Text Color",
+						"type": "string",
+						"desc": "Text color for the tag (e.g. \"#ffffff\")."
+					},
+					{
+						"name": "background_color",
+						"displayName": "Background Color",
+						"type": "string",
+						"desc": "Background color for the tag (e.g. \"#1a73e8\")."
+					},
+					{
+						"name": "archived",
+						"displayName": "Archived",
+						"type": "boolean",
+						"desc": "If true, the tag is archived and not displayed in the Lunch Money app."
+					}
+				]
+			}
+		},
+		"deleteTag": {
+			"resource": "tag",
+			"value": "delete",
+			"name": "Delete",
+			"desc": "Delete a tag",
+			"action": "Delete a tag",
+			"fields": {
+				"optional": [
+					{
+						"name": "force",
+						"displayName": "Force",
+						"type": "boolean",
+						"desc": "Set to true to force deletion even if there are dependencies."
+					}
+				]
+			}
+		},
+		"getTagById": {
+			"resource": "tag",
+			"value": "get",
+			"name": "Get",
+			"desc": "Get a single tag by ID",
+			"action": "Get a tag"
+		},
+		"getAllTags": {
+			"resource": "tag",
+			"value": "getAll",
+			"name": "Get Many",
+			"desc": "Get all tags",
+			"action": "Get many tags"
+		},
+		"updateTag": {
+			"resource": "tag",
+			"value": "update",
+			"name": "Update",
+			"desc": "Update a tag",
+			"action": "Update a tag",
+			"fields": {
+				"optional": [
+					{
+						"name": "name",
+						"displayName": "Name",
+						"type": "string",
+						"desc": "New name for the tag. Must be between 1 and 100 characters."
+					},
+					{
+						"name": "description",
+						"displayName": "Description",
+						"type": "string",
+						"desc": "New description. Must not exceed 200 characters."
+					},
+					{
+						"name": "text_color",
+						"displayName": "Text Color",
+						"type": "string",
+						"desc": "Text color for the tag (e.g. \"#ffffff\")."
+					},
+					{
+						"name": "background_color",
+						"displayName": "Background Color",
+						"type": "string",
+						"desc": "Background color for the tag (e.g. \"#1a73e8\")."
+					},
+					{
+						"name": "archived",
+						"displayName": "Archived",
+						"type": "boolean",
+						"desc": "If set, indicates whether the tag is archived."
+					},
+					{
+						"name": "archived_at",
+						"displayName": "Archived At",
+						"type": "string",
+						"desc": "ISO 8601 datetime for when the tag was archived. Set to null to clear it."
+					}
+				]
+			}
+		},
+		"getRecurringById": {
+			"resource": "recurringItem",
+			"value": "get",
+			"name": "Get",
+			"desc": "Get a single recurring item by ID",
+			"action": "Get a recurring item",
+			"fields": {
+				"optional": [
+					{
+						"name": "start_date",
+						"displayName": "Start Date",
+						"type": "string",
+						"desc": "Beginning of the range to populate the matching object (YYYY-MM-DD). Defaults to current month start.",
+						"placeholder": "2024-01-01"
+					},
+					{
+						"name": "end_date",
+						"displayName": "End Date",
+						"type": "string",
+						"desc": "End of the range to populate the matching object (YYYY-MM-DD). Required if start_date is set.",
+						"placeholder": "2024-12-31"
+					}
+				]
+			}
+		},
+		"getAllRecurring": {
+			"resource": "recurringItem",
+			"value": "getAll",
+			"name": "Get Many",
+			"desc": "Get all recurring items",
+			"action": "Get many recurring items",
+			"fields": {
+				"optional": [
+					{
+						"name": "start_date",
+						"displayName": "Start Date",
+						"type": "string",
+						"desc": "Beginning of the range to populate the matching object (YYYY-MM-DD). Defaults to current month start if omitted.",
+						"placeholder": "2024-01-01"
+					},
+					{
+						"name": "end_date",
+						"displayName": "End Date",
+						"type": "string",
+						"desc": "End of the range to populate the matching object (YYYY-MM-DD). Required if start_date is set.",
+						"placeholder": "2024-12-31"
+					},
+					{
+						"name": "include_suggested",
+						"displayName": "Include Suggested",
+						"type": "boolean",
+						"desc": "If true, include suggested recurring items that Lunch Money has identified but not yet confirmed."
+					}
+				]
+			}
+		},
+		"getBudgetSettings": {
+			"resource": "budget",
+			"value": "getSettings",
+			"name": "Get Settings",
+			"desc": "Get budget settings",
+			"action": "Get budget settings",
+			"fields": {}
+		},
+		"deleteBudget": {
+			"resource": "budget",
+			"value": "remove",
+			"name": "Remove",
+			"desc": "Remove a budget entry",
+			"action": "Remove a budget entry",
+			"fields": {
+				"_useQs": true,
+				"required": [
+					{
+						"name": "start_date",
+						"displayName": "Start Date",
+						"type": "string",
+						"desc": "Start date of the budget period to remove (YYYY-MM-DD).",
+						"placeholder": "2024-01-01"
+					},
+					{
+						"name": "category_id",
+						"displayName": "Category ID",
+						"type": "string",
+						"desc": "Category ID of the budget to remove."
+					}
+				]
+			}
+		},
+		"upsertBudget": {
+			"resource": "budget",
+			"value": "upsert",
+			"name": "Upsert",
+			"desc": "Create or update a budget entry",
+			"action": "Upsert a budget entry",
+			"fields": {
+				"required": [
+					{
+						"name": "start_date",
+						"displayName": "Start Date",
+						"type": "string",
+						"desc": "Start date of the budget period (YYYY-MM-DD). Must be a valid budget period start for the account.",
+						"placeholder": "2024-01-01"
+					},
+					{
+						"name": "category_id",
+						"displayName": "Category ID",
+						"type": "string",
+						"desc": "Category ID for the budget."
+					},
+					{
+						"name": "amount",
+						"displayName": "Amount",
+						"type": "string",
+						"desc": "Budget amount as a number or decimal string.",
+						"placeholder": "500.00"
+					}
+				],
+				"optional": [
+					{
+						"name": "currency",
+						"displayName": "Currency",
+						"type": "string",
+						"desc": "Three-letter currency code. Defaults to the account primary currency.",
+						"placeholder": "usd"
+					},
+					{
+						"name": "notes",
+						"displayName": "Notes",
+						"type": "string",
+						"desc": "Optional notes for the budget period."
+					}
+				]
+			}
+		},
+		"createManualAccount": {
+			"resource": "manualAccount",
+			"value": "create",
+			"name": "Create",
+			"desc": "Create a new manual account",
+			"action": "Create a manual account",
+			"fields": {
+				"required": [
+					{
+						"name": "name",
+						"displayName": "Name",
+						"type": "string",
+						"desc": "Name of the manual account."
+					},
+					{
+						"name": "type",
+						"displayName": "Account Type",
+						"type": "options",
+						"desc": "The type of the manual account.",
+						"options": [
+							"cash",
+							"credit",
+							"investment",
+							"retirement",
+							"brokerage",
+							"other asset",
+							"other liability",
+							"loan",
+							"real estate",
+							"vehicle",
+							"cryptocurrency",
+							"employee compensation"
+						]
+					},
+					{
+						"name": "balance",
+						"displayName": "Balance",
+						"type": "string",
+						"desc": "Current balance as a number or decimal string (up to 4 decimal places).",
+						"placeholder": "1000.00"
+					}
+				],
+				"optional": [
+					{
+						"name": "currency",
+						"displayName": "Currency",
+						"type": "string",
+						"desc": "Three-letter lowercase ISO 4217 currency code.",
+						"placeholder": "usd"
+					},
+					{
+						"name": "institution_name",
+						"displayName": "Institution Name",
+						"type": "string",
+						"desc": "Name of institution holding the account."
+					},
+					{
+						"name": "display_name",
+						"displayName": "Display Name",
+						"type": "string",
+						"desc": "Display name for the account as shown in the app. Derived from institution_name and name if not set."
+					},
+					{
+						"name": "subtype",
+						"displayName": "Subtype",
+						"type": "string",
+						"desc": "Optional account subtype (e.g. \"checking\", \"savings\", \"retirement\")."
+					},
+					{
+						"name": "balance_as_of",
+						"displayName": "Balance As Of",
+						"type": "string",
+						"desc": "Date/time the balance was last updated in ISO 8601 format."
+					},
+					{
+						"name": "status",
+						"displayName": "Status",
+						"type": "options",
+						"desc": "Status of the account.",
+						"options": [
+							"active",
+							"closed"
+						]
+					},
+					{
+						"name": "closed_on",
+						"displayName": "Closed On",
+						"type": "string",
+						"desc": "Date this account was closed (YYYY-MM-DD). If set, status must also be set to \"closed\"."
+					},
+					{
+						"name": "external_id",
+						"displayName": "External ID",
+						"type": "string",
+						"desc": "Optional user-defined ID for the account."
+					},
+					{
+						"name": "custom_metadata",
+						"displayName": "Custom Metadata (JSON)",
+						"type": "json",
+						"desc": "Optional JSON object with additional data related to this account."
+					},
+					{
+						"name": "exclude_from_transactions",
+						"displayName": "Exclude From Transactions",
+						"type": "boolean",
+						"desc": "If true, transactions may not be created or imported for this account."
+					}
+				]
+			}
+		},
+		"deleteManualAccount": {
+			"resource": "manualAccount",
+			"value": "delete",
+			"name": "Delete",
+			"desc": "Delete a manual account",
+			"action": "Delete a manual account",
+			"fields": {
+				"optional": [
+					{
+						"name": "delete_items",
+						"displayName": "Delete Items",
+						"type": "boolean",
+						"desc": "If true, also delete any transactions, rules, and recurring items associated with this account."
+					},
+					{
+						"name": "delete_balance_history",
+						"displayName": "Delete Balance History",
+						"type": "boolean",
+						"desc": "If true, delete any balance history associated with this account."
+					}
+				]
+			}
+		},
+		"getManualAccountById": {
+			"resource": "manualAccount",
+			"value": "get",
+			"name": "Get",
+			"desc": "Get a single manual account by ID",
+			"action": "Get a manual account"
+		},
+		"getAllManualAccounts": {
+			"resource": "manualAccount",
+			"value": "getAll",
+			"name": "Get Many",
+			"desc": "Get all manual accounts",
+			"action": "Get many manual accounts"
+		},
+		"updateManualAccount": {
+			"resource": "manualAccount",
+			"value": "update",
+			"name": "Update",
+			"desc": "Update a manual account",
+			"action": "Update a manual account",
+			"fields": {
+				"optional": [
+					{
+						"name": "name",
+						"displayName": "Name",
+						"type": "string",
+						"desc": "New name for the account."
+					},
+					{
+						"name": "institution_name",
+						"displayName": "Institution Name",
+						"type": "string",
+						"desc": "New name of the institution holding the account."
+					},
+					{
+						"name": "display_name",
+						"displayName": "Display Name",
+						"type": "string",
+						"desc": "New display name. Must be unique for the user."
+					},
+					{
+						"name": "type",
+						"displayName": "Account Type",
+						"type": "options",
+						"desc": "New type for the account.",
+						"options": [
+							"cash",
+							"credit",
+							"investment",
+							"retirement",
+							"brokerage",
+							"other asset",
+							"other liability",
+							"loan",
+							"real estate",
+							"vehicle",
+							"cryptocurrency",
+							"employee compensation"
+						]
+					},
+					{
+						"name": "subtype",
+						"displayName": "Subtype",
+						"type": "string",
+						"desc": "New account subtype (e.g. \"checking\", \"savings\")."
+					},
+					{
+						"name": "balance",
+						"displayName": "Balance",
+						"type": "string",
+						"desc": "New balance as a number or decimal string."
+					},
+					{
+						"name": "currency",
+						"displayName": "Currency",
+						"type": "string",
+						"desc": "New three-letter lowercase ISO 4217 currency code."
+					},
+					{
+						"name": "balance_as_of",
+						"displayName": "Balance As Of",
+						"type": "string",
+						"desc": "New date for the balance timestamp (YYYY-MM-DD or ISO 8601 datetime)."
+					},
+					{
+						"name": "status",
+						"displayName": "Status",
+						"type": "options",
+						"desc": "New status. If set to \"closed\", closed_on will be set to today if not provided.",
+						"options": [
+							"active",
+							"closed"
+						]
+					},
+					{
+						"name": "closed_on",
+						"displayName": "Closed On",
+						"type": "string",
+						"desc": "Date this account was closed (YYYY-MM-DD). Account must currently be closed or being set to closed."
+					},
+					{
+						"name": "external_id",
+						"displayName": "External ID",
+						"type": "string",
+						"desc": "User-defined external ID."
+					},
+					{
+						"name": "custom_metadata",
+						"displayName": "Custom Metadata (JSON)",
+						"type": "json",
+						"desc": "Optional JSON object with additional data related to this account."
+					},
+					{
+						"name": "exclude_from_transactions",
+						"displayName": "Exclude From Transactions",
+						"type": "boolean",
+						"desc": "If true, transactions may not be created or imported for this account."
+					}
+				]
+			}
+		},
+		"triggerPlaidAccountFetch": {
+			"resource": "plaidAccount",
+			"value": "fetch",
+			"name": "Fetch Latest",
+			"desc": "Trigger a fetch of latest data from Plaid",
+			"action": "Fetch latest Plaid data",
+			"fields": {
+				"_useQs": true,
+				"optional": [
+					{
+						"name": "start_date",
+						"displayName": "Start Date",
+						"type": "string",
+						"desc": "Beginning of the time period to fetch transactions for (YYYY-MM-DD). If omitted, the most recent transactions are returned.",
+						"placeholder": "2024-01-01"
+					},
+					{
+						"name": "end_date",
+						"displayName": "End Date",
+						"type": "string",
+						"desc": "End of the time period to fetch transactions for (YYYY-MM-DD). Required if start_date is set.",
+						"placeholder": "2024-12-31"
+					},
+					{
+						"name": "id",
+						"displayName": "Plaid Account ID",
+						"type": "string",
+						"desc": "Specific Plaid account ID to fetch. If not set, triggers a fetch for all eligible accounts."
+					}
+				]
+			}
+		},
+		"getPlaidAccountById": {
+			"resource": "plaidAccount",
+			"value": "get",
+			"name": "Get",
+			"desc": "Get a single Plaid account by ID",
+			"action": "Get a Plaid account"
+		},
+		"getAllPlaidAccounts": {
+			"resource": "plaidAccount",
+			"value": "getAll",
+			"name": "Get Many",
+			"desc": "Get all Plaid accounts",
+			"action": "Get many Plaid accounts"
+		},
+		"createCryptoManual": {
+			"resource": "crypto",
+			"value": "createManual",
+			"name": "Create Manual",
+			"desc": "Create a manual crypto account",
+			"action": "Create a manual crypto account",
+			"fields": {
+				"required": [
+					{
+						"name": "name",
+						"displayName": "Name",
+						"type": "string",
+						"desc": "Name of the crypto account"
+					},
+					{
+						"name": "currency",
+						"displayName": "Currency/Symbol",
+						"type": "string",
+						"desc": "Cryptocurrency symbol (e.g. \"btc\")",
+						"placeholder": "btc"
+					},
+					{
+						"name": "balance",
+						"displayName": "Balance",
+						"type": "string",
+						"desc": "Current balance",
+						"placeholder": "0.5"
+					}
+				],
+				"optional": [
+					{
+						"name": "institution_name",
+						"displayName": "Institution Name",
+						"type": "string",
+						"desc": "Name of the exchange or wallet"
+					},
+					{
+						"name": "notes",
+						"displayName": "Notes",
+						"type": "string",
+						"desc": "Notes about this crypto account"
+					}
+				]
+			}
+		},
+		"deleteCryptoManual": {
+			"resource": "crypto",
+			"value": "deleteManual",
+			"name": "Delete Manual",
+			"desc": "Delete a manual crypto account",
+			"action": "Delete a manual crypto account"
+		},
+		"getCryptoManualById": {
+			"resource": "crypto",
+			"value": "getManual",
+			"name": "Get Manual",
+			"desc": "Get a manual crypto account by ID",
+			"action": "Get a manual crypto account"
+		},
+		"getAllCryptoManual": {
+			"resource": "crypto",
+			"value": "getAllManual",
+			"name": "Get Many Manual",
+			"desc": "Get all manual crypto accounts",
+			"action": "Get many manual crypto accounts"
+		},
+		"getAllCryptoSynced": {
+			"resource": "crypto",
+			"value": "getAllSynced",
+			"name": "Get Many Synced",
+			"desc": "Get all synced crypto accounts",
+			"action": "Get many synced crypto accounts"
+		},
+		"getCryptoSyncedById": {
+			"resource": "crypto",
+			"value": "getSynced",
+			"name": "Get Synced",
+			"desc": "Get a synced crypto account by ID",
+			"action": "Get a synced crypto account"
+		},
+		"getCryptoSyncedBalanceBySymbol": {
+			"resource": "crypto",
+			"value": "getSyncedBySymbol",
+			"name": "Get Synced By Symbol",
+			"desc": "Get synced crypto balance for a specific symbol",
+			"action": "Get synced crypto by symbol",
+			"fields": {
+				"required": [
+					{
+						"name": "cryptoSymbol",
+						"displayName": "Symbol",
+						"type": "string",
+						"desc": "Cryptocurrency symbol (e.g. \"btc\")",
+						"placeholder": "btc"
+					}
+				]
+			}
+		},
+		"refreshCryptoSynced": {
+			"resource": "crypto",
+			"value": "refreshSynced",
+			"name": "Refresh Synced",
+			"desc": "Refresh balances for a synced crypto account",
+			"action": "Refresh synced crypto balances"
+		},
+		"updateCryptoManual": {
+			"resource": "crypto",
+			"value": "updateManual",
+			"name": "Update Manual",
+			"desc": "Update a manual crypto account",
+			"action": "Update a manual crypto account",
+			"fields": {
+				"optional": [
+					{
+						"name": "name",
+						"displayName": "Name",
+						"type": "string",
+						"desc": "Name of the crypto account"
+					},
+					{
+						"name": "balance",
+						"displayName": "Balance",
+						"type": "string",
+						"desc": "Current balance"
+					},
+					{
+						"name": "currency",
+						"displayName": "Currency/Symbol",
+						"type": "string",
+						"desc": "Cryptocurrency symbol"
+					},
+					{
+						"name": "institution_name",
+						"displayName": "Institution Name",
+						"type": "string",
+						"desc": "Exchange or wallet name"
+					},
+					{
+						"name": "notes",
+						"displayName": "Notes",
+						"type": "string",
+						"desc": "Notes about this account"
+					}
+				]
+			}
+		},
+		"getAllCryptocurrencies": {
+			"resource": "crypto",
+			"value": "getAllLegacy",
+			"name": "Get All (Legacy)",
+			"desc": "Get all cryptocurrencies (legacy endpoint)",
+			"action": "Get all cryptocurrencies (legacy)"
+		},
+		"deleteBalanceHistoryEntry": {
+			"resource": "balanceHistory",
+			"value": "deleteEntry",
+			"name": "Delete Entry",
+			"desc": "Delete a balance history entry",
+			"action": "Delete a balance history entry",
+			"fields": {
+				"required": [
+					{
+						"name": "entryId",
+						"displayName": "Entry ID",
+						"type": "string",
+						"desc": "ID of the balance history entry to delete"
+					}
+				]
+			}
+		},
+		"deleteBalanceHistoryForAccount": {
+			"resource": "balanceHistory",
+			"value": "deleteForAccount",
+			"name": "Delete For Account",
+			"desc": "Delete balance history for an account",
+			"action": "Delete balance history for account",
+			"fields": {
+				"required": [
+					{
+						"name": "account_type",
+						"displayName": "Account Type",
+						"type": "options",
+						"desc": "Type of account",
+						"options": [
+							"manual",
+							"plaid",
+							"crypto_manual",
+							"deleted"
+						]
+					},
+					{
+						"name": "account_id",
+						"displayName": "Account ID",
+						"type": "string",
+						"desc": "ID of the account"
+					}
+				],
+				"optional": [
+					{
+						"name": "start_date",
+						"displayName": "Start Date",
+						"type": "string",
+						"desc": "Start date of range to delete (YYYY-MM-DD)"
+					},
+					{
+						"name": "end_date",
+						"displayName": "End Date",
+						"type": "string",
+						"desc": "End date of range to delete (YYYY-MM-DD)"
+					}
+				]
+			}
+		},
+		"getBalanceHistory": {
+			"resource": "balanceHistory",
+			"value": "getAll",
+			"name": "Get All",
+			"desc": "Get balance history overview",
+			"action": "Get all balance history",
+			"fields": {
+				"optional": [
+					{
+						"name": "start_date",
+						"displayName": "Start Date",
+						"type": "string",
+						"desc": "Start date (YYYY-MM-DD)",
+						"placeholder": "2024-01-01"
+					},
+					{
+						"name": "end_date",
+						"displayName": "End Date",
+						"type": "string",
+						"desc": "End date (YYYY-MM-DD)",
+						"placeholder": "2024-12-31"
+					}
+				]
+			}
+		},
+		"getBalanceHistoryForAccount": {
+			"resource": "balanceHistory",
+			"value": "getForAccount",
+			"name": "Get For Account",
+			"desc": "Get balance history for an account",
+			"action": "Get balance history for account",
+			"fields": {
+				"required": [
+					{
+						"name": "account_type",
+						"displayName": "Account Type",
+						"type": "options",
+						"desc": "Type of account",
+						"options": [
+							"manual",
+							"plaid",
+							"crypto_manual",
+							"deleted"
+						]
+					},
+					{
+						"name": "account_id",
+						"displayName": "Account ID",
+						"type": "string",
+						"desc": "ID of the account"
+					}
+				],
+				"optional": [
+					{
+						"name": "start_date",
+						"displayName": "Start Date",
+						"type": "string",
+						"desc": "Start date (YYYY-MM-DD)",
+						"placeholder": "2024-01-01"
+					},
+					{
+						"name": "end_date",
+						"displayName": "End Date",
+						"type": "string",
+						"desc": "End date (YYYY-MM-DD)",
+						"placeholder": "2024-12-31"
+					}
+				]
+			}
+		},
+		"upsertBalanceHistoryForAccount": {
+			"resource": "balanceHistory",
+			"value": "updateForAccount",
+			"name": "Update For Account",
+			"desc": "Create or update balance history for an account",
+			"action": "Update balance history for account",
+			"fields": {
+				"required": [
+					{
+						"name": "account_type",
+						"displayName": "Account Type",
+						"type": "options",
+						"desc": "Type of account",
+						"options": [
+							"manual",
+							"plaid",
+							"crypto_manual",
+							"deleted"
+						]
+					},
+					{
+						"name": "account_id",
+						"displayName": "Account ID",
+						"type": "string",
+						"desc": "ID of the account"
+					},
+					{
+						"name": "balanceEntries",
+						"displayName": "Balance Entries (JSON)",
+						"type": "json",
+						"desc": "JSON array of balance entries with date and balance fields"
+					}
+				]
+			}
+		},
+		"getBalanceHistoryForCryptoSynced": {
+			"resource": "balanceHistory",
+			"value": "getCryptoSynced",
+			"name": "Get Crypto Synced",
+			"desc": "Get balance history for a synced crypto account and symbol",
+			"action": "Get crypto synced balance history",
+			"fields": {
+				"required": [
+					{
+						"name": "cryptoSyncedAccountId",
+						"displayName": "Account ID",
+						"type": "string",
+						"desc": "ID of the synced crypto account"
+					},
+					{
+						"name": "cryptoSyncedSymbol",
+						"displayName": "Symbol",
+						"type": "string",
+						"desc": "Cryptocurrency symbol (e.g. \"btc\")",
+						"placeholder": "btc"
+					}
+				],
+				"optional": [
+					{
+						"name": "start_date",
+						"displayName": "Start Date",
+						"type": "string",
+						"desc": "Start date (YYYY-MM-DD)",
+						"placeholder": "2024-01-01"
+					},
+					{
+						"name": "end_date",
+						"displayName": "End Date",
+						"type": "string",
+						"desc": "End date (YYYY-MM-DD)",
+						"placeholder": "2024-12-31"
+					}
+				]
+			}
+		},
+		"upsertBalanceHistoryForCryptoSynced": {
+			"resource": "balanceHistory",
+			"value": "updateCryptoSynced",
+			"name": "Update Crypto Synced",
+			"desc": "Update balance history for a synced crypto account and symbol",
+			"action": "Update crypto synced balance history",
+			"fields": {
+				"required": [
+					{
+						"name": "cryptoSyncedAccountId",
+						"displayName": "Account ID",
+						"type": "string",
+						"desc": "ID of the synced crypto account"
+					},
+					{
+						"name": "cryptoSyncedSymbol",
+						"displayName": "Symbol",
+						"type": "string",
+						"desc": "Cryptocurrency symbol (e.g. \"btc\")",
+						"placeholder": "btc"
+					},
+					{
+						"name": "balanceEntries",
+						"displayName": "Balance Entries (JSON)",
+						"type": "json",
+						"desc": "JSON array of balance entries with date and balance fields"
+					}
+				]
+			}
+		},
+		"deleteBalanceHistoryForCryptoSynced": {
+			"resource": "balanceHistory",
+			"value": "deleteCryptoSynced",
+			"name": "Delete Crypto Synced",
+			"desc": "Delete balance history for a synced crypto account and symbol",
+			"action": "Delete crypto synced balance history",
+			"fields": {
+				"required": [
+					{
+						"name": "cryptoSyncedAccountId",
+						"displayName": "Account ID",
+						"type": "string",
+						"desc": "ID of the synced crypto account"
+					},
+					{
+						"name": "cryptoSyncedSymbol",
+						"displayName": "Symbol",
+						"type": "string",
+						"desc": "Cryptocurrency symbol (e.g. \"btc\")",
+						"placeholder": "btc"
+					}
+				],
+				"optional": [
+					{
+						"name": "start_date",
+						"displayName": "Start Date",
+						"type": "string",
+						"desc": "Start date of range to delete (YYYY-MM-DD)"
+					},
+					{
+						"name": "end_date",
+						"displayName": "End Date",
+						"type": "string",
+						"desc": "End date of range to delete (YYYY-MM-DD)"
+					}
+				]
+			}
+		},
+		"updateBalanceHistoryDetails": {
+			"resource": "balanceHistory",
+			"value": "updateDeletedDetails",
+			"name": "Update Deleted Details",
+			"desc": "Update display details for a deleted account in balance history",
+			"action": "Update deleted account details",
+			"fields": {
+				"required": [
+					{
+						"name": "deletedAccountId",
+						"displayName": "Deleted Account ID",
+						"type": "string",
+						"desc": "ID of the deleted account source"
+					},
+					{
+						"name": "detailsData",
+						"displayName": "Details (JSON)",
+						"type": "json",
+						"desc": "JSON object with display_name and/or other metadata fields"
+					}
+				]
+			}
+		}
+	}
+}

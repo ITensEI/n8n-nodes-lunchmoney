@@ -191,7 +191,7 @@ function toFieldProp(field, resource, operations) {
 		name: field.name,
 		// number → string: n8n always renders number fields as 0; use string for truly empty inputs
 		type: field.type === 'options' ? 'options' : field.type === 'json' ? 'json' : field.type === 'number' ? 'string' : field.type,
-		default: field.type === 'boolean' ? false : field.type === 'json' ? '[]' : '',
+		default: field.default !== undefined ? field.default : field.type === 'boolean' ? false : field.type === 'json' ? '[]' : '',
 		description: field.desc,
 		displayOptions: {
 			show: {
@@ -334,7 +334,7 @@ function generateIndex(resources) {
 function generateMainNode(resources) {
 	let imports = `import { NodeConnectionTypes } from 'n8n-workflow';\n`;
 	imports += `import type {\n\tIExecuteFunctions,\n\tIDataObject,\n\tINodeExecutionData,\n\tINodeType,\n\tINodeTypeDescription,\n} from 'n8n-workflow';\n\n`;
-	imports += `import {\n\tlunchMoneyApiRequest,\n\tvalidateDateFormat,\n\tvalidateAmount,\n\tvalidateCurrency,\n} from './GenericFunctions';\n\n`;
+	imports += `import {\n\tlunchMoneyApiRequest,\n\tlunchMoneyApiRequestMultipart,\n\tvalidateDateFormat,\n\tvalidateAmount,\n\tvalidateCurrency,\n} from './GenericFunctions';\n\n`;
 
 	// Import descriptions
 	const importNames = [];
@@ -447,10 +447,16 @@ function generateOperationHandler(resourceKey, op) {
 	let apiPath = op.path;
 	let needsId = false;
 
-	// Determine parameter gathering
+	// Determine parameter gathering. Path-derived fields (the ID field plus
+	// names like groupId/entryId/account_type/deletedAccountId) are consumed
+	// below for URL substitution only — several live request-body schemas set
+	// additionalProperties: false, so including them in body/qs as well gets
+	// the whole request rejected by the API.
 	const opFields = fields[op.value] || {};
-	const hasRequired = opFields.required && opFields.required.length > 0;
-	const hasOptional = opFields.optional && opFields.optional.length > 0;
+	const bodyRequired = (opFields.required || []).filter((f) => !knownPathDerivedFields.has(f.name));
+	const bodyOptional = (opFields.optional || []).filter((f) => !knownPathDerivedFields.has(f.name));
+	const hasRequired = bodyRequired.length > 0;
+	const hasOptional = bodyOptional.length > 0;
 
 	// Handle ID substitution from the standard ID field
 	if (idField && idField.ops.includes(op.value) && apiPath.includes('{id}')) {
@@ -504,6 +510,22 @@ function generateOperationHandler(resourceKey, op) {
 		apiPath = '/balance_history/deleted/${delAccountId}/details';
 	}
 
+	// Attachment upload is multipart/form-data with a binary file, not a JSON
+	// body - doesn't fit the generic method-based branching below at all.
+	if (op.value === 'uploadAttachment' && resourceKey === 'transaction') {
+		code += `\t\t\t\t\t\tconst binaryPropertyName = this.getNodeParameter('binaryPropertyName', i) as string;\n`;
+		code += `\t\t\t\t\t\tconst binaryData = this.helpers.assertBinaryData(i, binaryPropertyName);\n`;
+		code += `\t\t\t\t\t\tconst fileBuffer = await this.helpers.getBinaryDataBuffer(i, binaryPropertyName);\n`;
+		code += `\t\t\t\t\t\tresponseData = await lunchMoneyApiRequestMultipart.call(this, '${op.method}', \`${apiPath}\`, {\n`;
+		code += `\t\t\t\t\t\t\tfile: {\n`;
+		code += `\t\t\t\t\t\t\t\tvalue: fileBuffer,\n`;
+		code += `\t\t\t\t\t\t\t\toptions: { filename: binaryData.fileName || 'file', contentType: binaryData.mimeType },\n`;
+		code += `\t\t\t\t\t\t\t},\n`;
+		code += `\t\t\t\t\t\t});\n`;
+		code += `\t\t\t\t\t}\n\n`;
+		return code;
+	}
+
 	// Array fields that must be converted from comma-separated strings to int arrays
 	const ARRAY_INT_FIELDS = new Set(['ids', 'tag_ids', 'additional_tag_ids']);
 
@@ -519,7 +541,7 @@ function generateOperationHandler(resourceKey, op) {
 			// All fields go to query string, no body
 			code += `\t\t\t\t\t\tconst qs: IDataObject = {};\n`;
 			if (hasRequired) {
-				for (const f of opFields.required) {
+				for (const f of bodyRequired) {
 					code += `\t\t\t\t\t\tqs.${f.name} = this.getNodeParameter('${f.name}', i);\n`;
 				}
 			}
@@ -533,7 +555,7 @@ function generateOperationHandler(resourceKey, op) {
 			code += `\t\t\t\t\t\tconst body: IDataObject = {};\n`;
 
 			if (hasRequired) {
-				for (const f of opFields.required) {
+				for (const f of bodyRequired) {
 					if (f.type === 'json') {
 						// JSON fields go directly into body under their API key
 						const apiKey = f.name === 'child_transactions' ? 'child_transactions' : f.name;
@@ -552,21 +574,21 @@ function generateOperationHandler(resourceKey, op) {
 			if (hasOptional) {
 				code += `\t\t\t\t\t\tconst additionalFields = this.getNodeParameter('additionalFields', i) as IDataObject;\n`;
 				// Parse JSON fields in additionalFields
-				const jsonOptFields = opFields.optional.filter(f => f.type === 'json');
+				const jsonOptFields = bodyOptional.filter(f => f.type === 'json');
 				for (const f of jsonOptFields) {
 					code += `\t\t\t\t\t\tif (additionalFields.${f.name} && typeof additionalFields.${f.name} === 'string') {\n`;
 					code += `\t\t\t\t\t\t\ttry { additionalFields.${f.name} = JSON.parse(additionalFields.${f.name} as string); } catch { throw new Error('Invalid JSON in "${f.displayName}"'); }\n`;
 					code += `\t\t\t\t\t\t}\n`;
 				}
 				// Convert any comma-separated array fields in additionalFields
-				const arrayOptFields = opFields.optional.filter(f => ARRAY_INT_FIELDS.has(f.name));
+				const arrayOptFields = bodyOptional.filter(f => ARRAY_INT_FIELDS.has(f.name));
 				for (const f of arrayOptFields) {
 					code += `\t\t\t\t\t\tif (additionalFields.${f.name}) {\n`;
 					code += `\t\t\t\t\t\t\tadditionalFields.${f.name} = (additionalFields.${f.name} as string).split(',').map(s => parseInt(s.trim(), 10)).filter(n => !isNaN(n));\n`;
 					code += `\t\t\t\t\t\t}\n`;
 				}
 				// Hoist query-string-only fields out of body
-				const qsOptFields = opFields.optional.filter(f => QS_ON_MUTATION.has(f.name));
+				const qsOptFields = bodyOptional.filter(f => QS_ON_MUTATION.has(f.name));
 				if (qsOptFields.length > 0) {
 					code += `\t\t\t\t\t\tconst mutationQs: IDataObject = {};\n`;
 					for (const f of qsOptFields) {
@@ -582,7 +604,7 @@ function generateOperationHandler(resourceKey, op) {
 			if (resourceKey === 'transaction' && op.value === 'create') {
 				code += `\t\t\t\t\t\tresponseData = await lunchMoneyApiRequest.call(this, '${op.method}', \`${apiPath}\`, { transactions: [body] });\n`;
 			} else {
-				const hasQsFields = hasOptional && (opFields.optional || []).some(f => QS_ON_MUTATION.has(f.name));
+				const hasQsFields = hasOptional && bodyOptional.some(f => QS_ON_MUTATION.has(f.name));
 				if (hasQsFields) {
 					code += `\t\t\t\t\t\tresponseData = await lunchMoneyApiRequest.call(this, '${op.method}', \`${apiPath}\`, body, mutationQs);\n`;
 				} else {
@@ -594,7 +616,7 @@ function generateOperationHandler(resourceKey, op) {
 		if (hasRequired || hasOptional) {
 			code += `\t\t\t\t\t\tconst qs: IDataObject = {};\n`;
 			if (hasRequired) {
-				for (const f of opFields.required) {
+				for (const f of bodyRequired) {
 					code += `\t\t\t\t\t\tqs.${f.name} = this.getNodeParameter('${f.name}', i);\n`;
 				}
 			}
@@ -627,14 +649,14 @@ function generateOperationHandler(resourceKey, op) {
 			if (opFields._useQs) {
 				// DELETE with query string params (e.g. DELETE /budgets)
 				code += `\t\t\t\t\t\tconst qs: IDataObject = {};\n`;
-				for (const f of opFields.required) {
+				for (const f of bodyRequired) {
 					code += `\t\t\t\t\t\tqs.${f.name} = this.getNodeParameter('${f.name}', i);\n`;
 				}
 				code += `\t\t\t\t\t\tresponseData = await lunchMoneyApiRequest.call(this, '${op.method}', \`${apiPath}\`, {}, qs);\n`;
 			} else {
 				// DELETE with request body
 				code += `\t\t\t\t\t\tconst body: IDataObject = {};\n`;
-				for (const f of opFields.required) {
+				for (const f of bodyRequired) {
 					code += `\t\t\t\t\t\tbody.${f.name} = this.getNodeParameter('${f.name}', i);\n`;
 				}
 				if (hasOptional) {

@@ -120,11 +120,11 @@ exports.cryptoFields = [
         "required": true
     },
     {
-        "displayName": "Currency/Symbol",
-        "name": "currency",
+        "displayName": "Symbol",
+        "name": "symbol",
         "type": "string",
         "default": "",
-        "description": "Cryptocurrency symbol (e.g. \"btc\")",
+        "description": "Cryptocurrency symbol to track (e.g. \"btc\")",
         "displayOptions": {
             "show": {
                 "resource": [
@@ -182,11 +182,11 @@ exports.cryptoFields = [
                 "description": "Name of the exchange or wallet"
             },
             {
-                "displayName": "Notes",
-                "name": "notes",
+                "displayName": "Display Name",
+                "name": "display_name",
                 "type": "string",
                 "default": "",
-                "description": "Notes about this crypto account"
+                "description": "Display name for the manual crypto asset. If omitted, may be derived from institution_name + name."
             }
         ]
     },
@@ -241,13 +241,6 @@ exports.cryptoFields = [
                 "description": "Current balance"
             },
             {
-                "displayName": "Currency/Symbol",
-                "name": "currency",
-                "type": "string",
-                "default": "",
-                "description": "Cryptocurrency symbol"
-            },
-            {
                 "displayName": "Institution Name",
                 "name": "institution_name",
                 "type": "string",
@@ -255,11 +248,11 @@ exports.cryptoFields = [
                 "description": "Exchange or wallet name"
             },
             {
-                "displayName": "Notes",
-                "name": "notes",
+                "displayName": "Display Name",
+                "name": "display_name",
                 "type": "string",
                 "default": "",
-                "description": "Notes about this account"
+                "description": "New display name for the manual crypto asset."
             }
         ]
     },

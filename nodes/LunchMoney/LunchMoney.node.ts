@@ -9,6 +9,7 @@ import type {
 
 import {
 	lunchMoneyApiRequest,
+	lunchMoneyApiRequestMultipart,
 	validateDateFormat,
 	validateAmount,
 	validateCurrency,
@@ -215,16 +216,12 @@ export class LunchMoney implements INodeType {
 
 					if (operation === 'deleteAttachment') {
 						const fileId = this.getNodeParameter('fileId', i) as number;
-						const body: IDataObject = {};
-						body.fileId = this.getNodeParameter('fileId', i);
-						responseData = await lunchMoneyApiRequest.call(this, 'DELETE', `/transactions/attachments/${fileId}`, body);
+						responseData = await lunchMoneyApiRequest.call(this, 'DELETE', `/transactions/attachments/${fileId}`);
 					}
 
 					if (operation === 'deleteGroup') {
 						const groupId = this.getNodeParameter('groupId', i) as number;
-						const body: IDataObject = {};
-						body.groupId = this.getNodeParameter('groupId', i);
-						responseData = await lunchMoneyApiRequest.call(this, 'DELETE', `/transactions/group/${groupId}`, body);
+						responseData = await lunchMoneyApiRequest.call(this, 'DELETE', `/transactions/group/${groupId}`);
 					}
 
 					if (operation === 'get') {
@@ -234,9 +231,7 @@ export class LunchMoney implements INodeType {
 
 					if (operation === 'getAttachment') {
 						const fileId = this.getNodeParameter('fileId', i) as number;
-						const qs: IDataObject = {};
-						qs.fileId = this.getNodeParameter('fileId', i);
-						responseData = await lunchMoneyApiRequest.call(this, 'GET', `/transactions/attachments/${fileId}`, {}, qs);
+						responseData = await lunchMoneyApiRequest.call(this, 'GET', `/transactions/attachments/${fileId}`);
 					}
 
 					if (operation === 'getAll') {
@@ -283,13 +278,15 @@ export class LunchMoney implements INodeType {
 
 					if (operation === 'uploadAttachment') {
 						const txId = this.getNodeParameter('uploadTransactionId', i) as number;
-						const body: IDataObject = {};
-						body.uploadTransactionId = this.getNodeParameter('uploadTransactionId', i);
-						body.fileUrl = this.getNodeParameter('fileUrl', i);
-						const additionalFields = this.getNodeParameter('additionalFields', i) as IDataObject;
-						for (const k of Object.keys(additionalFields)) { if (additionalFields[k] === '') delete additionalFields[k]; }
-						Object.assign(body, additionalFields);
-						responseData = await lunchMoneyApiRequest.call(this, 'POST', `/transactions/${txId}/attachments`, body);
+						const binaryPropertyName = this.getNodeParameter('binaryPropertyName', i) as string;
+						const binaryData = this.helpers.assertBinaryData(i, binaryPropertyName);
+						const fileBuffer = await this.helpers.getBinaryDataBuffer(i, binaryPropertyName);
+						responseData = await lunchMoneyApiRequestMultipart.call(this, 'POST', `/transactions/${txId}/attachments`, {
+							file: {
+								value: fileBuffer,
+								options: { filename: binaryData.fileName || 'file', contentType: binaryData.mimeType },
+							},
+						});
 					}
 
 				}
@@ -453,7 +450,7 @@ export class LunchMoney implements INodeType {
 					if (operation === 'createManual') {
 						const body: IDataObject = {};
 						body.name = this.getNodeParameter('name', i);
-						body.currency = this.getNodeParameter('currency', i);
+						body.symbol = this.getNodeParameter('symbol', i);
 						body.balance = this.getNodeParameter('balance', i);
 						const additionalFields = this.getNodeParameter('additionalFields', i) as IDataObject;
 						for (const k of Object.keys(additionalFields)) { if (additionalFields[k] === '') delete additionalFields[k]; }
@@ -489,9 +486,7 @@ export class LunchMoney implements INodeType {
 					if (operation === 'getSyncedBySymbol') {
 						const id = this.getNodeParameter('cryptoId', i) as number;
 						const symbol = this.getNodeParameter('cryptoSymbol', i) as string;
-						const qs: IDataObject = {};
-						qs.cryptoSymbol = this.getNodeParameter('cryptoSymbol', i);
-						responseData = await lunchMoneyApiRequest.call(this, 'GET', `/crypto/synced/${id}/${symbol}`, {}, qs);
+						responseData = await lunchMoneyApiRequest.call(this, 'GET', `/crypto/synced/${id}/${symbol}`);
 					}
 
 					if (operation === 'refreshSynced') {
@@ -519,20 +514,13 @@ export class LunchMoney implements INodeType {
 				if (resource === 'balanceHistory') {
 					if (operation === 'deleteEntry') {
 						const entryId = this.getNodeParameter('entryId', i) as number;
-						const body: IDataObject = {};
-						body.entryId = this.getNodeParameter('entryId', i);
-						responseData = await lunchMoneyApiRequest.call(this, 'DELETE', `/balance_history/entries/${entryId}`, body);
+						responseData = await lunchMoneyApiRequest.call(this, 'DELETE', `/balance_history/entries/${entryId}`);
 					}
 
 					if (operation === 'deleteForAccount') {
 						const accountType = this.getNodeParameter('account_type', i) as string;
 						const accountId = this.getNodeParameter('account_id', i) as number;
-						const body: IDataObject = {};
-						body.account_type = this.getNodeParameter('account_type', i);
-						body.account_id = this.getNodeParameter('account_id', i);
-						const additionalFields = this.getNodeParameter('additionalFields', i) as IDataObject;
-						Object.assign(body, additionalFields);
-						responseData = await lunchMoneyApiRequest.call(this, 'DELETE', `/balance_history/${accountType}/${accountId}`, body);
+						responseData = await lunchMoneyApiRequest.call(this, 'DELETE', `/balance_history/${accountType}/${accountId}`);
 					}
 
 					if (operation === 'getAll') {
@@ -547,8 +535,6 @@ export class LunchMoney implements INodeType {
 						const accountType = this.getNodeParameter('account_type', i) as string;
 						const accountId = this.getNodeParameter('account_id', i) as number;
 						const qs: IDataObject = {};
-						qs.account_type = this.getNodeParameter('account_type', i);
-						qs.account_id = this.getNodeParameter('account_id', i);
 						const additionalFields = this.getNodeParameter('additionalFields', i) as IDataObject;
 						for (const k of Object.keys(additionalFields)) { if (additionalFields[k] === '') delete additionalFields[k]; }
 						Object.assign(qs, additionalFields);
@@ -559,10 +545,8 @@ export class LunchMoney implements INodeType {
 						const accountType = this.getNodeParameter('account_type', i) as string;
 						const accountId = this.getNodeParameter('account_id', i) as number;
 						const body: IDataObject = {};
-						body.account_type = this.getNodeParameter('account_type', i);
-						body.account_id = this.getNodeParameter('account_id', i);
-						const balanceEntriesRaw = this.getNodeParameter('balanceEntries', i) as string;
-						try { body.balanceEntries = JSON.parse(balanceEntriesRaw); } catch { throw new Error('Invalid JSON in "Balance Entries (JSON)"'); }
+						const balancesRaw = this.getNodeParameter('balances', i) as string;
+						try { body.balances = JSON.parse(balancesRaw); } catch { throw new Error('Invalid JSON in "Balance Entries (JSON)"'); }
 						responseData = await lunchMoneyApiRequest.call(this, 'PUT', `/balance_history/${accountType}/${accountId}`, body);
 					}
 
@@ -572,8 +556,6 @@ export class LunchMoney implements INodeType {
 						const csAccountId = this.getNodeParameter('cryptoSyncedAccountId', i) as number;
 						const csSymbol = this.getNodeParameter('cryptoSyncedSymbol', i) as string;
 						const qs: IDataObject = {};
-						qs.cryptoSyncedAccountId = this.getNodeParameter('cryptoSyncedAccountId', i);
-						qs.cryptoSyncedSymbol = this.getNodeParameter('cryptoSyncedSymbol', i);
 						const additionalFields = this.getNodeParameter('additionalFields', i) as IDataObject;
 						for (const k of Object.keys(additionalFields)) { if (additionalFields[k] === '') delete additionalFields[k]; }
 						Object.assign(qs, additionalFields);
@@ -586,10 +568,8 @@ export class LunchMoney implements INodeType {
 						const csAccountId = this.getNodeParameter('cryptoSyncedAccountId', i) as number;
 						const csSymbol = this.getNodeParameter('cryptoSyncedSymbol', i) as string;
 						const body: IDataObject = {};
-						body.cryptoSyncedAccountId = this.getNodeParameter('cryptoSyncedAccountId', i);
-						body.cryptoSyncedSymbol = this.getNodeParameter('cryptoSyncedSymbol', i);
-						const balanceEntriesRaw = this.getNodeParameter('balanceEntries', i) as string;
-						try { body.balanceEntries = JSON.parse(balanceEntriesRaw); } catch { throw new Error('Invalid JSON in "Balance Entries (JSON)"'); }
+						const balancesRaw = this.getNodeParameter('balances', i) as string;
+						try { body.balances = JSON.parse(balancesRaw); } catch { throw new Error('Invalid JSON in "Balance Entries (JSON)"'); }
 						responseData = await lunchMoneyApiRequest.call(this, 'PUT', `/balance_history/crypto_synced/${csAccountId}/${csSymbol}`, body);
 					}
 
@@ -598,21 +578,16 @@ export class LunchMoney implements INodeType {
 						const symbol = this.getNodeParameter('cryptoSyncedSymbol', i) as string;
 						const csAccountId = this.getNodeParameter('cryptoSyncedAccountId', i) as number;
 						const csSymbol = this.getNodeParameter('cryptoSyncedSymbol', i) as string;
-						const body: IDataObject = {};
-						body.cryptoSyncedAccountId = this.getNodeParameter('cryptoSyncedAccountId', i);
-						body.cryptoSyncedSymbol = this.getNodeParameter('cryptoSyncedSymbol', i);
-						const additionalFields = this.getNodeParameter('additionalFields', i) as IDataObject;
-						Object.assign(body, additionalFields);
-						responseData = await lunchMoneyApiRequest.call(this, 'DELETE', `/balance_history/crypto_synced/${csAccountId}/${csSymbol}`, body);
+						responseData = await lunchMoneyApiRequest.call(this, 'DELETE', `/balance_history/crypto_synced/${csAccountId}/${csSymbol}`);
 					}
 
 					if (operation === 'updateDeletedDetails') {
 						const accountId = this.getNodeParameter('account_id', i) as number;
 						const delAccountId = this.getNodeParameter('deletedAccountId', i) as number;
 						const body: IDataObject = {};
-						body.deletedAccountId = this.getNodeParameter('deletedAccountId', i);
-						const detailsDataRaw = this.getNodeParameter('detailsData', i) as string;
-						try { body.detailsData = JSON.parse(detailsDataRaw); } catch { throw new Error('Invalid JSON in "Details (JSON)"'); }
+						const additionalFields = this.getNodeParameter('additionalFields', i) as IDataObject;
+						for (const k of Object.keys(additionalFields)) { if (additionalFields[k] === '') delete additionalFields[k]; }
+						Object.assign(body, additionalFields);
 						responseData = await lunchMoneyApiRequest.call(this, 'PUT', `/balance_history/deleted/${delAccountId}/details`, body);
 					}
 

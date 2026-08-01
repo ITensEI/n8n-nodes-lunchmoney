@@ -199,15 +199,11 @@ class LunchMoney {
                     }
                     if (operation === 'deleteAttachment') {
                         const fileId = this.getNodeParameter('fileId', i);
-                        const body = {};
-                        body.fileId = this.getNodeParameter('fileId', i);
-                        responseData = await GenericFunctions_1.lunchMoneyApiRequest.call(this, 'DELETE', `/transactions/attachments/${fileId}`, body);
+                        responseData = await GenericFunctions_1.lunchMoneyApiRequest.call(this, 'DELETE', `/transactions/attachments/${fileId}`);
                     }
                     if (operation === 'deleteGroup') {
                         const groupId = this.getNodeParameter('groupId', i);
-                        const body = {};
-                        body.groupId = this.getNodeParameter('groupId', i);
-                        responseData = await GenericFunctions_1.lunchMoneyApiRequest.call(this, 'DELETE', `/transactions/group/${groupId}`, body);
+                        responseData = await GenericFunctions_1.lunchMoneyApiRequest.call(this, 'DELETE', `/transactions/group/${groupId}`);
                     }
                     if (operation === 'get') {
                         const id = this.getNodeParameter('transactionId', i);
@@ -215,9 +211,7 @@ class LunchMoney {
                     }
                     if (operation === 'getAttachment') {
                         const fileId = this.getNodeParameter('fileId', i);
-                        const qs = {};
-                        qs.fileId = this.getNodeParameter('fileId', i);
-                        responseData = await GenericFunctions_1.lunchMoneyApiRequest.call(this, 'GET', `/transactions/attachments/${fileId}`, {}, qs);
+                        responseData = await GenericFunctions_1.lunchMoneyApiRequest.call(this, 'GET', `/transactions/attachments/${fileId}`);
                     }
                     if (operation === 'getAll') {
                         const qs = {};
@@ -278,16 +272,15 @@ class LunchMoney {
                     }
                     if (operation === 'uploadAttachment') {
                         const txId = this.getNodeParameter('uploadTransactionId', i);
-                        const body = {};
-                        body.uploadTransactionId = this.getNodeParameter('uploadTransactionId', i);
-                        body.fileUrl = this.getNodeParameter('fileUrl', i);
-                        const additionalFields = this.getNodeParameter('additionalFields', i);
-                        for (const k of Object.keys(additionalFields)) {
-                            if (additionalFields[k] === '')
-                                delete additionalFields[k];
-                        }
-                        Object.assign(body, additionalFields);
-                        responseData = await GenericFunctions_1.lunchMoneyApiRequest.call(this, 'POST', `/transactions/${txId}/attachments`, body);
+                        const binaryPropertyName = this.getNodeParameter('binaryPropertyName', i);
+                        const binaryData = this.helpers.assertBinaryData(i, binaryPropertyName);
+                        const fileBuffer = await this.helpers.getBinaryDataBuffer(i, binaryPropertyName);
+                        responseData = await GenericFunctions_1.lunchMoneyApiRequestMultipart.call(this, 'POST', `/transactions/${txId}/attachments`, {
+                            file: {
+                                value: fileBuffer,
+                                options: { filename: binaryData.fileName || 'file', contentType: binaryData.mimeType },
+                            },
+                        });
                     }
                 }
                 if (resource === 'tag') {
@@ -466,7 +459,7 @@ class LunchMoney {
                     if (operation === 'createManual') {
                         const body = {};
                         body.name = this.getNodeParameter('name', i);
-                        body.currency = this.getNodeParameter('currency', i);
+                        body.symbol = this.getNodeParameter('symbol', i);
                         body.balance = this.getNodeParameter('balance', i);
                         const additionalFields = this.getNodeParameter('additionalFields', i);
                         for (const k of Object.keys(additionalFields)) {
@@ -499,9 +492,7 @@ class LunchMoney {
                     if (operation === 'getSyncedBySymbol') {
                         const id = this.getNodeParameter('cryptoId', i);
                         const symbol = this.getNodeParameter('cryptoSymbol', i);
-                        const qs = {};
-                        qs.cryptoSymbol = this.getNodeParameter('cryptoSymbol', i);
-                        responseData = await GenericFunctions_1.lunchMoneyApiRequest.call(this, 'GET', `/crypto/synced/${id}/${symbol}`, {}, qs);
+                        responseData = await GenericFunctions_1.lunchMoneyApiRequest.call(this, 'GET', `/crypto/synced/${id}/${symbol}`);
                     }
                     if (operation === 'refreshSynced') {
                         const id = this.getNodeParameter('cryptoId', i);
@@ -527,19 +518,12 @@ class LunchMoney {
                 if (resource === 'balanceHistory') {
                     if (operation === 'deleteEntry') {
                         const entryId = this.getNodeParameter('entryId', i);
-                        const body = {};
-                        body.entryId = this.getNodeParameter('entryId', i);
-                        responseData = await GenericFunctions_1.lunchMoneyApiRequest.call(this, 'DELETE', `/balance_history/entries/${entryId}`, body);
+                        responseData = await GenericFunctions_1.lunchMoneyApiRequest.call(this, 'DELETE', `/balance_history/entries/${entryId}`);
                     }
                     if (operation === 'deleteForAccount') {
                         const accountType = this.getNodeParameter('account_type', i);
                         const accountId = this.getNodeParameter('account_id', i);
-                        const body = {};
-                        body.account_type = this.getNodeParameter('account_type', i);
-                        body.account_id = this.getNodeParameter('account_id', i);
-                        const additionalFields = this.getNodeParameter('additionalFields', i);
-                        Object.assign(body, additionalFields);
-                        responseData = await GenericFunctions_1.lunchMoneyApiRequest.call(this, 'DELETE', `/balance_history/${accountType}/${accountId}`, body);
+                        responseData = await GenericFunctions_1.lunchMoneyApiRequest.call(this, 'DELETE', `/balance_history/${accountType}/${accountId}`);
                     }
                     if (operation === 'getAll') {
                         const qs = {};
@@ -555,8 +539,6 @@ class LunchMoney {
                         const accountType = this.getNodeParameter('account_type', i);
                         const accountId = this.getNodeParameter('account_id', i);
                         const qs = {};
-                        qs.account_type = this.getNodeParameter('account_type', i);
-                        qs.account_id = this.getNodeParameter('account_id', i);
                         const additionalFields = this.getNodeParameter('additionalFields', i);
                         for (const k of Object.keys(additionalFields)) {
                             if (additionalFields[k] === '')
@@ -569,11 +551,9 @@ class LunchMoney {
                         const accountType = this.getNodeParameter('account_type', i);
                         const accountId = this.getNodeParameter('account_id', i);
                         const body = {};
-                        body.account_type = this.getNodeParameter('account_type', i);
-                        body.account_id = this.getNodeParameter('account_id', i);
-                        const balanceEntriesRaw = this.getNodeParameter('balanceEntries', i);
+                        const balancesRaw = this.getNodeParameter('balances', i);
                         try {
-                            body.balanceEntries = JSON.parse(balanceEntriesRaw);
+                            body.balances = JSON.parse(balancesRaw);
                         }
                         catch {
                             throw new Error('Invalid JSON in "Balance Entries (JSON)"');
@@ -586,8 +566,6 @@ class LunchMoney {
                         const csAccountId = this.getNodeParameter('cryptoSyncedAccountId', i);
                         const csSymbol = this.getNodeParameter('cryptoSyncedSymbol', i);
                         const qs = {};
-                        qs.cryptoSyncedAccountId = this.getNodeParameter('cryptoSyncedAccountId', i);
-                        qs.cryptoSyncedSymbol = this.getNodeParameter('cryptoSyncedSymbol', i);
                         const additionalFields = this.getNodeParameter('additionalFields', i);
                         for (const k of Object.keys(additionalFields)) {
                             if (additionalFields[k] === '')
@@ -602,11 +580,9 @@ class LunchMoney {
                         const csAccountId = this.getNodeParameter('cryptoSyncedAccountId', i);
                         const csSymbol = this.getNodeParameter('cryptoSyncedSymbol', i);
                         const body = {};
-                        body.cryptoSyncedAccountId = this.getNodeParameter('cryptoSyncedAccountId', i);
-                        body.cryptoSyncedSymbol = this.getNodeParameter('cryptoSyncedSymbol', i);
-                        const balanceEntriesRaw = this.getNodeParameter('balanceEntries', i);
+                        const balancesRaw = this.getNodeParameter('balances', i);
                         try {
-                            body.balanceEntries = JSON.parse(balanceEntriesRaw);
+                            body.balances = JSON.parse(balancesRaw);
                         }
                         catch {
                             throw new Error('Invalid JSON in "Balance Entries (JSON)"');
@@ -618,25 +594,18 @@ class LunchMoney {
                         const symbol = this.getNodeParameter('cryptoSyncedSymbol', i);
                         const csAccountId = this.getNodeParameter('cryptoSyncedAccountId', i);
                         const csSymbol = this.getNodeParameter('cryptoSyncedSymbol', i);
-                        const body = {};
-                        body.cryptoSyncedAccountId = this.getNodeParameter('cryptoSyncedAccountId', i);
-                        body.cryptoSyncedSymbol = this.getNodeParameter('cryptoSyncedSymbol', i);
-                        const additionalFields = this.getNodeParameter('additionalFields', i);
-                        Object.assign(body, additionalFields);
-                        responseData = await GenericFunctions_1.lunchMoneyApiRequest.call(this, 'DELETE', `/balance_history/crypto_synced/${csAccountId}/${csSymbol}`, body);
+                        responseData = await GenericFunctions_1.lunchMoneyApiRequest.call(this, 'DELETE', `/balance_history/crypto_synced/${csAccountId}/${csSymbol}`);
                     }
                     if (operation === 'updateDeletedDetails') {
                         const accountId = this.getNodeParameter('account_id', i);
                         const delAccountId = this.getNodeParameter('deletedAccountId', i);
                         const body = {};
-                        body.deletedAccountId = this.getNodeParameter('deletedAccountId', i);
-                        const detailsDataRaw = this.getNodeParameter('detailsData', i);
-                        try {
-                            body.detailsData = JSON.parse(detailsDataRaw);
+                        const additionalFields = this.getNodeParameter('additionalFields', i);
+                        for (const k of Object.keys(additionalFields)) {
+                            if (additionalFields[k] === '')
+                                delete additionalFields[k];
                         }
-                        catch {
-                            throw new Error('Invalid JSON in "Details (JSON)"');
-                        }
+                        Object.assign(body, additionalFields);
                         responseData = await GenericFunctions_1.lunchMoneyApiRequest.call(this, 'PUT', `/balance_history/deleted/${delAccountId}/details`, body);
                     }
                 }

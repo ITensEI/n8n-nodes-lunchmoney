@@ -156,59 +156,26 @@ exports.balanceHistoryFields = [
                     "balanceHistory"
                 ],
                 "operation": [
-                    "deleteForAccount"
-                ]
-            }
-        },
-        "options": [
-            {
-                "displayName": "Start Date",
-                "name": "start_date",
-                "type": "string",
-                "default": "",
-                "description": "Start date of range to delete (YYYY-MM-DD)"
-            },
-            {
-                "displayName": "End Date",
-                "name": "end_date",
-                "type": "string",
-                "default": "",
-                "description": "End date of range to delete (YYYY-MM-DD)"
-            }
-        ]
-    },
-    {
-        "displayName": "Additional Fields",
-        "name": "additionalFields",
-        "type": "collection",
-        "placeholder": "Add Field",
-        "default": {},
-        "displayOptions": {
-            "show": {
-                "resource": [
-                    "balanceHistory"
-                ],
-                "operation": [
                     "getAll"
                 ]
             }
         },
         "options": [
             {
-                "displayName": "Start Date",
-                "name": "start_date",
+                "displayName": "Start Month",
+                "name": "start_month",
                 "type": "string",
                 "default": "",
-                "description": "Start date (YYYY-MM-DD)",
-                "placeholder": "2024-01-01"
+                "description": "Start of the month range in YYYY-MM format",
+                "placeholder": "2024-01"
             },
             {
-                "displayName": "End Date",
-                "name": "end_date",
+                "displayName": "End Month",
+                "name": "end_month",
                 "type": "string",
                 "default": "",
-                "description": "End date (YYYY-MM-DD)",
-                "placeholder": "2024-12-31"
+                "description": "End of the month range in YYYY-MM format",
+                "placeholder": "2024-12"
             }
         ]
     },
@@ -284,20 +251,20 @@ exports.balanceHistoryFields = [
         },
         "options": [
             {
-                "displayName": "Start Date",
-                "name": "start_date",
+                "displayName": "Start Month",
+                "name": "start_month",
                 "type": "string",
                 "default": "",
-                "description": "Start date (YYYY-MM-DD)",
-                "placeholder": "2024-01-01"
+                "description": "Start of the month range in YYYY-MM format",
+                "placeholder": "2024-01"
             },
             {
-                "displayName": "End Date",
-                "name": "end_date",
+                "displayName": "End Month",
+                "name": "end_month",
                 "type": "string",
                 "default": "",
-                "description": "End date (YYYY-MM-DD)",
-                "placeholder": "2024-12-31"
+                "description": "End of the month range in YYYY-MM format",
+                "placeholder": "2024-12"
             }
         ]
     },
@@ -357,7 +324,7 @@ exports.balanceHistoryFields = [
     },
     {
         "displayName": "Balance Entries (JSON)",
-        "name": "balanceEntries",
+        "name": "balances",
         "type": "json",
         "default": "[]",
         "description": "JSON array of balance entries with date and balance fields",
@@ -428,20 +395,20 @@ exports.balanceHistoryFields = [
         },
         "options": [
             {
-                "displayName": "Start Date",
-                "name": "start_date",
+                "displayName": "Start Month",
+                "name": "start_month",
                 "type": "string",
                 "default": "",
-                "description": "Start date (YYYY-MM-DD)",
-                "placeholder": "2024-01-01"
+                "description": "Start of the month range in YYYY-MM format",
+                "placeholder": "2024-01"
             },
             {
-                "displayName": "End Date",
-                "name": "end_date",
+                "displayName": "End Month",
+                "name": "end_month",
                 "type": "string",
                 "default": "",
-                "description": "End date (YYYY-MM-DD)",
-                "placeholder": "2024-12-31"
+                "description": "End of the month range in YYYY-MM format",
+                "placeholder": "2024-12"
             }
         ]
     },
@@ -484,7 +451,7 @@ exports.balanceHistoryFields = [
     },
     {
         "displayName": "Balance Entries (JSON)",
-        "name": "balanceEntries",
+        "name": "balances",
         "type": "json",
         "default": "[]",
         "description": "JSON array of balance entries with date and balance fields",
@@ -536,39 +503,6 @@ exports.balanceHistoryFields = [
         },
         "required": true,
         "placeholder": "btc"
-    },
-    {
-        "displayName": "Additional Fields",
-        "name": "additionalFields",
-        "type": "collection",
-        "placeholder": "Add Field",
-        "default": {},
-        "displayOptions": {
-            "show": {
-                "resource": [
-                    "balanceHistory"
-                ],
-                "operation": [
-                    "deleteCryptoSynced"
-                ]
-            }
-        },
-        "options": [
-            {
-                "displayName": "Start Date",
-                "name": "start_date",
-                "type": "string",
-                "default": "",
-                "description": "Start date of range to delete (YYYY-MM-DD)"
-            },
-            {
-                "displayName": "End Date",
-                "name": "end_date",
-                "type": "string",
-                "default": "",
-                "description": "End date of range to delete (YYYY-MM-DD)"
-            }
-        ]
     },
     {
         "displayName": "Deleted Account ID",
@@ -589,11 +523,11 @@ exports.balanceHistoryFields = [
         "required": true
     },
     {
-        "displayName": "Details (JSON)",
-        "name": "detailsData",
-        "type": "json",
-        "default": "[]",
-        "description": "JSON object with display_name and/or other metadata fields",
+        "displayName": "Additional Fields",
+        "name": "additionalFields",
+        "type": "collection",
+        "placeholder": "Add Field",
+        "default": {},
         "displayOptions": {
             "show": {
                 "resource": [
@@ -604,7 +538,50 @@ exports.balanceHistoryFields = [
                 ]
             }
         },
-        "required": true
+        "options": [
+            {
+                "displayName": "Name",
+                "name": "name",
+                "type": "string",
+                "default": "",
+                "description": "New archived account name for the deleted account source"
+            },
+            {
+                "displayName": "Institution Name",
+                "name": "institution_name",
+                "type": "string",
+                "default": "",
+                "description": "New archived institution name for the deleted account source"
+            },
+            {
+                "displayName": "Display Name",
+                "name": "display_name",
+                "type": "string",
+                "default": "",
+                "description": "New display name for the deleted account source"
+            },
+            {
+                "displayName": "Account Type",
+                "name": "account_type",
+                "type": "string",
+                "default": "",
+                "description": "New archived account type for the deleted account source"
+            },
+            {
+                "displayName": "Subtype",
+                "name": "subtype",
+                "type": "string",
+                "default": "",
+                "description": "New archived subtype for the deleted account source"
+            },
+            {
+                "displayName": "Mask",
+                "name": "mask",
+                "type": "string",
+                "default": "",
+                "description": "New archived account mask for the deleted account source"
+            }
+        ]
     },
 ];
 //# sourceMappingURL=BalanceHistoryDescription.js.map

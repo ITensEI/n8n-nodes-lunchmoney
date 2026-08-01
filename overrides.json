@@ -940,18 +940,11 @@
 						"desc": "ID of the transaction to attach the file to."
 					},
 					{
-						"name": "fileUrl",
-						"displayName": "File URL",
+						"name": "binaryPropertyName",
+						"displayName": "Input Binary Field",
 						"type": "string",
-						"desc": "URL of the file to attach."
-					}
-				],
-				"optional": [
-					{
-						"name": "fileName",
-						"displayName": "File Name",
-						"type": "string",
-						"desc": "Name for the attachment file."
+						"desc": "Name of the binary property on the input item containing the file to upload (from an upstream node like HTTP Request or Read Binary File). Max 10MB.",
+						"default": "data"
 					}
 				]
 			}
@@ -1528,10 +1521,10 @@
 						"desc": "Name of the crypto account"
 					},
 					{
-						"name": "currency",
-						"displayName": "Currency/Symbol",
+						"name": "symbol",
+						"displayName": "Symbol",
 						"type": "string",
-						"desc": "Cryptocurrency symbol (e.g. \"btc\")",
+						"desc": "Cryptocurrency symbol to track (e.g. \"btc\")",
 						"placeholder": "btc"
 					},
 					{
@@ -1550,10 +1543,10 @@
 						"desc": "Name of the exchange or wallet"
 					},
 					{
-						"name": "notes",
-						"displayName": "Notes",
+						"name": "display_name",
+						"displayName": "Display Name",
 						"type": "string",
-						"desc": "Notes about this crypto account"
+						"desc": "Display name for the manual crypto asset. If omitted, may be derived from institution_name + name."
 					}
 				]
 			}
@@ -1639,22 +1632,16 @@
 						"desc": "Current balance"
 					},
 					{
-						"name": "currency",
-						"displayName": "Currency/Symbol",
-						"type": "string",
-						"desc": "Cryptocurrency symbol"
-					},
-					{
 						"name": "institution_name",
 						"displayName": "Institution Name",
 						"type": "string",
 						"desc": "Exchange or wallet name"
 					},
 					{
-						"name": "notes",
-						"displayName": "Notes",
+						"name": "display_name",
+						"displayName": "Display Name",
 						"type": "string",
-						"desc": "Notes about this account"
+						"desc": "New display name for the manual crypto asset."
 					}
 				]
 			}
@@ -1709,20 +1696,6 @@
 						"type": "string",
 						"desc": "ID of the account"
 					}
-				],
-				"optional": [
-					{
-						"name": "start_date",
-						"displayName": "Start Date",
-						"type": "string",
-						"desc": "Start date of range to delete (YYYY-MM-DD)"
-					},
-					{
-						"name": "end_date",
-						"displayName": "End Date",
-						"type": "string",
-						"desc": "End date of range to delete (YYYY-MM-DD)"
-					}
 				]
 			}
 		},
@@ -1735,18 +1708,18 @@
 			"fields": {
 				"optional": [
 					{
-						"name": "start_date",
-						"displayName": "Start Date",
+						"name": "start_month",
+						"displayName": "Start Month",
 						"type": "string",
-						"desc": "Start date (YYYY-MM-DD)",
-						"placeholder": "2024-01-01"
+						"desc": "Start of the month range in YYYY-MM format",
+						"placeholder": "2024-01"
 					},
 					{
-						"name": "end_date",
-						"displayName": "End Date",
+						"name": "end_month",
+						"displayName": "End Month",
 						"type": "string",
-						"desc": "End date (YYYY-MM-DD)",
-						"placeholder": "2024-12-31"
+						"desc": "End of the month range in YYYY-MM format",
+						"placeholder": "2024-12"
 					}
 				]
 			}
@@ -1780,18 +1753,18 @@
 				],
 				"optional": [
 					{
-						"name": "start_date",
-						"displayName": "Start Date",
+						"name": "start_month",
+						"displayName": "Start Month",
 						"type": "string",
-						"desc": "Start date (YYYY-MM-DD)",
-						"placeholder": "2024-01-01"
+						"desc": "Start of the month range in YYYY-MM format",
+						"placeholder": "2024-01"
 					},
 					{
-						"name": "end_date",
-						"displayName": "End Date",
+						"name": "end_month",
+						"displayName": "End Month",
 						"type": "string",
-						"desc": "End date (YYYY-MM-DD)",
-						"placeholder": "2024-12-31"
+						"desc": "End of the month range in YYYY-MM format",
+						"placeholder": "2024-12"
 					}
 				]
 			}
@@ -1823,7 +1796,7 @@
 						"desc": "ID of the account"
 					},
 					{
-						"name": "balanceEntries",
+						"name": "balances",
 						"displayName": "Balance Entries (JSON)",
 						"type": "json",
 						"desc": "JSON array of balance entries with date and balance fields"
@@ -1855,18 +1828,18 @@
 				],
 				"optional": [
 					{
-						"name": "start_date",
-						"displayName": "Start Date",
+						"name": "start_month",
+						"displayName": "Start Month",
 						"type": "string",
-						"desc": "Start date (YYYY-MM-DD)",
-						"placeholder": "2024-01-01"
+						"desc": "Start of the month range in YYYY-MM format",
+						"placeholder": "2024-01"
 					},
 					{
-						"name": "end_date",
-						"displayName": "End Date",
+						"name": "end_month",
+						"displayName": "End Month",
 						"type": "string",
-						"desc": "End date (YYYY-MM-DD)",
-						"placeholder": "2024-12-31"
+						"desc": "End of the month range in YYYY-MM format",
+						"placeholder": "2024-12"
 					}
 				]
 			}
@@ -1893,7 +1866,7 @@
 						"placeholder": "btc"
 					},
 					{
-						"name": "balanceEntries",
+						"name": "balances",
 						"displayName": "Balance Entries (JSON)",
 						"type": "json",
 						"desc": "JSON array of balance entries with date and balance fields"
@@ -1922,20 +1895,6 @@
 						"desc": "Cryptocurrency symbol (e.g. \"btc\")",
 						"placeholder": "btc"
 					}
-				],
-				"optional": [
-					{
-						"name": "start_date",
-						"displayName": "Start Date",
-						"type": "string",
-						"desc": "Start date of range to delete (YYYY-MM-DD)"
-					},
-					{
-						"name": "end_date",
-						"displayName": "End Date",
-						"type": "string",
-						"desc": "End date of range to delete (YYYY-MM-DD)"
-					}
 				]
 			}
 		},
@@ -1952,12 +1911,44 @@
 						"displayName": "Deleted Account ID",
 						"type": "string",
 						"desc": "ID of the deleted account source"
+					}
+				],
+				"optional": [
+					{
+						"name": "name",
+						"displayName": "Name",
+						"type": "string",
+						"desc": "New archived account name for the deleted account source"
 					},
 					{
-						"name": "detailsData",
-						"displayName": "Details (JSON)",
-						"type": "json",
-						"desc": "JSON object with display_name and/or other metadata fields"
+						"name": "institution_name",
+						"displayName": "Institution Name",
+						"type": "string",
+						"desc": "New archived institution name for the deleted account source"
+					},
+					{
+						"name": "display_name",
+						"displayName": "Display Name",
+						"type": "string",
+						"desc": "New display name for the deleted account source"
+					},
+					{
+						"name": "account_type",
+						"displayName": "Account Type",
+						"type": "string",
+						"desc": "New archived account type for the deleted account source"
+					},
+					{
+						"name": "subtype",
+						"displayName": "Subtype",
+						"type": "string",
+						"desc": "New archived subtype for the deleted account source"
+					},
+					{
+						"name": "mask",
+						"displayName": "Mask",
+						"type": "string",
+						"desc": "New archived account mask for the deleted account source"
 					}
 				]
 			}

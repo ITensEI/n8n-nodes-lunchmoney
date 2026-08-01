@@ -789,11 +789,11 @@ exports.transactionFields = [
         "required": true
     },
     {
-        "displayName": "File URL",
-        "name": "fileUrl",
+        "displayName": "Input Binary Field",
+        "name": "binaryPropertyName",
         "type": "string",
-        "default": "",
-        "description": "URL of the file to attach.",
+        "default": "data",
+        "description": "Name of the binary property on the input item containing the file to upload (from an upstream node like HTTP Request or Read Binary File). Max 10MB.",
         "displayOptions": {
             "show": {
                 "resource": [
@@ -805,32 +805,6 @@ exports.transactionFields = [
             }
         },
         "required": true
-    },
-    {
-        "displayName": "Additional Fields",
-        "name": "additionalFields",
-        "type": "collection",
-        "placeholder": "Add Field",
-        "default": {},
-        "displayOptions": {
-            "show": {
-                "resource": [
-                    "transaction"
-                ],
-                "operation": [
-                    "uploadAttachment"
-                ]
-            }
-        },
-        "options": [
-            {
-                "displayName": "File Name",
-                "name": "fileName",
-                "type": "string",
-                "default": "",
-                "description": "Name for the attachment file."
-            }
-        ]
     },
 ];
 //# sourceMappingURL=TransactionDescription.js.map

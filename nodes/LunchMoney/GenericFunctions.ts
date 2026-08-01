@@ -51,6 +51,36 @@ export async function lunchMoneyApiRequest(
 	}
 }
 
+export async function lunchMoneyApiRequestMultipart(
+	this: IExecuteFunctions,
+	method: IHttpRequestMethods,
+	endpoint: string,
+	formData: IDataObject,
+): Promise<any> {
+	const credentials = await this.getCredentials('lunchMoneyApi');
+	const useMock = credentials.useMockServer as boolean;
+	const baseURL = useMock ? MOCK_BASE_URL : LIVE_BASE_URL;
+
+	const options: IRequestOptions = {
+		method,
+		uri: `${baseURL}${endpoint}`,
+		formData,
+		json: true,
+	};
+
+	try {
+		return await this.helpers.requestWithAuthentication.call(
+			this,
+			'lunchMoneyApi',
+			options,
+		);
+	} catch (error) {
+		throw new NodeApiError(this.getNode(), error as JsonObject, {
+			message: parseErrorMessage(error),
+		});
+	}
+}
+
 export async function lunchMoneyApiRequestAllItems(
 	this: IExecuteFunctions | ILoadOptionsFunctions,
 	method: IHttpRequestMethods,

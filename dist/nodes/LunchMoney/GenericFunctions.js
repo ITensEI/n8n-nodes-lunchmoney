@@ -1,6 +1,7 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.lunchMoneyApiRequest = lunchMoneyApiRequest;
+exports.lunchMoneyApiRequestMultipart = lunchMoneyApiRequestMultipart;
 exports.lunchMoneyApiRequestAllItems = lunchMoneyApiRequestAllItems;
 exports.validateDateFormat = validateDateFormat;
 exports.validateAmount = validateAmount;
@@ -25,6 +26,25 @@ async function lunchMoneyApiRequest(method, endpoint, body = {}, qs = {}) {
     if (Object.keys(qs).length === 0) {
         delete options.qs;
     }
+    try {
+        return await this.helpers.requestWithAuthentication.call(this, 'lunchMoneyApi', options);
+    }
+    catch (error) {
+        throw new n8n_workflow_1.NodeApiError(this.getNode(), error, {
+            message: parseErrorMessage(error),
+        });
+    }
+}
+async function lunchMoneyApiRequestMultipart(method, endpoint, formData) {
+    const credentials = await this.getCredentials('lunchMoneyApi');
+    const useMock = credentials.useMockServer;
+    const baseURL = useMock ? MOCK_BASE_URL : LIVE_BASE_URL;
+    const options = {
+        method,
+        uri: `${baseURL}${endpoint}`,
+        formData,
+        json: true,
+    };
     try {
         return await this.helpers.requestWithAuthentication.call(this, 'lunchMoneyApi', options);
     }

@@ -110,15 +110,6 @@ Publishing is automatic on merge; merging stays a human review step.
 2. **CI** (`.github/workflows/ci.yml`) runs on the pull request. Because the bot opens it with `GITHUB_TOKEN`, GitHub holds the run until a maintainer selects **Approve workflows to run** in the merge box. CI also fails any pull request that changes `nodes/`, `credentials/` or `dist/` without bumping the version. For a manual change, run `npm version patch|minor|major --no-git-tag-version` and commit it.
 3. **Publish** (`.github/workflows/publish.yml`) runs when a merge to `main` changes `package.json`. If npm does not have that version yet, it re-runs lint, tests and the build, publishes with npm Trusted Publishing (provenance is attached automatically), and creates a `vX.Y.Z` GitHub release.
 
-### First-time npm setup (maintainer)
-
-Trusted Publishing is configured on the package's own npm settings page, so the first version is published by hand:
-
-1. From a clean, up-to-date `main`: `npm ci --ignore-scripts`, `npm run build`, `npm pack --dry-run` (check the file list), `npm login`, `npm publish --access public`.
-2. On npmjs.com, open the package, then **Settings > Trusted Publisher > GitHub Actions**, and enter: organization or user `ITensEI`, repository `n8n-nodes-lunchmoney`, workflow filename `publish.yml` (filename only, exact case), environment empty. Under **Allowed actions**, allow direct `npm publish` as well as staged publishing.
-3. Recommended: **Settings > Publishing access > Require two-factor authentication and disallow tokens**.
-4. In GitHub, run the **Publish** workflow once by hand (**Actions > Publish > Run workflow**). It sees the version is already on npm and only creates the missing GitHub release for it.
-
 ## License
 
 MIT

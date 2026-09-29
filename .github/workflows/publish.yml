@@ -45,7 +45,7 @@ jobs:
           echo "name=$NAME" >> "$GITHUB_OUTPUT"
           echo "version=$VERSION" >> "$GITHUB_OUTPUT"
           if ! npm view "$NAME" name >/dev/null 2>&1; then
-            echo "::notice::$NAME is not on npm yet. Publish the first version manually, then configure Trusted Publishing (see README > Releases)."
+            echo "::notice::$NAME is not on npm yet. Publish the first version manually, then configure Trusted Publishing for publish.yml on the package's npm settings page."
             echo "publish=false" >> "$GITHUB_OUTPUT"
             echo "exists=false" >> "$GITHUB_OUTPUT"
           elif [ "$(npm view "$NAME@$VERSION" version 2>/dev/null)" = "$VERSION" ]; then

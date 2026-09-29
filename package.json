@@ -1,6 +1,6 @@
 {
 	"name": "n8n-nodes-lunch-money",
-	"version": "1.0.0",
+	"version": "1.0.1",
 	"description": "n8n community node for the Lunch Money personal finance API (v2)",
 	"keywords": [
 		"n8n-community-node-package",

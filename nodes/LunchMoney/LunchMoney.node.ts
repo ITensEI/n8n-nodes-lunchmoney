@@ -127,6 +127,45 @@ export class LunchMoney implements INodeType {
 						responseData = await lunchMoneyApiRequest.call(this, 'GET', `/summary`, {}, qs);
 					}
 
+					if (operation === 'getAccountSettings') {
+						responseData = await lunchMoneyApiRequest.call(this, 'GET', `/me/account/settings`);
+					}
+
+					if (operation === 'updateAccountSettings') {
+						const body: IDataObject = {};
+						const additionalFields = this.getNodeParameter('additionalFields', i) as IDataObject;
+						if (additionalFields.supported_currencies && typeof additionalFields.supported_currencies === 'string') {
+							try { additionalFields.supported_currencies = JSON.parse(additionalFields.supported_currencies as string); } catch { throw new Error('Invalid JSON in "Supported Currencies"'); }
+						}
+						for (const k of Object.keys(additionalFields)) { if (additionalFields[k] === '') delete additionalFields[k]; }
+						Object.assign(body, additionalFields);
+						responseData = await lunchMoneyApiRequest.call(this, 'PUT', `/me/account/settings`, body);
+					}
+
+					if (operation === 'getUserSettings') {
+						responseData = await lunchMoneyApiRequest.call(this, 'GET', `/me/user/settings`);
+					}
+
+					if (operation === 'updateUserSettings') {
+						const body: IDataObject = {};
+						const additionalFields = this.getNodeParameter('additionalFields', i) as IDataObject;
+						for (const k of Object.keys(additionalFields)) { if (additionalFields[k] === '') delete additionalFields[k]; }
+						Object.assign(body, additionalFields);
+						responseData = await lunchMoneyApiRequest.call(this, 'PUT', `/me/user/settings`, body);
+					}
+
+					if (operation === 'getUserAccountSettings') {
+						responseData = await lunchMoneyApiRequest.call(this, 'GET', `/me/user/account/settings`);
+					}
+
+					if (operation === 'updateUserAccountSettings') {
+						const body: IDataObject = {};
+						const additionalFields = this.getNodeParameter('additionalFields', i) as IDataObject;
+						for (const k of Object.keys(additionalFields)) { if (additionalFields[k] === '') delete additionalFields[k]; }
+						Object.assign(body, additionalFields);
+						responseData = await lunchMoneyApiRequest.call(this, 'PUT', `/me/user/account/settings`, body);
+					}
+
 				}
 
 				if (resource === 'category') {

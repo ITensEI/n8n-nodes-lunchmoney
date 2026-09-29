@@ -92,6 +92,53 @@ class LunchMoney {
                         Object.assign(qs, additionalFields);
                         responseData = await GenericFunctions_1.lunchMoneyApiRequest.call(this, 'GET', `/summary`, {}, qs);
                     }
+                    if (operation === 'getAccountSettings') {
+                        responseData = await GenericFunctions_1.lunchMoneyApiRequest.call(this, 'GET', `/me/account/settings`);
+                    }
+                    if (operation === 'updateAccountSettings') {
+                        const body = {};
+                        const additionalFields = this.getNodeParameter('additionalFields', i);
+                        if (additionalFields.supported_currencies && typeof additionalFields.supported_currencies === 'string') {
+                            try {
+                                additionalFields.supported_currencies = JSON.parse(additionalFields.supported_currencies);
+                            }
+                            catch {
+                                throw new Error('Invalid JSON in "Supported Currencies"');
+                            }
+                        }
+                        for (const k of Object.keys(additionalFields)) {
+                            if (additionalFields[k] === '')
+                                delete additionalFields[k];
+                        }
+                        Object.assign(body, additionalFields);
+                        responseData = await GenericFunctions_1.lunchMoneyApiRequest.call(this, 'PUT', `/me/account/settings`, body);
+                    }
+                    if (operation === 'getUserSettings') {
+                        responseData = await GenericFunctions_1.lunchMoneyApiRequest.call(this, 'GET', `/me/user/settings`);
+                    }
+                    if (operation === 'updateUserSettings') {
+                        const body = {};
+                        const additionalFields = this.getNodeParameter('additionalFields', i);
+                        for (const k of Object.keys(additionalFields)) {
+                            if (additionalFields[k] === '')
+                                delete additionalFields[k];
+                        }
+                        Object.assign(body, additionalFields);
+                        responseData = await GenericFunctions_1.lunchMoneyApiRequest.call(this, 'PUT', `/me/user/settings`, body);
+                    }
+                    if (operation === 'getUserAccountSettings') {
+                        responseData = await GenericFunctions_1.lunchMoneyApiRequest.call(this, 'GET', `/me/user/account/settings`);
+                    }
+                    if (operation === 'updateUserAccountSettings') {
+                        const body = {};
+                        const additionalFields = this.getNodeParameter('additionalFields', i);
+                        for (const k of Object.keys(additionalFields)) {
+                            if (additionalFields[k] === '')
+                                delete additionalFields[k];
+                        }
+                        Object.assign(body, additionalFields);
+                        responseData = await GenericFunctions_1.lunchMoneyApiRequest.call(this, 'PUT', `/me/user/account/settings`, body);
+                    }
                 }
                 if (resource === 'category') {
                     if (operation === 'create') {

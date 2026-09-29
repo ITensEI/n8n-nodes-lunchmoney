@@ -79,12 +79,13 @@ web_modules/
 out
 
 # Nuxt.js build / generate output
+.nuxt
 .output
 
 # Gatsby files
 .cache/
-# Comment in the public line in your project if you use Gatsby
-# https://gatsbyjs.com/docs/reference/config-files/gatsby-config/
+# Comment in the public line in if your project uses Gatsby and not Next.js
+# https://nextjs.org/blog/next-9-1#public-directory-support
 # public
 
 # vuepress build output
@@ -108,11 +109,14 @@ out
 # Serverless directories
 .serverless/
 
-# FuseBox cache directory
+# FuseBox cache
 .fusebox/
 
-# DynamoDB (Local) files
+# DynamoDB Local files
 .dynamodb/
+
+# Firebase cache directory
+.firebase/
 
 # TernJS port file
 .tern-port

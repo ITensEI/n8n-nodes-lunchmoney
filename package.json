@@ -14,11 +14,20 @@
 	"author": {
 		"name": "TensE"
 	},
-	"main": "index.js",
+	"repository": {
+		"type": "git",
+		"url": "https://github.com/ITensEI/n8n-nodes-lunchmoney.git"
+	},
+	"homepage": "https://github.com/ITensEI/n8n-nodes-lunchmoney#readme",
+	"bugs": {
+		"url": "https://github.com/ITensEI/n8n-nodes-lunchmoney/issues"
+	},
 	"scripts": {
 		"build": "tsc && gulp build:icons",
 		"dev": "tsc --watch",
+		"generate": "node scripts/generate-node.js",
 		"lint": "eslint nodes credentials --ext .ts",
+		"test": "node --test test/spec-sync-fields.test.js",
 		"prepublishOnly": "npm run build"
 	},
 	"files": [
@@ -34,15 +43,19 @@
 		]
 	},
 	"devDependencies": {
-		"@typescript-eslint/parser": "^7.0.0",
-		"eslint": "^8.56.0",
-		"gulp": "^4.0.2",
+		"@typescript-eslint/eslint-plugin": "^8.71.0",
+		"@typescript-eslint/parser": "^8.71.0",
+		"eslint": "^8.57.1",
+		"gulp": "^5.0.1",
 		"js-yaml": "^5.2.3",
-		"n8n-workflow": "^1.0.0",
+		"n8n-workflow": "^2.16.0",
 		"prettier": "^3.2.0",
 		"typescript": "^5.3.0"
 	},
 	"peerDependencies": {
 		"n8n-workflow": "*"
+	},
+	"publishConfig": {
+		"access": "public"
 	}
 }

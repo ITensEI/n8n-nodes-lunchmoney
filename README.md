@@ -1,4 +1,4 @@
-# n8n-nodes-lunchmoney
+# n8n-nodes-lunch-money
 
 An [n8n](https://n8n.io/) community node for the [Lunch Money](https://lunchmoney.app/) personal finance API (v2).
 
@@ -10,16 +10,17 @@ Lunch Money is a personal finance and budgeting tool. This node lets you automat
 
 ## Features
 
-- Full coverage of the v2 API — **39 live endpoints** across 10 resources
+- Full coverage of the v2 API — **62 live endpoints** across 10 resources
 - **Mock server toggle** in credentials — test safely without touching real data
 - Credential test built-in (calls `/me` to verify your token)
 - All operations and parameters configurable through the n8n UI
+- Daily, review-gated synchronization with the latest stable upstream OpenAPI specification
 
 ## Resources & Operations
 
 | Resource | Operations |
 |---|---|
-| **User** | Get Current User, Get Summary |
+| **User** | Get Current User, Get Summary, Get/Update Account Settings, Get/Update User Settings, Get/Update User Account Settings |
 | **Category** | Get Many, Get, Create, Update, Delete |
 | **Transaction** | Get Many, Get, Create, Update, Delete, Create Group, Delete Group, Split, Unsplit, Upload Attachment, Get Attachment, Delete Attachment |
 | **Tag** | Get Many, Get, Create, Update, Delete |
@@ -27,12 +28,12 @@ Lunch Money is a personal finance and budgeting tool. This node lets you automat
 | **Budget** | Get Settings, Upsert, Remove |
 | **Manual Account** | Get Many, Get, Create, Update, Delete |
 | **Plaid Account** | Get Many, Get, Fetch Latest |
-| **Crypto** | Get Many Manual, Get Manual, Create Manual, Update Manual, Delete Manual, Get Many Synced, Get Synced, Refresh Synced |
-| **Balance History** | Get All, Get For Account, Update For Account, Delete For Account, Delete Entry |
+| **Crypto** | Get Many Manual, Get Manual, Create Manual, Update Manual, Delete Manual, Get Many Synced, Get Synced, Get Synced By Symbol, Refresh Synced, Get All (Legacy) |
+| **Balance History** | Get All, Get/Update/Delete For Account, Delete Entry, Get/Update/Delete Crypto Synced, Update Deleted Details |
 
 ## Prerequisites
 
-- n8n (self-hosted or cloud)
+- A self-hosted n8n instance for GitHub or unverified npm installation
 - A [Lunch Money](https://lunchmoney.app/) account
 - A Lunch Money API access token — generate one from **Settings → Developers** in the Lunch Money app
 
@@ -61,10 +62,10 @@ npm install --legacy-peer-deps git+https://github.com/ITensEI/n8n-nodes-lunchmon
 
 Then restart n8n.
 
-### npm (if published)
+### npm (after publication)
 
 ```bash
-npm install --legacy-peer-deps n8n-nodes-lunchmoney
+npm install --legacy-peer-deps n8n-nodes-lunch-money
 ```
 
 ## Credentials
@@ -91,12 +92,16 @@ npm run build    # tsc + copy icons to dist/
 npm run dev      # watch mode
 ```
 
-The node source is generated from the OpenAPI spec. To regenerate after updating `api-1.json` or `scripts/generate-node.js`:
+The node source is generated from `lm-endpoints.json`, which is extracted from the latest stable `@lunch-money/v2-api-spec` package. To refresh and regenerate it locally:
 
 ```bash
-node scripts/generate-node.js
+npm ci --ignore-scripts
+node scripts/fetch-spec.js
+npm run generate
 npm run build
 ```
+
+The scheduled GitHub Actions workflow performs the same refresh and opens a pull request. It never commits to `main` or auto-merges. `overrides.json` is the reviewed adapter contract that preserves stable n8n operation names and curated fields while recording intentional differences between the OpenAPI request shape and the n8n UI. New or changed upstream operations remain subject to pull-request review and CI before release.
 
 ## License
 

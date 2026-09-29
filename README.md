@@ -10,7 +10,7 @@ Lunch Money is a personal finance and budgeting tool. This node lets you automat
 
 ## Features
 
-- Full coverage of the v2 API — **62 live endpoints** across 10 resources
+- Covers every endpoint in the latest stable Lunch Money v2 API spec
 - **Mock server toggle** in credentials — test safely without touching real data
 - Credential test built-in (calls `/me` to verify your token)
 - All operations and parameters configurable through the n8n UI
@@ -18,18 +18,9 @@ Lunch Money is a personal finance and budgeting tool. This node lets you automat
 
 ## Resources & Operations
 
-| Resource | Operations |
-|---|---|
-| **User** | Get Current User, Get Summary, Get/Update Account Settings, Get/Update User Settings, Get/Update User Account Settings |
-| **Category** | Get Many, Get, Create, Update, Delete |
-| **Transaction** | Get Many, Get, Create, Update, Delete, Create Group, Delete Group, Split, Unsplit, Upload Attachment, Get Attachment, Delete Attachment |
-| **Tag** | Get Many, Get, Create, Update, Delete |
-| **Recurring Item** | Get Many, Get |
-| **Budget** | Get Settings, Upsert, Remove |
-| **Manual Account** | Get Many, Get, Create, Update, Delete |
-| **Plaid Account** | Get Many, Get, Fetch Latest |
-| **Crypto** | Get Many Manual, Get Manual, Create Manual, Update Manual, Delete Manual, Get Many Synced, Get Synced, Get Synced By Symbol, Refresh Synced, Get All (Legacy) |
-| **Balance History** | Get All, Get/Update/Delete For Account, Delete Entry, Get/Update/Delete Crypto Synced, Update Deleted Details |
+Resources: User, Category, Transaction, Tag, Recurring Item, Budget, Manual Account, Plaid Account, Crypto, and Balance History.
+
+The operations follow the upstream spec and change as it does, so they are not listed here. To see the current set, open the node's **Operation** dropdown in n8n, or read `lm-endpoints.json` (every endpoint in the synced spec) and `.spec-version` (the spec version it was generated from).
 
 ## Prerequisites
 
@@ -126,7 +117,7 @@ Trusted Publishing is configured on the package's own npm settings page, so the 
 1. From a clean, up-to-date `main`: `npm ci --ignore-scripts`, `npm run build`, `npm pack --dry-run` (check the file list), `npm login`, `npm publish --access public`.
 2. On npmjs.com, open the package, then **Settings > Trusted Publisher > GitHub Actions**, and enter: organization or user `ITensEI`, repository `n8n-nodes-lunchmoney`, workflow filename `publish.yml` (filename only, exact case), environment empty. Under **Allowed actions**, allow direct `npm publish` as well as staged publishing.
 3. Recommended: **Settings > Publishing access > Require two-factor authentication and disallow tokens**.
-4. In GitHub, run the **Publish** workflow once by hand (**Actions > Publish > Run workflow**). It sees the version is already on npm and only creates the missing `v0.1.0` release.
+4. In GitHub, run the **Publish** workflow once by hand (**Actions > Publish > Run workflow**). It sees the version is already on npm and only creates the missing GitHub release for it.
 
 ## License
 

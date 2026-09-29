@@ -186,6 +186,13 @@ exports.transactionFields = [
         },
         "options": [
             {
+                "displayName": "Original Payee Name",
+                "name": "original_name",
+                "type": "string",
+                "default": "",
+                "description": "Original payee name. Defaults to Payee when omitted."
+            },
+            {
                 "displayName": "Currency",
                 "name": "currency",
                 "type": "string",
@@ -239,6 +246,13 @@ exports.transactionFields = [
                 "description": "ID of the manual account to associate with this transaction."
             },
             {
+                "displayName": "Plaid Account ID",
+                "name": "plaid_account_id",
+                "type": "string",
+                "default": "",
+                "description": "ID of the Plaid account to associate with this transaction. Cannot be combined with Manual Account ID."
+            },
+            {
                 "displayName": "Tag IDs",
                 "name": "tag_ids",
                 "type": "string",
@@ -251,6 +265,13 @@ exports.transactionFields = [
                 "type": "string",
                 "default": "",
                 "description": "ID of the recurring item to link to this transaction."
+            },
+            {
+                "displayName": "Custom Metadata (JSON)",
+                "name": "custom_metadata",
+                "type": "json",
+                "default": "",
+                "description": "Optional JSON object with additional transaction data. The stringified object must not exceed 4096 characters."
             },
             {
                 "displayName": "Apply Rules",
@@ -805,6 +826,32 @@ exports.transactionFields = [
             }
         },
         "required": true
+    },
+    {
+        "displayName": "Additional Fields",
+        "name": "additionalFields",
+        "type": "collection",
+        "placeholder": "Add Field",
+        "default": {},
+        "displayOptions": {
+            "show": {
+                "resource": [
+                    "transaction"
+                ],
+                "operation": [
+                    "uploadAttachment"
+                ]
+            }
+        },
+        "options": [
+            {
+                "displayName": "Notes",
+                "name": "notes",
+                "type": "string",
+                "default": "",
+                "description": "Optional notes about the file."
+            }
+        ]
     },
 ];
 //# sourceMappingURL=TransactionDescription.js.map

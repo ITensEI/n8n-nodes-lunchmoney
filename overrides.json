@@ -1,17 +1,20 @@
 {
-	"_comment": "Hand-maintained overrides for scripts/generate-node.js. Existing operations carry their current display name/value/action and per-field UI metadata verbatim (FIELDS is not auto-rewritten — see the Lunch Money n8n Custom Node vault doc, 2026-08-01, for why). New spec operations without an entry here fall back to mechanical derivation and are flagged in the sync PR for review. knownPathDerivedFields are field names driven by generateOperationHandler special-case routing code (not general spec params/bodyProps) and are excluded from the spec-divergence check to avoid false positives.",
-	"knownPathDerivedFields": [
-		"fileId",
-		"uploadTransactionId",
-		"groupId",
-		"entryId",
-		"cryptoSymbol",
-		"cryptoSyncedAccountId",
-		"cryptoSyncedSymbol",
-		"deletedAccountId",
-		"account_type",
-		"account_id"
-	],
+	"_comment": "Hand-reviewed contract for scripts/generate-node.js. Operation entries preserve stable n8n resource/value/name/action identities. A fields object preserves curated n8n UI metadata and is checked against the live spec; fieldsFromSpec keeps a reviewed operation's fields automatically derived from the spec. bodyAdapter describes deliberate request-shape translations. handlerOnlyFieldsByOperation lists n8n inputs consumed by special handler code instead of the generic request body/query builder. New spec operations without an entry fall back to best-effort derivation and are flagged in the sync PR for review.",
+	"handlerOnlyFieldsByOperation": {
+		"deleteTransactionAttachment": ["fileId"],
+		"getTransactionAttachmentUrl": ["fileId"],
+		"attachFileToTransaction": ["uploadTransactionId", "binaryPropertyName"],
+		"ungroupTransactions": ["groupId"],
+		"deleteBalanceHistoryEntry": ["entryId"],
+		"getCryptoSyncedBalanceBySymbol": ["cryptoSymbol"],
+		"getBalanceHistoryForCryptoSynced": ["cryptoSyncedAccountId", "cryptoSyncedSymbol"],
+		"upsertBalanceHistoryForCryptoSynced": ["cryptoSyncedAccountId", "cryptoSyncedSymbol"],
+		"deleteBalanceHistoryForCryptoSynced": ["cryptoSyncedAccountId", "cryptoSyncedSymbol"],
+		"updateBalanceHistoryDetails": ["deletedAccountId"],
+		"deleteBalanceHistoryForAccount": ["account_type", "account_id"],
+		"getBalanceHistoryForAccount": ["account_type", "account_id"],
+		"upsertBalanceHistoryForAccount": ["account_type", "account_id"]
+	},
 	"resources": {
 		"user": {
 			"displayName": "User",
@@ -213,6 +216,54 @@
 					}
 				]
 			}
+		},
+		"getAccountSettings": {
+			"resource": "user",
+			"value": "getAccountSettings",
+			"name": "Get Account Settings",
+			"desc": "Get account settings",
+			"action": "Get account settings",
+			"fieldsFromSpec": true
+		},
+		"updateAccountSettings": {
+			"resource": "user",
+			"value": "updateAccountSettings",
+			"name": "Update Account Settings",
+			"desc": "Update account settings",
+			"action": "Update account settings",
+			"fieldsFromSpec": true
+		},
+		"getUserSettings": {
+			"resource": "user",
+			"value": "getUserSettings",
+			"name": "Get User Settings",
+			"desc": "Get user settings",
+			"action": "Get user settings",
+			"fieldsFromSpec": true
+		},
+		"updateUserSettings": {
+			"resource": "user",
+			"value": "updateUserSettings",
+			"name": "Update User Settings",
+			"desc": "Update user settings",
+			"action": "Update user settings",
+			"fieldsFromSpec": true
+		},
+		"getUserAccountSettings": {
+			"resource": "user",
+			"value": "getUserAccountSettings",
+			"name": "Get User Account Settings",
+			"desc": "Get user account settings",
+			"action": "Get user account settings",
+			"fieldsFromSpec": true
+		},
+		"updateUserAccountSettings": {
+			"resource": "user",
+			"value": "updateUserAccountSettings",
+			"name": "Update User Account Settings",
+			"desc": "Update user account settings",
+			"action": "Update user account settings",
+			"fieldsFromSpec": true
 		},
 		"createCategory": {
 			"resource": "category",
@@ -433,6 +484,9 @@
 			"name": "Create",
 			"desc": "Create one or more transactions",
 			"action": "Create transactions",
+			"bodyAdapter": {
+				"arrayField": "transactions"
+			},
 			"fields": {
 				"required": [
 					{
@@ -457,6 +511,12 @@
 					}
 				],
 				"optional": [
+					{
+						"name": "original_name",
+						"displayName": "Original Payee Name",
+						"type": "string",
+						"desc": "Original payee name. Defaults to Payee when omitted."
+					},
 					{
 						"name": "currency",
 						"displayName": "Currency",
@@ -499,6 +559,12 @@
 						"desc": "ID of the manual account to associate with this transaction."
 					},
 					{
+						"name": "plaid_account_id",
+						"displayName": "Plaid Account ID",
+						"type": "string",
+						"desc": "ID of the Plaid account to associate with this transaction. Cannot be combined with Manual Account ID."
+					},
+					{
 						"name": "tag_ids",
 						"displayName": "Tag IDs",
 						"type": "string",
@@ -509,6 +575,12 @@
 						"displayName": "Recurring Item ID",
 						"type": "string",
 						"desc": "ID of the recurring item to link to this transaction."
+					},
+					{
+						"name": "custom_metadata",
+						"displayName": "Custom Metadata (JSON)",
+						"type": "json",
+						"desc": "Optional JSON object with additional transaction data. The stringified object must not exceed 4096 characters."
 					},
 					{
 						"name": "apply_rules",
@@ -931,6 +1003,11 @@
 			"name": "Upload Attachment",
 			"desc": "Upload an attachment to a transaction",
 			"action": "Upload a transaction attachment",
+			"bodyAdapter": {
+				"fieldAliases": {
+					"file": "binaryPropertyName"
+				}
+			},
 			"fields": {
 				"required": [
 					{
@@ -945,6 +1022,14 @@
 						"type": "string",
 						"desc": "Name of the binary property on the input item containing the file to upload (from an upstream node like HTTP Request or Read Binary File). Max 10MB.",
 						"default": "data"
+					}
+				],
+				"optional": [
+					{
+						"name": "notes",
+						"displayName": "Notes",
+						"type": "string",
+						"desc": "Optional notes about the file."
 					}
 				]
 			}

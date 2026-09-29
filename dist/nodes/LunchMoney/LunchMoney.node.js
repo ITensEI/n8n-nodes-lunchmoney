@@ -92,6 +92,53 @@ class LunchMoney {
                         Object.assign(qs, additionalFields);
                         responseData = await GenericFunctions_1.lunchMoneyApiRequest.call(this, 'GET', `/summary`, {}, qs);
                     }
+                    if (operation === 'getAccountSettings') {
+                        responseData = await GenericFunctions_1.lunchMoneyApiRequest.call(this, 'GET', `/me/account/settings`);
+                    }
+                    if (operation === 'updateAccountSettings') {
+                        const body = {};
+                        const additionalFields = this.getNodeParameter('additionalFields', i);
+                        if (additionalFields.supported_currencies && typeof additionalFields.supported_currencies === 'string') {
+                            try {
+                                additionalFields.supported_currencies = JSON.parse(additionalFields.supported_currencies);
+                            }
+                            catch {
+                                throw new Error('Invalid JSON in "Supported Currencies"');
+                            }
+                        }
+                        for (const k of Object.keys(additionalFields)) {
+                            if (additionalFields[k] === '')
+                                delete additionalFields[k];
+                        }
+                        Object.assign(body, additionalFields);
+                        responseData = await GenericFunctions_1.lunchMoneyApiRequest.call(this, 'PUT', `/me/account/settings`, body);
+                    }
+                    if (operation === 'getUserSettings') {
+                        responseData = await GenericFunctions_1.lunchMoneyApiRequest.call(this, 'GET', `/me/user/settings`);
+                    }
+                    if (operation === 'updateUserSettings') {
+                        const body = {};
+                        const additionalFields = this.getNodeParameter('additionalFields', i);
+                        for (const k of Object.keys(additionalFields)) {
+                            if (additionalFields[k] === '')
+                                delete additionalFields[k];
+                        }
+                        Object.assign(body, additionalFields);
+                        responseData = await GenericFunctions_1.lunchMoneyApiRequest.call(this, 'PUT', `/me/user/settings`, body);
+                    }
+                    if (operation === 'getUserAccountSettings') {
+                        responseData = await GenericFunctions_1.lunchMoneyApiRequest.call(this, 'GET', `/me/user/account/settings`);
+                    }
+                    if (operation === 'updateUserAccountSettings') {
+                        const body = {};
+                        const additionalFields = this.getNodeParameter('additionalFields', i);
+                        for (const k of Object.keys(additionalFields)) {
+                            if (additionalFields[k] === '')
+                                delete additionalFields[k];
+                        }
+                        Object.assign(body, additionalFields);
+                        responseData = await GenericFunctions_1.lunchMoneyApiRequest.call(this, 'PUT', `/me/user/account/settings`, body);
+                    }
                 }
                 if (resource === 'category') {
                     if (operation === 'create') {
@@ -166,6 +213,14 @@ class LunchMoney {
                         body.amount = this.getNodeParameter('amount', i);
                         body.payee = this.getNodeParameter('payee', i);
                         const additionalFields = this.getNodeParameter('additionalFields', i);
+                        if (additionalFields.custom_metadata && typeof additionalFields.custom_metadata === 'string') {
+                            try {
+                                additionalFields.custom_metadata = JSON.parse(additionalFields.custom_metadata);
+                            }
+                            catch {
+                                throw new Error('Invalid JSON in "Custom Metadata (JSON)"');
+                            }
+                        }
                         if (additionalFields.tag_ids) {
                             additionalFields.tag_ids = additionalFields.tag_ids.split(',').map(s => parseInt(s.trim(), 10)).filter(n => !isNaN(n));
                         }
@@ -174,7 +229,20 @@ class LunchMoney {
                                 delete additionalFields[k];
                         }
                         Object.assign(body, additionalFields);
-                        responseData = await GenericFunctions_1.lunchMoneyApiRequest.call(this, 'POST', `/transactions`, { transactions: [body] });
+                        const requestBody = { transactions: [body] };
+                        if (body.apply_rules !== undefined) {
+                            requestBody.apply_rules = body.apply_rules;
+                            delete body.apply_rules;
+                        }
+                        if (body.skip_duplicates !== undefined) {
+                            requestBody.skip_duplicates = body.skip_duplicates;
+                            delete body.skip_duplicates;
+                        }
+                        if (body.skip_balance_update !== undefined) {
+                            requestBody.skip_balance_update = body.skip_balance_update;
+                            delete body.skip_balance_update;
+                        }
+                        responseData = await GenericFunctions_1.lunchMoneyApiRequest.call(this, 'POST', `/transactions`, requestBody);
                     }
                     if (operation === 'createGroup') {
                         const body = {};
@@ -275,12 +343,19 @@ class LunchMoney {
                         const binaryPropertyName = this.getNodeParameter('binaryPropertyName', i);
                         const binaryData = this.helpers.assertBinaryData(i, binaryPropertyName);
                         const fileBuffer = await this.helpers.getBinaryDataBuffer(i, binaryPropertyName);
-                        responseData = await GenericFunctions_1.lunchMoneyApiRequestMultipart.call(this, 'POST', `/transactions/${txId}/attachments`, {
+                        const multipartBody = {
                             file: {
                                 value: fileBuffer,
                                 options: { filename: binaryData.fileName || 'file', contentType: binaryData.mimeType },
                             },
-                        });
+                        };
+                        const additionalFields = this.getNodeParameter('additionalFields', i);
+                        for (const key of Object.keys(additionalFields)) {
+                            if (additionalFields[key] === '')
+                                delete additionalFields[key];
+                        }
+                        Object.assign(multipartBody, additionalFields);
+                        responseData = await GenericFunctions_1.lunchMoneyApiRequestMultipart.call(this, 'POST', `/transactions/${txId}/attachments`, multipartBody);
                     }
                 }
                 if (resource === 'tag') {
@@ -561,8 +636,6 @@ class LunchMoney {
                         responseData = await GenericFunctions_1.lunchMoneyApiRequest.call(this, 'PUT', `/balance_history/${accountType}/${accountId}`, body);
                     }
                     if (operation === 'getCryptoSynced') {
-                        const accountId = this.getNodeParameter('account_id', i);
-                        const symbol = this.getNodeParameter('cryptoSyncedSymbol', i);
                         const csAccountId = this.getNodeParameter('cryptoSyncedAccountId', i);
                         const csSymbol = this.getNodeParameter('cryptoSyncedSymbol', i);
                         const qs = {};
@@ -575,8 +648,6 @@ class LunchMoney {
                         responseData = await GenericFunctions_1.lunchMoneyApiRequest.call(this, 'GET', `/balance_history/crypto_synced/${csAccountId}/${csSymbol}`, {}, qs);
                     }
                     if (operation === 'updateCryptoSynced') {
-                        const accountId = this.getNodeParameter('account_id', i);
-                        const symbol = this.getNodeParameter('cryptoSyncedSymbol', i);
                         const csAccountId = this.getNodeParameter('cryptoSyncedAccountId', i);
                         const csSymbol = this.getNodeParameter('cryptoSyncedSymbol', i);
                         const body = {};
@@ -590,14 +661,11 @@ class LunchMoney {
                         responseData = await GenericFunctions_1.lunchMoneyApiRequest.call(this, 'PUT', `/balance_history/crypto_synced/${csAccountId}/${csSymbol}`, body);
                     }
                     if (operation === 'deleteCryptoSynced') {
-                        const accountId = this.getNodeParameter('account_id', i);
-                        const symbol = this.getNodeParameter('cryptoSyncedSymbol', i);
                         const csAccountId = this.getNodeParameter('cryptoSyncedAccountId', i);
                         const csSymbol = this.getNodeParameter('cryptoSyncedSymbol', i);
                         responseData = await GenericFunctions_1.lunchMoneyApiRequest.call(this, 'DELETE', `/balance_history/crypto_synced/${csAccountId}/${csSymbol}`);
                     }
                     if (operation === 'updateDeletedDetails') {
-                        const accountId = this.getNodeParameter('account_id', i);
                         const delAccountId = this.getNodeParameter('deletedAccountId', i);
                         const body = {};
                         const additionalFields = this.getNodeParameter('additionalFields', i);

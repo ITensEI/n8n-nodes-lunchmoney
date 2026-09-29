@@ -13,10 +13,14 @@ const os = require('os');
 const path = require('path');
 const yaml = require('js-yaml');
 const { execFileSync } = require('child_process');
+const { extractBodyProps, resolveSchema, schemaType } = require('./spec-fields');
 
 const PACKAGE_NAME = '@lunch-money/v2-api-spec';
 const REPO_ROOT = path.join(__dirname, '..');
 const HTTP_METHODS = ['get', 'post', 'put', 'patch', 'delete'];
+const overrides = JSON.parse(
+	fs.readFileSync(path.join(REPO_ROOT, 'overrides.json'), 'utf8'),
+);
 
 function resolveLatestStableVersion() {
 	const versions = JSON.parse(
@@ -44,45 +48,13 @@ function downloadSpecYaml(version) {
 		shell: true,
 	});
 	const tarball = fs.readdirSync(tmpDir).find((f) => f.endsWith('.tgz'));
-	// --force-local: without it, GNU tar on Windows misreads a "C:\..." path as a
-	// "host:path" remote-tar spec because of the drive-letter colon.
-	execFileSync(
-		'tar',
-		['--force-local', '-xzf', path.join(tmpDir, tarball), '-C', tmpDir],
-		{ shell: true },
-	);
+	// Extract from inside the temporary directory so the archive argument has no
+	// Windows drive-letter colon. This works with both bsdtar and GNU tar.
+	execFileSync('tar', ['-xzf', tarball, '-C', tmpDir], {
+		cwd: tmpDir,
+		shell: true,
+	});
 	return path.join(tmpDir, 'package', 'lunch-money-api-v2.yaml');
-}
-
-function resolveRef(ref, root) {
-	// Only local refs of the form "#/components/schemas/xyz" appear in this spec.
-	const parts = ref.replace(/^#\//, '').split('/');
-	let node = root;
-	for (const part of parts) node = node[part];
-	return node;
-}
-
-function resolveSchema(schema, root) {
-	if (!schema) return schema;
-	if (schema.$ref) return resolveSchema(resolveRef(schema.$ref, root), root);
-	if (schema.allOf) {
-		// Common OpenAPI pattern for attaching a local description/override to a
-		// referenced schema (e.g. `currency: { allOf: [{ $ref: currencyEnum }],
-		// description: ... }`). Flatten by merging resolved members in order,
-		// then letting this node's own sibling keys win as the most specific layer.
-		const merged = Object.assign({}, ...schema.allOf.map((s) => resolveSchema(s, root)));
-		const { allOf, ...own } = schema;
-		return Object.assign(merged, own);
-	}
-	return schema;
-}
-
-// oneOf/anyOf schemas (e.g. crypto balance: number | numeric string) don't map
-// to a single n8n field type, so they're surfaced as 'unknown' for the caller
-// to special-case, matching the convention already used by the current node.
-function schemaType(schema) {
-	if (schema.oneOf || schema.anyOf) return 'unknown';
-	return schema.type || 'unknown';
 }
 
 function extractParams(operation, root) {
@@ -102,32 +74,6 @@ function extractParams(operation, root) {
 	});
 }
 
-function extractBodyProps(operation, root) {
-	const content = operation.requestBody && operation.requestBody.content;
-	const mediaSchema = content && content['application/json'] && content['application/json'].schema;
-	const schema = resolveSchema(mediaSchema, root);
-	if (!schema || !schema.properties) return [];
-
-	const required = new Set(schema.required || []);
-	return Object.entries(schema.properties).map(([name, propSchema]) => {
-		const resolved = resolveSchema(propSchema, root);
-		const out = {
-			name,
-			type: schemaType(resolved),
-			required: required.has(name),
-			description: resolved.description || '',
-			nullable: !!resolved.nullable,
-		};
-		if (resolved.format) out.format = resolved.format;
-		if (resolved.enum) out.enum = resolved.enum;
-		// x-updatable: false marks fields the API accepts but ignores on update
-		// (system-computed values tolerated in a full-object echo payload) —
-		// load-bearing for deciding which body props become editable UI fields.
-		if (resolved['x-updatable'] !== undefined) out.updatable = resolved['x-updatable'];
-		return out;
-	});
-}
-
 function extractEndpoints(spec) {
 	const endpoints = [];
 	for (const [urlPath, pathItem] of Object.entries(spec.paths || {})) {
@@ -141,7 +87,11 @@ function extractEndpoints(spec) {
 				tags: operation.tags || [],
 				summary: operation.summary || '',
 				params: extractParams(operation, spec),
-				bodyProps: extractBodyProps(operation, spec),
+				bodyProps: extractBodyProps(
+					operation,
+					spec,
+					overrides.operations[operation.operationId],
+				),
 			});
 		}
 	}

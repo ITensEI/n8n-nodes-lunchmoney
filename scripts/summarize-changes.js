@@ -10,6 +10,9 @@ const path = require('path');
 const { execFileSync } = require('child_process');
 
 const REPO_ROOT = path.join(__dirname, '..');
+const overrides = JSON.parse(
+	fs.readFileSync(path.join(REPO_ROOT, 'overrides.json'), 'utf8'),
+);
 
 function readJson(p) {
 	try {
@@ -63,6 +66,23 @@ function diffEndpoints(oldEndpoints, newEndpoints) {
 	return { added, removed, changed };
 }
 
+function formatAddedEndpoint(endpoint, generatedOperation, operationOverride) {
+	const operationLabel = `\`${endpoint.method} ${endpoint.path}\` (\`${endpoint.operationId}\`)`;
+
+	if (operationOverride) {
+		const fieldMode = operationOverride.fieldsFromSpec
+			? 'fields remain spec-derived'
+			: 'fields use reviewed UI metadata';
+		return `- ${operationLabel} - generated as **${operationOverride.name}** under \`${operationOverride.resource}\` using a reviewed override; ${fieldMode}.\n`;
+	}
+
+	if (generatedOperation) {
+		return `- ${operationLabel} - auto-generated as **${generatedOperation.name}** under \`${generatedOperation.resourceKey}\`. Name/fields are best-effort; review before relying on it.\n`;
+	}
+
+	return `- ${operationLabel} - not wired to any resource. Add a tag mapping in \`overrides.json\` if it belongs in the node.\n`;
+}
+
 function main() {
 	const specVersion = fs.readFileSync(path.join(REPO_ROOT, '.spec-version'), 'utf8').trim();
 	const { endpoints } = readJson(path.join(REPO_ROOT, 'lm-endpoints.json'));
@@ -80,9 +100,7 @@ function main() {
 		for (const id of added) {
 			const ep = endpoints.find((e) => e.operationId === id);
 			const gen = newOperations.find((n) => n.operationId === id);
-			md += gen
-				? `- \`${ep.method} ${ep.path}\` (\`${id}\`) — auto-generated as **${gen.name}** under \`${gen.resourceKey}\`. Name/fields are best-effort; review before relying on it.\n`
-				: `- \`${ep.method} ${ep.path}\` (\`${id}\`) — not wired to any resource. Add a tag mapping in \`overrides.json\` if it belongs in the node.\n`;
+			md += formatAddedEndpoint(ep, gen, overrides.operations[id]);
 		}
 		md += '\n';
 	}
@@ -128,4 +146,8 @@ function main() {
 	console.log(md);
 }
 
-main();
+if (require.main === module) {
+	main();
+}
+
+module.exports = { formatAddedEndpoint };

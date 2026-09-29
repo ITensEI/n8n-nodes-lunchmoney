@@ -7,11 +7,16 @@ const { endpoints } = JSON.parse(
 const overrides = JSON.parse(
 	fs.readFileSync(path.join(__dirname, '..', 'overrides.json'), 'utf8'),
 );
+const { computeFieldDivergence, specFieldCandidates } = require('./spec-fields');
 
 const NODES_DIR = path.join(__dirname, '..', 'nodes', 'LunchMoney');
 const DESC_DIR = path.join(NODES_DIR, 'descriptions');
 
 fs.mkdirSync(DESC_DIR, { recursive: true });
+
+for (const reportName of ['.new-operations.json', '.field-divergence.json']) {
+	fs.rmSync(path.join(__dirname, '..', reportName), { force: true });
+}
 
 // ── Resource → Operation → Endpoint mapping (derived from lm-endpoints.json + overrides.json) ──
 //
@@ -37,7 +42,10 @@ for (const [resourceKey, resource] of Object.entries(overrides.resources)) {
 }
 
 const excludeOperationIds = new Set(overrides.excludeOperationIds);
-const knownPathDerivedFields = new Set(overrides.knownPathDerivedFields);
+
+function handlerOnlyFieldsForOperation(operationId) {
+	return new Set(overrides.handlerOnlyFieldsByOperation[operationId] || []);
+}
 
 function toTitleCase(snakeName) {
 	return snakeName.replace(/_/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase());
@@ -73,17 +81,6 @@ function deriveField(specField) {
 	};
 	if (specField.enum) field.options = specField.enum;
 	return field;
-}
-
-// Fields a spec-sync PR should actually validate against: query params and
-// non-legacy body props. Path params are excluded — several are renamed for
-// n8n-side disambiguation (e.g. {symbol} -> cryptoSymbol) by handler code this
-// generator doesn't touch, so comparing them by name produces false positives.
-function specFieldCandidates(endpoint) {
-	return [
-		...endpoint.params.filter((p) => p.in !== 'path'),
-		...endpoint.bodyProps.filter((p) => p.updatable !== false),
-	];
 }
 
 // overrides.json's `operations` key order reflects the original hand-picked
@@ -133,27 +130,30 @@ for (const endpoint of endpoints) {
 		path: endpoint.path,
 		desc,
 		action,
+		bodyAdapter: override && override.bodyAdapter,
+		bodyProps: endpoint.bodyProps,
 	});
 
 	if (override && override.fields) {
 		FIELDS[resourceKey][value] = override.fields;
 
-		const candidates = specFieldCandidates(endpoint);
-		const overrideFieldNames = new Set(
-			[...(override.fields.required || []), ...(override.fields.optional || [])].map((f) => f.name),
+		const divergence = computeFieldDivergence(
+			endpoint,
+			override,
+			handlerOnlyFieldsForOperation(endpoint.operationId),
 		);
-		const missingFromOverride = candidates
-			.filter((c) => !overrideFieldNames.has(c.name))
-			.map((c) => c.name);
-		const staleInOverride = [...overrideFieldNames].filter(
-			(n) => !knownPathDerivedFields.has(n) && !candidates.some((c) => c.name === n),
-		);
-		if (missingFromOverride.length || staleInOverride.length) {
-			fieldDivergence.push({ resourceKey, value, operationId: endpoint.operationId, missingFromOverride, staleInOverride });
+		if (divergence) {
+			fieldDivergence.push({
+				resourceKey,
+				value,
+				operationId: endpoint.operationId,
+				...divergence,
+			});
 		}
-	} else if (!override) {
-		// New operation, no hand-written fields to diverge from - derive from spec directly.
-		const candidates = specFieldCandidates(endpoint);
+	} else if (!override || override.fieldsFromSpec) {
+		// New operations and explicitly spec-driven reviewed operations derive
+		// their fields from the current API contract.
+		const candidates = specFieldCandidates(endpoint, override);
 		const required = candidates.filter((c) => c.required).map(deriveField);
 		const optional = candidates.filter((c) => !c.required).map(deriveField);
 		const fieldsEntry = {};
@@ -334,7 +334,7 @@ function generateIndex(resources) {
 function generateMainNode(resources) {
 	let imports = `import { NodeConnectionTypes } from 'n8n-workflow';\n`;
 	imports += `import type {\n\tIExecuteFunctions,\n\tIDataObject,\n\tINodeExecutionData,\n\tINodeType,\n\tINodeTypeDescription,\n} from 'n8n-workflow';\n\n`;
-	imports += `import {\n\tlunchMoneyApiRequest,\n\tlunchMoneyApiRequestMultipart,\n\tvalidateDateFormat,\n\tvalidateAmount,\n\tvalidateCurrency,\n} from './GenericFunctions';\n\n`;
+	imports += `import {\n\tlunchMoneyApiRequest,\n\tlunchMoneyApiRequestMultipart,\n} from './GenericFunctions';\n\n`;
 
 	// Import descriptions
 	const importNames = [];
@@ -453,10 +453,31 @@ function generateOperationHandler(resourceKey, op) {
 	// additionalProperties: false, so including them in body/qs as well gets
 	// the whole request rejected by the API.
 	const opFields = fields[op.value] || {};
-	const bodyRequired = (opFields.required || []).filter((f) => !knownPathDerivedFields.has(f.name));
-	const bodyOptional = (opFields.optional || []).filter((f) => !knownPathDerivedFields.has(f.name));
+	const handlerOnlyFields = handlerOnlyFieldsForOperation(op.opId);
+	const bodyRequired = (opFields.required || []).filter((f) => !handlerOnlyFields.has(f.name));
+	const bodyOptional = (opFields.optional || []).filter((f) => !handlerOnlyFields.has(f.name));
 	const hasRequired = bodyRequired.length > 0;
 	const hasOptional = bodyOptional.length > 0;
+
+	// Select non-standard path fields before generic placeholder handling so an
+	// operation never reads both its dedicated n8n field and a hidden raw field.
+	if (op.value === 'deleteGroup') {
+		code += `\t\t\t\t\t\tconst groupId = this.getNodeParameter('groupId', i) as number;\n`;
+		apiPath = '/transactions/group/${groupId}';
+	}
+	if (op.value === 'deleteEntry') {
+		code += `\t\t\t\t\t\tconst entryId = this.getNodeParameter('entryId', i) as number;\n`;
+		apiPath = '/balance_history/entries/${entryId}';
+	}
+	if (['getCryptoSynced', 'updateCryptoSynced', 'deleteCryptoSynced'].includes(op.value)) {
+		code += `\t\t\t\t\t\tconst csAccountId = this.getNodeParameter('cryptoSyncedAccountId', i) as number;\n`;
+		code += `\t\t\t\t\t\tconst csSymbol = this.getNodeParameter('cryptoSyncedSymbol', i) as string;\n`;
+		apiPath = '/balance_history/crypto_synced/${csAccountId}/${csSymbol}';
+	}
+	if (op.value === 'updateDeletedDetails') {
+		code += `\t\t\t\t\t\tconst delAccountId = this.getNodeParameter('deletedAccountId', i) as number;\n`;
+		apiPath = '/balance_history/deleted/${delAccountId}/details';
+	}
 
 	// Handle ID substitution from the standard ID field
 	if (idField && idField.ops.includes(op.value) && apiPath.includes('{id}')) {
@@ -490,38 +511,24 @@ function generateOperationHandler(resourceKey, op) {
 		apiPath = apiPath.replace('{symbol}', '${symbol}');
 	}
 
-	// Special cases for non-standard IDs
-	if (op.value === 'deleteGroup') {
-		code += `\t\t\t\t\t\tconst groupId = this.getNodeParameter('groupId', i) as number;\n`;
-		apiPath = '/transactions/group/${groupId}';
-	}
-	if (op.value === 'deleteEntry') {
-		code += `\t\t\t\t\t\tconst entryId = this.getNodeParameter('entryId', i) as number;\n`;
-		apiPath = '/balance_history/entries/${entryId}';
-	}
-	// Balance history crypto synced operations use dedicated fields
-	if (['getCryptoSynced', 'updateCryptoSynced', 'deleteCryptoSynced'].includes(op.value)) {
-		code += `\t\t\t\t\t\tconst csAccountId = this.getNodeParameter('cryptoSyncedAccountId', i) as number;\n`;
-		code += `\t\t\t\t\t\tconst csSymbol = this.getNodeParameter('cryptoSyncedSymbol', i) as string;\n`;
-		apiPath = '/balance_history/crypto_synced/${csAccountId}/${csSymbol}';
-	}
-	if (op.value === 'updateDeletedDetails') {
-		code += `\t\t\t\t\t\tconst delAccountId = this.getNodeParameter('deletedAccountId', i) as number;\n`;
-		apiPath = '/balance_history/deleted/${delAccountId}/details';
-	}
-
 	// Attachment upload is multipart/form-data with a binary file, not a JSON
 	// body - doesn't fit the generic method-based branching below at all.
 	if (op.value === 'uploadAttachment' && resourceKey === 'transaction') {
 		code += `\t\t\t\t\t\tconst binaryPropertyName = this.getNodeParameter('binaryPropertyName', i) as string;\n`;
 		code += `\t\t\t\t\t\tconst binaryData = this.helpers.assertBinaryData(i, binaryPropertyName);\n`;
 		code += `\t\t\t\t\t\tconst fileBuffer = await this.helpers.getBinaryDataBuffer(i, binaryPropertyName);\n`;
-		code += `\t\t\t\t\t\tresponseData = await lunchMoneyApiRequestMultipart.call(this, '${op.method}', \`${apiPath}\`, {\n`;
+		code += `\t\t\t\t\t\tconst multipartBody: IDataObject = {\n`;
 		code += `\t\t\t\t\t\t\tfile: {\n`;
 		code += `\t\t\t\t\t\t\t\tvalue: fileBuffer,\n`;
 		code += `\t\t\t\t\t\t\t\toptions: { filename: binaryData.fileName || 'file', contentType: binaryData.mimeType },\n`;
 		code += `\t\t\t\t\t\t\t},\n`;
-		code += `\t\t\t\t\t\t});\n`;
+		code += `\t\t\t\t\t\t};\n`;
+		if (bodyOptional.length > 0) {
+			code += `\t\t\t\t\t\tconst additionalFields = this.getNodeParameter('additionalFields', i) as IDataObject;\n`;
+			code += `\t\t\t\t\t\tfor (const key of Object.keys(additionalFields)) { if (additionalFields[key] === '') delete additionalFields[key]; }\n`;
+			code += `\t\t\t\t\t\tObject.assign(multipartBody, additionalFields);\n`;
+		}
+		code += `\t\t\t\t\t\tresponseData = await lunchMoneyApiRequestMultipart.call(this, '${op.method}', \`${apiPath}\`, multipartBody);\n`;
 		code += `\t\t\t\t\t}\n\n`;
 		return code;
 	}
@@ -600,9 +607,14 @@ function generateOperationHandler(resourceKey, op) {
 				code += `\t\t\t\t\t\tObject.assign(body, additionalFields);\n`;
 			}
 
-			// Wrap transactions in array for bulk create
-			if (resourceKey === 'transaction' && op.value === 'create') {
-				code += `\t\t\t\t\t\tresponseData = await lunchMoneyApiRequest.call(this, '${op.method}', \`${apiPath}\`, { transactions: [body] });\n`;
+			if (op.bodyAdapter && op.bodyAdapter.arrayField) {
+				const arrayField = op.bodyAdapter.arrayField;
+				const envelopeFields = op.bodyProps.filter((field) => field.name !== arrayField);
+				code += `\t\t\t\t\t\tconst requestBody: IDataObject = { ${arrayField}: [body] };\n`;
+				for (const field of envelopeFields) {
+					code += `\t\t\t\t\t\tif (body.${field.name} !== undefined) { requestBody.${field.name} = body.${field.name}; delete body.${field.name}; }\n`;
+				}
+				code += `\t\t\t\t\t\tresponseData = await lunchMoneyApiRequest.call(this, '${op.method}', \`${apiPath}\`, requestBody);\n`;
 			} else {
 				const hasQsFields = hasOptional && bodyOptional.some(f => QS_ON_MUTATION.has(f.name));
 				if (hasQsFields) {

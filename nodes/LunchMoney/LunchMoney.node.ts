@@ -10,9 +10,6 @@ import type {
 import {
 	lunchMoneyApiRequest,
 	lunchMoneyApiRequestMultipart,
-	validateDateFormat,
-	validateAmount,
-	validateCurrency,
 } from './GenericFunctions';
 
 import {
@@ -127,6 +124,45 @@ export class LunchMoney implements INodeType {
 						responseData = await lunchMoneyApiRequest.call(this, 'GET', `/summary`, {}, qs);
 					}
 
+					if (operation === 'getAccountSettings') {
+						responseData = await lunchMoneyApiRequest.call(this, 'GET', `/me/account/settings`);
+					}
+
+					if (operation === 'updateAccountSettings') {
+						const body: IDataObject = {};
+						const additionalFields = this.getNodeParameter('additionalFields', i) as IDataObject;
+						if (additionalFields.supported_currencies && typeof additionalFields.supported_currencies === 'string') {
+							try { additionalFields.supported_currencies = JSON.parse(additionalFields.supported_currencies as string); } catch { throw new Error('Invalid JSON in "Supported Currencies"'); }
+						}
+						for (const k of Object.keys(additionalFields)) { if (additionalFields[k] === '') delete additionalFields[k]; }
+						Object.assign(body, additionalFields);
+						responseData = await lunchMoneyApiRequest.call(this, 'PUT', `/me/account/settings`, body);
+					}
+
+					if (operation === 'getUserSettings') {
+						responseData = await lunchMoneyApiRequest.call(this, 'GET', `/me/user/settings`);
+					}
+
+					if (operation === 'updateUserSettings') {
+						const body: IDataObject = {};
+						const additionalFields = this.getNodeParameter('additionalFields', i) as IDataObject;
+						for (const k of Object.keys(additionalFields)) { if (additionalFields[k] === '') delete additionalFields[k]; }
+						Object.assign(body, additionalFields);
+						responseData = await lunchMoneyApiRequest.call(this, 'PUT', `/me/user/settings`, body);
+					}
+
+					if (operation === 'getUserAccountSettings') {
+						responseData = await lunchMoneyApiRequest.call(this, 'GET', `/me/user/account/settings`);
+					}
+
+					if (operation === 'updateUserAccountSettings') {
+						const body: IDataObject = {};
+						const additionalFields = this.getNodeParameter('additionalFields', i) as IDataObject;
+						for (const k of Object.keys(additionalFields)) { if (additionalFields[k] === '') delete additionalFields[k]; }
+						Object.assign(body, additionalFields);
+						responseData = await lunchMoneyApiRequest.call(this, 'PUT', `/me/user/account/settings`, body);
+					}
+
 				}
 
 				if (resource === 'category') {
@@ -186,12 +222,19 @@ export class LunchMoney implements INodeType {
 						body.amount = this.getNodeParameter('amount', i);
 						body.payee = this.getNodeParameter('payee', i);
 						const additionalFields = this.getNodeParameter('additionalFields', i) as IDataObject;
+						if (additionalFields.custom_metadata && typeof additionalFields.custom_metadata === 'string') {
+							try { additionalFields.custom_metadata = JSON.parse(additionalFields.custom_metadata as string); } catch { throw new Error('Invalid JSON in "Custom Metadata (JSON)"'); }
+						}
 						if (additionalFields.tag_ids) {
 							additionalFields.tag_ids = (additionalFields.tag_ids as string).split(',').map(s => parseInt(s.trim(), 10)).filter(n => !isNaN(n));
 						}
 						for (const k of Object.keys(additionalFields)) { if (additionalFields[k] === '') delete additionalFields[k]; }
 						Object.assign(body, additionalFields);
-						responseData = await lunchMoneyApiRequest.call(this, 'POST', `/transactions`, { transactions: [body] });
+						const requestBody: IDataObject = { transactions: [body] };
+						if (body.apply_rules !== undefined) { requestBody.apply_rules = body.apply_rules; delete body.apply_rules; }
+						if (body.skip_duplicates !== undefined) { requestBody.skip_duplicates = body.skip_duplicates; delete body.skip_duplicates; }
+						if (body.skip_balance_update !== undefined) { requestBody.skip_balance_update = body.skip_balance_update; delete body.skip_balance_update; }
+						responseData = await lunchMoneyApiRequest.call(this, 'POST', `/transactions`, requestBody);
 					}
 
 					if (operation === 'createGroup') {
@@ -281,12 +324,16 @@ export class LunchMoney implements INodeType {
 						const binaryPropertyName = this.getNodeParameter('binaryPropertyName', i) as string;
 						const binaryData = this.helpers.assertBinaryData(i, binaryPropertyName);
 						const fileBuffer = await this.helpers.getBinaryDataBuffer(i, binaryPropertyName);
-						responseData = await lunchMoneyApiRequestMultipart.call(this, 'POST', `/transactions/${txId}/attachments`, {
+						const multipartBody: IDataObject = {
 							file: {
 								value: fileBuffer,
 								options: { filename: binaryData.fileName || 'file', contentType: binaryData.mimeType },
 							},
-						});
+						};
+						const additionalFields = this.getNodeParameter('additionalFields', i) as IDataObject;
+						for (const key of Object.keys(additionalFields)) { if (additionalFields[key] === '') delete additionalFields[key]; }
+						Object.assign(multipartBody, additionalFields);
+						responseData = await lunchMoneyApiRequestMultipart.call(this, 'POST', `/transactions/${txId}/attachments`, multipartBody);
 					}
 
 				}
@@ -551,8 +598,6 @@ export class LunchMoney implements INodeType {
 					}
 
 					if (operation === 'getCryptoSynced') {
-						const accountId = this.getNodeParameter('account_id', i) as number;
-						const symbol = this.getNodeParameter('cryptoSyncedSymbol', i) as string;
 						const csAccountId = this.getNodeParameter('cryptoSyncedAccountId', i) as number;
 						const csSymbol = this.getNodeParameter('cryptoSyncedSymbol', i) as string;
 						const qs: IDataObject = {};
@@ -563,8 +608,6 @@ export class LunchMoney implements INodeType {
 					}
 
 					if (operation === 'updateCryptoSynced') {
-						const accountId = this.getNodeParameter('account_id', i) as number;
-						const symbol = this.getNodeParameter('cryptoSyncedSymbol', i) as string;
 						const csAccountId = this.getNodeParameter('cryptoSyncedAccountId', i) as number;
 						const csSymbol = this.getNodeParameter('cryptoSyncedSymbol', i) as string;
 						const body: IDataObject = {};
@@ -574,15 +617,12 @@ export class LunchMoney implements INodeType {
 					}
 
 					if (operation === 'deleteCryptoSynced') {
-						const accountId = this.getNodeParameter('account_id', i) as number;
-						const symbol = this.getNodeParameter('cryptoSyncedSymbol', i) as string;
 						const csAccountId = this.getNodeParameter('cryptoSyncedAccountId', i) as number;
 						const csSymbol = this.getNodeParameter('cryptoSyncedSymbol', i) as string;
 						responseData = await lunchMoneyApiRequest.call(this, 'DELETE', `/balance_history/crypto_synced/${csAccountId}/${csSymbol}`);
 					}
 
 					if (operation === 'updateDeletedDetails') {
-						const accountId = this.getNodeParameter('account_id', i) as number;
 						const delAccountId = this.getNodeParameter('deletedAccountId', i) as number;
 						const body: IDataObject = {};
 						const additionalFields = this.getNodeParameter('additionalFields', i) as IDataObject;

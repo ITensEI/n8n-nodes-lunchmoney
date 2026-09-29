@@ -39,7 +39,20 @@ Lunch Money is a personal finance and budgeting tool. This node lets you automat
 
 ## Installation
 
-### Self-hosted n8n (Docker)
+### From npm in the n8n UI (recommended)
+
+On a self-hosted instance, as an Owner or Admin:
+
+1. Go to **Settings > Community Nodes** and select **Install**.
+2. Enter `n8n-nodes-lunch-money`, accept the community-node risk notice, and select **Install**.
+
+The **Lunch Money** node then appears in the node palette.
+
+**Updating:** when a new version is published, n8n shows an **Update** button on the package in **Settings > Community Nodes**. Select it to upgrade. To roll back, uninstall and reinstall with a specific version (`n8n-nodes-lunch-money@1.2.3`).
+
+Versions follow semver: a release that removes an operation is a major bump, one that adds an operation is a minor bump, and anything else is a patch.
+
+### From GitHub (Docker, without npm)
 
 SSH or exec into your n8n container, then:
 
@@ -53,20 +66,15 @@ Restart your n8n container. The **Lunch Money** node will appear in the node pal
 
 > `--legacy-peer-deps` is required if your n8n instance already has other community nodes with conflicting peer dependencies. It is safe to use.
 
-### Upgrading
+To upgrade a GitHub install, uninstall and reinstall (npm treats a git dependency as already satisfied), then restart n8n:
 
 ```bash
 cd /home/node/.n8n/nodes
+npm uninstall n8n-nodes-lunch-money
 npm install --legacy-peer-deps git+https://github.com/ITensEI/n8n-nodes-lunchmoney.git
 ```
 
-Then restart n8n.
-
-### npm (after publication)
-
-```bash
-npm install --legacy-peer-deps n8n-nodes-lunch-money
-```
+To move from a GitHub install to the npm install, uninstall the GitHub copy, restart n8n, then install from **Settings > Community Nodes**. The package name is the same, so existing workflows and credentials should keep resolving; open one afterwards to confirm.
 
 ## Credentials
 
@@ -101,7 +109,24 @@ npm run generate
 npm run build
 ```
 
-The scheduled GitHub Actions workflow performs the same refresh and opens a pull request. It never commits to `main` or auto-merges. `overrides.json` is the reviewed adapter contract that preserves stable n8n operation names and curated fields while recording intentional differences between the OpenAPI request shape and the n8n UI. New or changed upstream operations remain subject to pull-request review and CI before release.
+The scheduled GitHub Actions workflow performs the same refresh, bumps the package version, and opens a pull request. It never commits to `main` or auto-merges. `overrides.json` is the reviewed adapter contract that preserves stable n8n operation names and curated fields while recording intentional differences between the OpenAPI request shape and the n8n UI. New or changed upstream operations remain subject to pull-request review and CI before release.
+
+## Releases
+
+Publishing is automatic on merge; merging stays a human review step.
+
+1. **Spec sync** (`.github/workflows/spec-sync.yml`) runs daily. When the upstream spec changes the node, it regenerates the code, runs lint, tests and a build, bumps `package.json` (major for removed operations, minor for added ones, patch otherwise), and opens a `spec-sync/<spec-version>` pull request.
+2. **CI** (`.github/workflows/ci.yml`) runs on the pull request. Because the bot opens it with `GITHUB_TOKEN`, GitHub holds the run until a maintainer selects **Approve workflows to run** in the merge box. CI also fails any pull request that changes `nodes/`, `credentials/` or `dist/` without bumping the version. For a manual change, run `npm version patch|minor|major --no-git-tag-version` and commit it.
+3. **Publish** (`.github/workflows/publish.yml`) runs when a merge to `main` changes `package.json`. If npm does not have that version yet, it re-runs lint, tests and the build, publishes with npm Trusted Publishing (provenance is attached automatically), and creates a `vX.Y.Z` GitHub release.
+
+### First-time npm setup (maintainer)
+
+Trusted Publishing is configured on the package's own npm settings page, so the first version is published by hand:
+
+1. From a clean, up-to-date `main`: `npm ci --ignore-scripts`, `npm run build`, `npm pack --dry-run` (check the file list), `npm login`, `npm publish --access public`.
+2. On npmjs.com, open the package, then **Settings > Trusted Publisher > GitHub Actions**, and enter: organization or user `ITensEI`, repository `n8n-nodes-lunchmoney`, workflow filename `publish.yml` (filename only, exact case), environment empty. Under **Allowed actions**, allow direct `npm publish` as well as staged publishing.
+3. Recommended: **Settings > Publishing access > Require two-factor authentication and disallow tokens**.
+4. In GitHub, run the **Publish** workflow once by hand (**Actions > Publish > Run workflow**). It sees the version is already on npm and only creates the missing `v0.1.0` release.
 
 ## License
 

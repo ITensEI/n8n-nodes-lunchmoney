@@ -16,7 +16,7 @@
 	},
 	"repository": {
 		"type": "git",
-		"url": "https://github.com/ITensEI/n8n-nodes-lunchmoney.git"
+		"url": "git+https://github.com/ITensEI/n8n-nodes-lunchmoney.git"
 	},
 	"homepage": "https://github.com/ITensEI/n8n-nodes-lunchmoney#readme",
 	"bugs": {

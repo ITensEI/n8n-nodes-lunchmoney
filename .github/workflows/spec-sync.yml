@@ -42,8 +42,9 @@ jobs:
       - name: Summarize changes
         run: node scripts/summarize-changes.js
 
-      # PRs and pushes made with GITHUB_TOKEN do not trigger other workflows, so
-      # ci.yml never runs on the PR this job opens. Gate the bot PR here instead.
+      # Pre-filter so a broken regeneration never becomes a PR. ci.yml still runs
+      # on the PR this job opens, but because the PR is created with GITHUB_TOKEN,
+      # GitHub holds that run until a maintainer clicks "Approve workflows to run".
       - name: Lint
         run: npm run lint
 
@@ -82,7 +83,15 @@ jobs:
             exit 0
           fi
           git checkout -b "$BRANCH"
-          git add lm-endpoints.json .spec-version nodes/ dist/
+          # Every sync that changes the node ships as a new npm version.
+          # summarize-changes.js wrote the semver bump level to .release-type.
+          RELEASE_TYPE="$(cat .release-type)"
+          OLD_VERSION="$(node -p "require('./package.json').version")"
+          npm version "$RELEASE_TYPE" --no-git-tag-version
+          NEW_VERSION="$(node -p "require('./package.json').version")"
+          printf '### Release\n\nMerging publishes `%s` to npm (%s bump from `%s`).\n' \
+            "$NEW_VERSION" "$RELEASE_TYPE" "$OLD_VERSION" >> .pr-body.md
+          git add lm-endpoints.json .spec-version nodes/ dist/ package.json package-lock.json
           git commit -m "Sync node with Lunch Money v2 API spec ${{ steps.version.outputs.value }}"
           git push --set-upstream origin "$BRANCH"
 

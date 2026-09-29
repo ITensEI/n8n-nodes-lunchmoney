@@ -66,6 +66,15 @@ function diffEndpoints(oldEndpoints, newEndpoints) {
 	return { added, removed, changed };
 }
 
+// Semver bump for a sync that changed the generated node. Removing an
+// operation breaks workflows that use it (major); adding one is a feature
+// (minor); anything else is a fix to existing operations (patch).
+function releaseType({ added, removed }) {
+	if (removed.length) return 'major';
+	if (added.length) return 'minor';
+	return 'patch';
+}
+
 function formatAddedEndpoint(endpoint, generatedOperation, operationOverride) {
 	const operationLabel = `\`${endpoint.method} ${endpoint.path}\` (\`${endpoint.operationId}\`)`;
 
@@ -143,6 +152,7 @@ function main() {
 	}
 
 	fs.writeFileSync(path.join(REPO_ROOT, '.pr-body.md'), md);
+	fs.writeFileSync(path.join(REPO_ROOT, '.release-type'), releaseType({ added, removed }));
 	console.log(md);
 }
 
@@ -150,4 +160,4 @@ if (require.main === module) {
 	main();
 }
 
-module.exports = { formatAddedEndpoint };
+module.exports = { formatAddedEndpoint, releaseType };

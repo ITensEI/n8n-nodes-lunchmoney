@@ -152,3 +152,4 @@ node_modules/
 .new-operations.json
 .field-divergence.json
 .pr-body.md
+.release-type

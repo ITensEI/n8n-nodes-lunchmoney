@@ -8,7 +8,8 @@ const {
 	extractBodyProps,
 	specFieldCandidates,
 } = require('../scripts/spec-fields');
-const { formatAddedEndpoint } = require('../scripts/summarize-changes');
+const { formatAddedEndpoint, releaseType } = require('../scripts/summarize-changes');
+const { isGreater, touchesRelease } = require('../scripts/check-version-bump');
 
 function generatedOperationBlock(operationName) {
 	const generatedNodePath = path.join(
@@ -223,4 +224,23 @@ test('added endpoints with reviewed overrides are reported as wired', () => {
 	assert.match(summaryLine, /reviewed override/);
 	assert.match(summaryLine, /fields remain spec-derived/);
 	assert.doesNotMatch(summaryLine, /not wired/);
+});
+
+test('sync release type follows the operation-level change', () => {
+	assert.equal(releaseType({ added: [], removed: ['getThing'] }), 'major');
+	assert.equal(releaseType({ added: ['newThing'], removed: ['getThing'] }), 'major');
+	assert.equal(releaseType({ added: ['newThing'], removed: [] }), 'minor');
+	assert.equal(releaseType({ added: [], removed: [] }), 'patch');
+});
+
+test('version bump check compares numeric semver and scopes to published paths', () => {
+	assert.equal(isGreater('0.1.1', '0.1.0'), true);
+	assert.equal(isGreater('0.10.0', '0.9.9'), true);
+	assert.equal(isGreater('1.0.0', '0.99.99'), true);
+	assert.equal(isGreater('0.1.0', '0.1.0'), false);
+	assert.equal(isGreater('0.1.0', '0.2.0'), false);
+	assert.deepEqual(
+		touchesRelease(['README.md', 'dist/nodes/LunchMoney/LunchMoney.node.js', 'scripts/x.js']),
+		['dist/nodes/LunchMoney/LunchMoney.node.js'],
+	);
 });

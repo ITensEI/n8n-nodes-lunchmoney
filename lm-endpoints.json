@@ -222,7 +222,7 @@
             "name": "display_name",
             "type": "string",
             "required": false,
-            "description": "If set, updates the display name of the budgeting account.",
+            "description": "If set, updates the display name of the budget account.",
             "nullable": true,
             "updatable": true
           },
@@ -597,7 +597,7 @@
             "name": "default_manual_account_id",
             "type": "integer",
             "required": false,
-            "description": "If set, updates the manual account selected by default when the user creates a manual transaction in the current budgeting account. Must identify a manual account returned by [GET /manual_accounts](#tag/manual_accounts/GET/manual_accounts) for the current budgeting account. Set to `null` to clear the selection.",
+            "description": "If set, updates the manual account selected by default when the user creates a manual transaction in the current budget account. Must identify a manual account returned by [GET /manual_accounts](#tag/manual_accounts/GET/manual_accounts) for the current budget account. Set to `null` to clear the selection.",
             "nullable": true,
             "updatable": true
           }
@@ -1712,7 +1712,7 @@
             "name": "display_name",
             "type": "string",
             "required": false,
-            "description": "Display name of the manual account. If omitted or `null`, it is derived from `institution_name` and `name`. An explicitly set display name must be unique for the budgeting account.",
+            "description": "Display name of the manual account. If omitted or `null`, it is derived from `institution_name` and `name`. An explicitly set display name must be unique for the budget account.",
             "nullable": true
           },
           {
@@ -2610,7 +2610,7 @@
             "in": "query",
             "required": false,
             "type": "integer",
-            "description": "Sets the maximum number of transactions to return. If more match the filter criteria, the response will include a `has_more` attribute set to `true`. See [Pagination](https://lunchmoney.dev/v2/pagination)",
+            "description": "Sets the maximum number of transactions to return. Defaults to `1000`. When more transactions match, `has_more` is `true`. See [Pagination](https://lunchmoney.dev/pagination)",
             "default": 1000
           },
           {
@@ -2618,7 +2618,7 @@
             "in": "query",
             "required": false,
             "type": "integer",
-            "description": "Sets the offset for the records returned. This is typically set automatically in the header. See [Pagination](https://lunchmoney.dev/v2/pagination)"
+            "description": "Sets the number of matching transactions to skip before returning results. Increase this query parameter for each page. See [Pagination](https://lunchmoney.dev/pagination)"
           }
         ],
         "bodyProps": []
@@ -4438,7 +4438,7 @@
           "name": "display_name",
           "type": "string",
           "required": false,
-          "description": "If set, updates the display name of the budgeting account.",
+          "description": "If set, updates the display name of the budget account.",
           "nullable": true,
           "updatable": true
         },
@@ -4813,7 +4813,7 @@
           "name": "default_manual_account_id",
           "type": "integer",
           "required": false,
-          "description": "If set, updates the manual account selected by default when the user creates a manual transaction in the current budgeting account. Must identify a manual account returned by [GET /manual_accounts](#tag/manual_accounts/GET/manual_accounts) for the current budgeting account. Set to `null` to clear the selection.",
+          "description": "If set, updates the manual account selected by default when the user creates a manual transaction in the current budget account. Must identify a manual account returned by [GET /manual_accounts](#tag/manual_accounts/GET/manual_accounts) for the current budget account. Set to `null` to clear the selection.",
           "nullable": true,
           "updatable": true
         }
@@ -5916,7 +5916,7 @@
           "name": "display_name",
           "type": "string",
           "required": false,
-          "description": "Display name of the manual account. If omitted or `null`, it is derived from `institution_name` and `name`. An explicitly set display name must be unique for the budgeting account.",
+          "description": "Display name of the manual account. If omitted or `null`, it is derived from `institution_name` and `name`. An explicitly set display name must be unique for the budget account.",
           "nullable": true
         },
         {
@@ -6810,7 +6810,7 @@
           "in": "query",
           "required": false,
           "type": "integer",
-          "description": "Sets the maximum number of transactions to return. If more match the filter criteria, the response will include a `has_more` attribute set to `true`. See [Pagination](https://lunchmoney.dev/v2/pagination)",
+          "description": "Sets the maximum number of transactions to return. Defaults to `1000`. When more transactions match, `has_more` is `true`. See [Pagination](https://lunchmoney.dev/pagination)",
           "default": 1000
         },
         {
@@ -6818,7 +6818,7 @@
           "in": "query",
           "required": false,
           "type": "integer",
-          "description": "Sets the offset for the records returned. This is typically set automatically in the header. See [Pagination](https://lunchmoney.dev/v2/pagination)"
+          "description": "Sets the number of matching transactions to skip before returning results. Increase this query parameter for each page. See [Pagination](https://lunchmoney.dev/pagination)"
         }
       ],
       "bodyProps": []

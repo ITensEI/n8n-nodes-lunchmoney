@@ -463,6 +463,47 @@ export const transactionFields: INodeProperties[] = [
 		"required": true
 	},
 	{
+		"displayName": "Return All",
+		"name": "returnAll",
+		"type": "boolean",
+		"default": false,
+		"description": "Whether to return all results or only up to a given limit",
+		"displayOptions": {
+			"show": {
+				"resource": [
+					"transaction"
+				],
+				"operation": [
+					"getAll"
+				]
+			}
+		}
+	},
+	{
+		"displayName": "Limit",
+		"name": "limit",
+		"type": "number",
+		"default": 1000,
+		"description": "Max number of results to return",
+		"typeOptions": {
+			"minValue": 1,
+			"maxValue": 2000
+		},
+		"displayOptions": {
+			"show": {
+				"resource": [
+					"transaction"
+				],
+				"operation": [
+					"getAll"
+				],
+				"returnAll": [
+					false
+				]
+			}
+		}
+	},
+	{
 		"displayName": "Additional Fields",
 		"name": "additionalFields",
 		"type": "collection",
@@ -622,20 +663,6 @@ export const transactionFields: INodeProperties[] = [
 				"type": "boolean",
 				"default": false,
 				"description": "If true, include the files property containing a list of attached files for each transaction."
-			},
-			{
-				"displayName": "Limit",
-				"name": "limit",
-				"type": "string",
-				"default": "",
-				"description": "Maximum number of transactions to return."
-			},
-			{
-				"displayName": "Offset",
-				"name": "offset",
-				"type": "string",
-				"default": "",
-				"description": "Number of records to skip for pagination."
 			}
 		]
 	},

@@ -87,16 +87,19 @@ export async function lunchMoneyApiRequestAllItems(
 	endpoint: string,
 	body: IDataObject = {},
 	qs: IDataObject = {},
+	pageSize: number,
 	dataKey?: string,
 ): Promise<any[]> {
 	let responseData: any;
 	const returnData: any[] = [];
-
-	qs.limit = qs.limit || 500;
-	qs.offset = 0;
+	const pageQuery: IDataObject = {
+		...qs,
+		limit: pageSize,
+		offset: 0,
+	};
 
 	do {
-		responseData = await lunchMoneyApiRequest.call(this, method, endpoint, body, qs);
+		responseData = await lunchMoneyApiRequest.call(this, method, endpoint, body, pageQuery);
 		const items = dataKey ? responseData[dataKey] : responseData;
 
 		if (Array.isArray(items)) {
@@ -106,11 +109,11 @@ export async function lunchMoneyApiRequestAllItems(
 			break;
 		}
 
-		if (items.length < (qs.limit as number)) {
+		if (items.length === 0 || responseData.has_more === false) {
 			break;
 		}
 
-		qs.offset = (qs.offset as number) + (qs.limit as number);
+		pageQuery.offset = (pageQuery.offset as number) + pageSize;
 	} while (true);
 
 	return returnData;

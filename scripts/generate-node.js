@@ -131,6 +131,7 @@ for (const endpoint of endpoints) {
 		desc,
 		action,
 		bodyAdapter: override && override.bodyAdapter,
+		pagination: override && override.pagination,
 		bodyProps: endpoint.bodyProps,
 	});
 
@@ -268,6 +269,46 @@ function generateDescriptionFile(resourceKey) {
 	for (const op of resource.operations) {
 		const opFields = fields[op.value];
 		if (!opFields) continue;
+		const additionalFields = op.pagination
+			? (opFields.optional || []).filter((field) => !['limit', 'offset'].includes(field.name))
+			: opFields.optional;
+
+		// Standard n8n pagination controls stay outside Additional Fields.
+		if (op.pagination) {
+			const returnAll = {
+				displayName: 'Return All',
+				name: 'returnAll',
+				type: 'boolean',
+				default: false,
+				description: 'Whether to return all results or only up to a given limit',
+				displayOptions: {
+					show: {
+						resource: [resourceKey],
+						operation: [op.value],
+					},
+				},
+			};
+			const limit = {
+				displayName: 'Limit',
+				name: 'limit',
+				type: 'number',
+				default: op.pagination.defaultLimit,
+				description: 'Max number of results to return',
+				typeOptions: {
+					minValue: op.pagination.minimumLimit,
+					maxValue: op.pagination.pageSize,
+				},
+				displayOptions: {
+					show: {
+						resource: [resourceKey],
+						operation: [op.value],
+						returnAll: [false],
+					},
+				},
+			};
+			code += `\t${JSON.stringify(returnAll, null, '\t').replace(/\n/g, '\n\t')},\n`;
+			code += `\t${JSON.stringify(limit, null, '\t').replace(/\n/g, '\n\t')},\n`;
+		}
 
 		// Required fields
 		if (opFields.required) {
@@ -278,7 +319,7 @@ function generateDescriptionFile(resourceKey) {
 		}
 
 		// Optional fields (in additional fields collection)
-		if (opFields.optional && opFields.optional.length > 0) {
+		if (additionalFields && additionalFields.length > 0) {
 			// Additional Fields collection
 			const collection = {
 				displayName: 'Additional Fields',
@@ -292,7 +333,7 @@ function generateDescriptionFile(resourceKey) {
 						operation: [op.value],
 					},
 				},
-				options: opFields.optional.map(f => {
+				options: additionalFields.map(f => {
 					const o = {
 						displayName: f.displayName,
 						name: f.name,
@@ -334,7 +375,7 @@ function generateIndex(resources) {
 function generateMainNode(resources) {
 	let imports = `import { NodeConnectionTypes } from 'n8n-workflow';\n`;
 	imports += `import type {\n\tIExecuteFunctions,\n\tIDataObject,\n\tINodeExecutionData,\n\tINodeType,\n\tINodeTypeDescription,\n} from 'n8n-workflow';\n\n`;
-	imports += `import {\n\tlunchMoneyApiRequest,\n\tlunchMoneyApiRequestMultipart,\n} from './GenericFunctions';\n\n`;
+	imports += `import {\n\tlunchMoneyApiRequest,\n\tlunchMoneyApiRequestAllItems,\n\tlunchMoneyApiRequestMultipart,\n} from './GenericFunctions';\n\n`;
 
 	// Import descriptions
 	const importNames = [];
@@ -454,8 +495,11 @@ function generateOperationHandler(resourceKey, op) {
 	// the whole request rejected by the API.
 	const opFields = fields[op.value] || {};
 	const handlerOnlyFields = handlerOnlyFieldsForOperation(op.opId);
+	const paginationFields = op.pagination ? new Set(['limit', 'offset']) : new Set();
 	const bodyRequired = (opFields.required || []).filter((f) => !handlerOnlyFields.has(f.name));
-	const bodyOptional = (opFields.optional || []).filter((f) => !handlerOnlyFields.has(f.name));
+	const bodyOptional = (opFields.optional || []).filter(
+		(f) => !handlerOnlyFields.has(f.name) && !paginationFields.has(f.name),
+	);
 	const hasRequired = bodyRequired.length > 0;
 	const hasOptional = bodyOptional.length > 0;
 
@@ -625,7 +669,7 @@ function generateOperationHandler(resourceKey, op) {
 			}
 		}
 	} else if (op.method === 'GET') {
-		if (hasRequired || hasOptional) {
+		if (hasRequired || hasOptional || op.pagination) {
 			code += `\t\t\t\t\t\tconst qs: IDataObject = {};\n`;
 			if (hasRequired) {
 				for (const f of bodyRequired) {
@@ -637,7 +681,17 @@ function generateOperationHandler(resourceKey, op) {
 				code += `\t\t\t\t\t\tfor (const k of Object.keys(additionalFields)) { if (additionalFields[k] === '') delete additionalFields[k]; }\n`;
 				code += `\t\t\t\t\t\tObject.assign(qs, additionalFields);\n`;
 			}
-			code += `\t\t\t\t\t\tresponseData = await lunchMoneyApiRequest.call(this, '${op.method}', \`${apiPath}\`, {}, qs);\n`;
+			if (op.pagination) {
+				code += `\t\t\t\t\t\tconst returnAll = this.getNodeParameter('returnAll', i) as boolean;\n`;
+				code += `\t\t\t\t\t\tif (returnAll) {\n`;
+				code += `\t\t\t\t\t\t\tresponseData = await lunchMoneyApiRequestAllItems.call(this, '${op.method}', \`${apiPath}\`, {}, qs, ${op.pagination.pageSize}, '${op.pagination.dataKey}');\n`;
+				code += `\t\t\t\t\t\t} else {\n`;
+				code += `\t\t\t\t\t\t\tqs.limit = this.getNodeParameter('limit', i) as number;\n`;
+				code += `\t\t\t\t\t\t\tresponseData = await lunchMoneyApiRequest.call(this, '${op.method}', \`${apiPath}\`, {}, qs);\n`;
+				code += `\t\t\t\t\t\t}\n`;
+			} else {
+				code += `\t\t\t\t\t\tresponseData = await lunchMoneyApiRequest.call(this, '${op.method}', \`${apiPath}\`, {}, qs);\n`;
+			}
 		} else {
 			code += `\t\t\t\t\t\tresponseData = await lunchMoneyApiRequest.call(this, '${op.method}', \`${apiPath}\`);\n`;
 		}

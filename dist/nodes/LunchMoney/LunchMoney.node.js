@@ -289,7 +289,14 @@ class LunchMoney {
                                 delete additionalFields[k];
                         }
                         Object.assign(qs, additionalFields);
-                        responseData = await GenericFunctions_1.lunchMoneyApiRequest.call(this, 'GET', `/transactions`, {}, qs);
+                        const returnAll = this.getNodeParameter('returnAll', i);
+                        if (returnAll) {
+                            responseData = await GenericFunctions_1.lunchMoneyApiRequestAllItems.call(this, 'GET', `/transactions`, {}, qs, 2000, 'transactions');
+                        }
+                        else {
+                            qs.limit = this.getNodeParameter('limit', i);
+                            responseData = await GenericFunctions_1.lunchMoneyApiRequest.call(this, 'GET', `/transactions`, {}, qs);
+                        }
                         responseData = responseData.transactions || responseData;
                     }
                     if (operation === 'split') {

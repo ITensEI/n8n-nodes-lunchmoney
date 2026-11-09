@@ -22,6 +22,8 @@ Resources: User, Category, Transaction, Tag, Recurring Item, Budget, Manual Acco
 
 The operations follow the upstream spec and change as it does, so they are not listed here. To see the current set, open the node's **Operation** dropdown in n8n, or read `lm-endpoints.json` (every endpoint in the synced spec) and `.spec-version` (the spec version it was generated from).
 
+Transaction **Get Many** can return a selected limit or automatically retrieve every matching transaction across all available pages.
+
 ## Prerequisites
 
 - A self-hosted n8n instance for GitHub or unverified npm installation

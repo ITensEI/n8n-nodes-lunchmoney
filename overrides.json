@@ -734,6 +734,12 @@
 			"name": "Get Many",
 			"desc": "Get all transactions with optional filters",
 			"action": "Get many transactions",
+			"pagination": {
+				"dataKey": "transactions",
+				"pageSize": 2000,
+				"defaultLimit": 1000,
+				"minimumLimit": 1
+			},
 			"fields": {
 				"optional": [
 					{

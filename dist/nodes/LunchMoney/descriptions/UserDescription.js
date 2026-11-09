@@ -864,7 +864,7 @@ exports.userFields = [
                 "name": "display_name",
                 "type": "string",
                 "default": "",
-                "description": "If set, updates the display name of the budgeting account."
+                "description": "If set, updates the display name of the budget account."
             },
             {
                 "displayName": "Locale",
@@ -1788,7 +1788,7 @@ exports.userFields = [
                 "name": "default_manual_account_id",
                 "type": "string",
                 "default": "",
-                "description": "If set, updates the manual account selected by default when the user creates a manual transaction in the current budgeting account. Must identify a manual account returned by [GET /manual_accounts](#tag/manual_accounts/GET/manual_accounts) for the current budgeting account. Set to `null` to clear the selection."
+                "description": "If set, updates the manual account selected by default when the user creates a manual transaction in the current budget account. Must identify a manual account returned by [GET /manual_accounts](#tag/manual_accounts/GET/manual_accounts) for the current budget account. Set to `null` to clear the selection."
             }
         ]
     },

@@ -1,6 +1,6 @@
 {
 	"name": "n8n-nodes-lunch-money",
-	"version": "1.0.1",
+	"version": "1.1.0",
 	"description": "n8n community node for the Lunch Money personal finance API (v2)",
 	"keywords": [
 		"n8n-community-node-package",
@@ -27,7 +27,7 @@
 		"dev": "tsc --watch",
 		"generate": "node scripts/generate-node.js",
 		"lint": "eslint nodes credentials --ext .ts",
-		"test": "node --test test/spec-sync-fields.test.js",
+		"test": "node --test test/spec-sync-fields.test.js test/transaction-pagination.test.js",
 		"prepublishOnly": "npm run build"
 	},
 	"files": [

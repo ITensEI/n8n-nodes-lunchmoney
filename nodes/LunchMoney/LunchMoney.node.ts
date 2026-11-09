@@ -9,6 +9,7 @@ import type {
 
 import {
 	lunchMoneyApiRequest,
+	lunchMoneyApiRequestAllItems,
 	lunchMoneyApiRequestMultipart,
 } from './GenericFunctions';
 
@@ -282,7 +283,13 @@ export class LunchMoney implements INodeType {
 						const additionalFields = this.getNodeParameter('additionalFields', i) as IDataObject;
 						for (const k of Object.keys(additionalFields)) { if (additionalFields[k] === '') delete additionalFields[k]; }
 						Object.assign(qs, additionalFields);
-						responseData = await lunchMoneyApiRequest.call(this, 'GET', `/transactions`, {}, qs);
+						const returnAll = this.getNodeParameter('returnAll', i) as boolean;
+						if (returnAll) {
+							responseData = await lunchMoneyApiRequestAllItems.call(this, 'GET', `/transactions`, {}, qs, 2000, 'transactions');
+						} else {
+							qs.limit = this.getNodeParameter('limit', i) as number;
+							responseData = await lunchMoneyApiRequest.call(this, 'GET', `/transactions`, {}, qs);
+						}
 						responseData = responseData.transactions || responseData;
 					}
 

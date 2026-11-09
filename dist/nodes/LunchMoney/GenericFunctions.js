@@ -54,13 +54,16 @@ async function lunchMoneyApiRequestMultipart(method, endpoint, formData) {
         });
     }
 }
-async function lunchMoneyApiRequestAllItems(method, endpoint, body = {}, qs = {}, dataKey) {
+async function lunchMoneyApiRequestAllItems(method, endpoint, body = {}, qs = {}, pageSize, dataKey) {
     let responseData;
     const returnData = [];
-    qs.limit = qs.limit || 500;
-    qs.offset = 0;
+    const pageQuery = {
+        ...qs,
+        limit: pageSize,
+        offset: 0,
+    };
     do {
-        responseData = await lunchMoneyApiRequest.call(this, method, endpoint, body, qs);
+        responseData = await lunchMoneyApiRequest.call(this, method, endpoint, body, pageQuery);
         const items = dataKey ? responseData[dataKey] : responseData;
         if (Array.isArray(items)) {
             returnData.push(...items);
@@ -69,10 +72,10 @@ async function lunchMoneyApiRequestAllItems(method, endpoint, body = {}, qs = {}
             returnData.push(items);
             break;
         }
-        if (items.length < qs.limit) {
+        if (items.length === 0 || responseData.has_more === false) {
             break;
         }
-        qs.offset = qs.offset + qs.limit;
+        pageQuery.offset = pageQuery.offset + pageSize;
     } while (true);
     return returnData;
 }
